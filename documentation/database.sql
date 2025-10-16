@@ -105,34 +105,105 @@ CREATE TABLE "currency_unit" (
   "nazwa" varchar(10) NOT NULL
 );
 
+CREATE TABLE "role" (
+  "id" serial PRIMARY KEY,
+  "role_name" varchar(30),
+  "active" bool
+);
+
+CREATE TABLE "password" (
+  "id" serial PRIMARY KEY,
+  "pass" varchar(20),
+  "creation_at" timestamp
+);
+
+CREATE TABLE "user" (
+  "id" char(12) PRIMARY KEY,
+  "first_name" varchar(50),
+  "last_name" varchar(50),
+  "e_mail" varchar(100),
+  "id_role" integer,
+  "id_pass" integer UNIQUE,
+  "active" bool,
+  "created_at" timestamp
+);
+
+CREATE TABLE "action" (
+  "id" integer PRIMARY KEY,
+  "name" varchar(30)
+);
+
+CREATE TABLE "user_change_history" (
+  "id" integer PRIMARY KEY,
+  "id_user_who_changed" char(12),
+  "id_user_changed" char(12),
+  "id_action" integer,
+  "change_time" timestamp
+);
+
+CREATE TABLE "user_log_history" (
+  "id" integer PRIMARY KEY,
+  "id_user" char(12),
+  "id_action" integer,
+  "log_time" timestamp
+);
+
+CREATE TABLE "role_change_history" (
+  "id" integer PRIMARY KEY,
+  "id_user_who_changed" char(12),
+  "id_role" integer,
+  "id_action" integer,
+  "change_time" timestamp
+);
+
 COMMENT ON COLUMN "customer"."id_document" IS 'Passport ID of foreigner';
 
 COMMENT ON COLUMN "customer"."private_or_company" IS 'Sign company or private for example 0 or 1';
 
-ALTER TABLE "customer" ADD CONSTRAINT "customer_pkwiu" FOREIGN KEY ("id_pkwiu") REFERENCES "pkwiu" ("id");
+ALTER TABLE "customer" ADD FOREIGN KEY ("id_pkwiu") REFERENCES "pkwiu" ("id");
 
-ALTER TABLE "customer_address" ADD CONSTRAINT "customer_address_to_address" FOREIGN KEY ("id_address") REFERENCES "address" ("id");
+ALTER TABLE "address" ADD FOREIGN KEY ("id_city") REFERENCES "city" ("id");
 
-ALTER TABLE "customer_address" ADD CONSTRAINT "customer_address_to_customer" FOREIGN KEY ("id_customer") REFERENCES "customer" ("id");
+ALTER TABLE "address" ADD FOREIGN KEY ("id_district") REFERENCES "district" ("id");
 
-ALTER TABLE "supplier_address" ADD CONSTRAINT "supplier_address_to_address" FOREIGN KEY ("id_address") REFERENCES "address" ("id");
+ALTER TABLE "address" ADD FOREIGN KEY ("id_country") REFERENCES "country" ("id");
 
-ALTER TABLE "supplier_address" ADD CONSTRAINT "supplier_address_to_supplier" FOREIGN KEY ("id_supplier") REFERENCES "energy_supplier" ("id");
+ALTER TABLE "customer_address" ADD FOREIGN KEY ("id_address") REFERENCES "address" ("id");
 
-ALTER TABLE "address" ADD CONSTRAINT "address_to_city" FOREIGN KEY ("id_city") REFERENCES "city" ("id");
+ALTER TABLE "customer_address" ADD FOREIGN KEY ("id_customer") REFERENCES "customer" ("id");
 
-ALTER TABLE "address" ADD CONSTRAINT "address_to_district" FOREIGN KEY ("id_district") REFERENCES "district" ("id");
+ALTER TABLE "supplier_address" ADD FOREIGN KEY ("id_address") REFERENCES "address" ("id");
 
-ALTER TABLE "address" ADD CONSTRAINT "address_to_country" FOREIGN KEY ("id_country") REFERENCES "country" ("id");
+ALTER TABLE "supplier_address" ADD FOREIGN KEY ("id_supplier") REFERENCES "energy_supplier" ("id");
 
-ALTER TABLE "ppe" ADD CONSTRAINT "ppe_to_customer" FOREIGN KEY ("id_customer") REFERENCES "customer" ("id");
+ALTER TABLE "ppe" ADD FOREIGN KEY ("id_customer") REFERENCES "customer" ("id");
 
-ALTER TABLE "ppe" ADD CONSTRAINT "ppe_to_address" FOREIGN KEY ("id_address") REFERENCES "address" ("id");
+ALTER TABLE "ppe" ADD FOREIGN KEY ("id_address") REFERENCES "address" ("id");
 
-ALTER TABLE "supplier_offer" ADD CONSTRAINT "supplier_offer_to_supplier" FOREIGN KEY ("id_supplier") REFERENCES "energy_supplier" ("id");
+ALTER TABLE "supplier_offer" ADD FOREIGN KEY ("id_supplier") REFERENCES "energy_supplier" ("id");
 
-ALTER TABLE "supplier_offer" ADD CONSTRAINT "supplier_offer_to_power_unit" FOREIGN KEY ("id_power_unit") REFERENCES "power_unit" ("id");
+ALTER TABLE "supplier_offer" ADD FOREIGN KEY ("id_tariff") REFERENCES "energy_tariff" ("id");
 
-ALTER TABLE "supplier_offer" ADD CONSTRAINT "supplier_offer_to_tariff" FOREIGN KEY ("id_tariff") REFERENCES "energy_tariff" ("id");
+ALTER TABLE "supplier_offer" ADD FOREIGN KEY ("id_power_unit") REFERENCES "power_unit" ("id");
 
-ALTER TABLE "supplier_offer" ADD CONSTRAINT "supplier_offer_to_currency" FOREIGN KEY ("id_currency_unit") REFERENCES "currency_unit" ("id");
+ALTER TABLE "supplier_offer" ADD FOREIGN KEY ("id_currency_unit") REFERENCES "currency_unit" ("id");
+
+ALTER TABLE "user" ADD FOREIGN KEY ("id_role") REFERENCES "role" ("id");
+
+ALTER TABLE "user" ADD FOREIGN KEY ("id_pass") REFERENCES "password" ("id");
+
+ALTER TABLE "user_change_history" ADD FOREIGN KEY ("id_user_who_changed") REFERENCES "user" ("id");
+
+ALTER TABLE "user_change_history" ADD FOREIGN KEY ("id_user_changed") REFERENCES "user" ("id");
+
+ALTER TABLE "user_change_history" ADD FOREIGN KEY ("id_action") REFERENCES "action" ("id");
+
+ALTER TABLE "user_log_history" ADD FOREIGN KEY ("id_user") REFERENCES "user" ("id");
+
+ALTER TABLE "user_log_history" ADD FOREIGN KEY ("id_action") REFERENCES "action" ("id");
+
+ALTER TABLE "role_change_history" ADD FOREIGN KEY ("id_user_who_changed") REFERENCES "user" ("id");
+
+ALTER TABLE "role_change_history" ADD FOREIGN KEY ("id_role") REFERENCES "role" ("id");
+
+ALTER TABLE "role_change_history" ADD FOREIGN KEY ("id_action") REFERENCES "action" ("id");
