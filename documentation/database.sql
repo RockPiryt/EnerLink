@@ -1,3 +1,5 @@
+CREATE DATABASE enerlink;
+
 CREATE TABLE "customer" (
   "id" serial PRIMARY KEY,
   "name" varchar(30),
