@@ -1,5 +1,6 @@
-from app.db import db
+from app import create_app
 
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
+app = create_app()
+
+if __name__ == "__main__":
+    app.run()

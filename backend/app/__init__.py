@@ -10,13 +10,14 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
+    # Initialize database and migrations
     db.init_app(app)
     migrate.init_app(app, db)
 
-    # Import models here so Alembic can detect them
-    from .models import user_model
+    # Import models so Alembic detects them
+    from . import models  
 
-    # Blueprints
+    # Register blueprints
     from .routes.user_routes import user_bp
     app.register_blueprint(user_bp, url_prefix="/api/users")
 
