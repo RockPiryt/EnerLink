@@ -77,12 +77,20 @@ Database is described in the following document:
 ## API Documentation (Swagger)
 
 EnerLink uses Swagger UI for live API documentation.
-Once the Flask server is running, open:
-```bash
-🔗 http://localhost:5000/api/docs
-```
+
 The Swagger YAML file is located at:
-backend/swagger/swagger.yaml
+backend/oneapi.yaml
+
+Once the Flask server (flask run) is running, open:
+```bash
+ http://localhost:8080/apidocs/
+```
+
+![Swagger](./documentation/images/swagger.png)
+
+More info abiut api: 
+[View Oneapi](./documentation/oneapi.md)
+[View Rest Api](./documentation/rest_api.md)
 
 ## Project Status
 Project is: _in progress_ 
