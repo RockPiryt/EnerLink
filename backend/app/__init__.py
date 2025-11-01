@@ -2,6 +2,7 @@ from flask import Flask
 from flask_migrate import Migrate
 from .config import Config
 from .db import db
+from . import models
 
 migrate = Migrate()
 
@@ -13,9 +14,6 @@ def create_app():
     # Initialize database and migrations
     db.init_app(app)
     migrate.init_app(app, db)
-
-    # Import models so Alembic detects them
-    from . import models  
 
     # Register blueprints
     from .routes.user_routes import user_bp
