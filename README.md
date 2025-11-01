@@ -74,7 +74,7 @@ The system supports multiple user roles — **administrators, managers, and sale
 ### 1 **Clone the repository**
 ```bash
 git clone https://github.com/RockPiryt/Projekt_zespolowy_UG.git
-cd enerlink
+cd Projekt_zespolowy_UG
 ```
 ###  2 Backend setup
 ```bash
@@ -87,7 +87,7 @@ pip install -r requirements.txt
 
 ###  3 Set up PostgreSQL and configure environment variables (for example in .env file):
 ```bash
-DATABASE_URL=postgresql://username:password@localhost:5432/enerlink_db
+DATABASE_URL=postgresql://ener:link@localhost:5432/enerlink_db
 FLASK_ENV=development
 SECRET_KEY=your_secret_key
 ```
