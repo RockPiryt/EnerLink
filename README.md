@@ -1,8 +1,14 @@
-# Project Name
-> Outline a brief description of your project.
-> Live demo [_here_](https://www.example.com). <!-- If you have the project hosted somewhere, include the link here. -->
+# EnerLink
+
+## Project description
+> Customer Relationship Management System for Energy Vendor (CRM)
+
+The goal of the CRM system is to improve sales, marketing, and customer service processes by collecting, analyzing, and using customer data. The system includes a database of customers, contracts, and energy sales representatives divided into teams managed by managers. It also enables monitoring of customer interactions and ongoing sales performance.
+
+> Live demo [_here_](https://www.enerlink.com).
 
 ## Table of Contents
+* [Functional Requierements](#Functional Requierements)
 * [General Info](#general-information)
 * [Technologies Used](#technologies-used)
 * [Features](#features)
@@ -13,7 +19,11 @@
 * [Room for Improvement](#room-for-improvement)
 * [Acknowledgements](#acknowledgements)
 * [Contact](#contact)
-<!-- * [License](#license) -->
+* [License](#license)
+
+## Functional Requierements
+Detailed functional requirements are described in the following document:  
+[View Functional Requirements](./documentation/Functional_requirements.md)
 
 
 ## General Information
@@ -21,7 +31,7 @@
 - What problem does it (intend to) solve?
 - What is the purpose of your project?
 - Why did you undertake it?
-<!-- You don't have to answer all the questions - just the ones relevant to your project. -->
+
 
 
 ## Technologies Used
@@ -56,8 +66,7 @@ Provide various use cases and code examples here.
 
 
 ## Project Status
-Project is: _in progress_ / _complete_ / _no longer being worked on_. If you are no longer working on it, provide reasons why.
-
+Project is: _in progress_ 
 
 ## Room for Improvement
 Include areas you believe need improvement / could be improved. Also add TODOs for future development.
@@ -79,14 +88,15 @@ Give credit here.
 
 
 ## Contact
-Created by [@flynerdpl](https://www.flynerd.pl/) - feel free to contact me!
+Created by:
+- Rafał Arnista
+- Mariusz Dudzik
+- Marcin Gierszewski
+- Paulina Kimak [@rockpiryt](https://www.paulinakimak.pl/)
 
 
-<!-- Optional -->
-<!-- ## License -->
-<!-- This project is open source and available under the [... License](). -->
-
-<!-- You don't have to include all sections - just the one's relevant to your project -->
+## License
+<!-- This project is open source and available under the [... License]().
 
 
 
