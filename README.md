@@ -1,7 +1,7 @@
 # EnerLink
+> Customer Relationship Management System for Energy Vendor (CRM)
 
 ## Project description
-> Customer Relationship Management System for Energy Vendor (CRM)
 
 The goal of the CRM system is to improve sales, marketing, and customer service processes by collecting, analyzing, and using customer data. The system includes a database of customers, contracts, and energy sales representatives divided into teams managed by managers. It also enables monitoring of customer interactions and ongoing sales performance.
 
@@ -23,9 +23,11 @@ The goal of the CRM system is to improve sales, marketing, and customer service 
 
 ## Functional Requierements
 Detailed functional requirements are described in the following document:  
-[View Functional Requirements](./documentation/Functional_requirements.md)
+[View Functional Requirements](./documentation/functional_requirements.md)
 
-## Database 
+## Database
+Databese is described in the following document:  
+[View Database description](./documentation/database_info.md)
 
 ## General Information
 EnerLink is a CRM platform for energy vendors, designed to streamline customer management, contract tracking, and sales analysis.  
@@ -67,8 +69,6 @@ The system supports multiple user roles — **administrators, managers, and sale
 
 ## Screenshots
 ![Example screenshot](./img/screenshot.png)
-<!-- If you have screenshots you'd like to share, include them here. -->
-
 
 ## Setup
 ### 1 **Clone the repository**
@@ -123,43 +123,30 @@ npm start
 Now open your browser and go to http://localhost:3000
 
 
-📘 API Documentation (Swagger)
+## API Documentation (Swagger)
 
 EnerLink uses Swagger UI for live API documentation.
 Once the Flask server is running, open:
-
+```bash
 🔗 http://localhost:5000/api/docs
-
+```
 The Swagger YAML file is located at:
 backend/swagger/swagger.yaml
 
-## Usage
-How does one go about using it?
-Provide various use cases and code examples here.
-
-`write-your-code-here`
 
 
 ## Project Status
 Project is: _in progress_ 
 
 ## Room for Improvement
-Include areas you believe need improvement / could be improved. Also add TODOs for future development.
 
-Room for improvement:
-- Improvement to be done 1
-- Improvement to be done 2
+- Add Docker configuration for easier deployment
 
-To do:
-- Feature to be added 1
-- Feature to be added 2
+- Implement unit and integration tests
 
+- Enhance UI with modern dashboard components (charts, analytics)
 
-## Acknowledgements
-Give credit here.
-- This project was inspired by...
-- This project was based on [this tutorial](https://www.example.com).
-- Many thanks to...
+- Introduce JWT authentication
 
 
 ## Contact
@@ -171,12 +158,4 @@ Created by:
 
 
 ## License
-<!-- This project is open source and available under the [... License]().
-
-
-
-
-
-Readme previews relative urls
-https://stackoverflow.com/questions/11915826/image-not-showing-up-in-readme-md-on-github
-
+This project is open source and available under the Apache License 2.0
