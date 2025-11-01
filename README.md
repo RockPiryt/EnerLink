@@ -25,26 +25,44 @@ The goal of the CRM system is to improve sales, marketing, and customer service 
 Detailed functional requirements are described in the following document:  
 [View Functional Requirements](./documentation/Functional_requirements.md)
 
+## Database 
 
 ## General Information
-- Provide general information about your project here.
-- What problem does it (intend to) solve?
-- What is the purpose of your project?
-- Why did you undertake it?
-
-
+EnerLink is a CRM platform for energy vendors, designed to streamline customer management, contract tracking, and sales analysis.  
+The system supports multiple user roles — **administrators, managers, and sales representatives** — providing tailored dashboards and access permissions.
 
 ## Technologies Used
-- Tech 1 - version 1.0
-- Tech 2 - version 2.0
-- Tech 3 - version 3.0
+
+### **Frontend**
+- React `^19.2.0`
+- TypeScript `^4.9.5`
+- React Scripts `5.0.1`
+- React Testing Library
+- Jest
+- Web Vitals
+
+### **Backend**
+- Flask `3.1.2`
+- Flask-SQLAlchemy `3.0.5`
+- psycopg2-binary `2.9.9`
+- SQLAlchemy `2.0.44`
+- Werkzeug `3.1.3`
+- Jinja2 `3.1.6`
+- pytest `8.4.0`
+- Swagger for API documentation
+
+### **Database**
+- PostgreSQL
 
 
 ## Features
-List the ready features here:
-- Awesome feature 1
-- Awesome feature 2
-- Awesome feature 3
+- Role-based user management (Admin / Manager / Sales Representative)
+- Customer and contract management
+- Energy provider and tariff database
+- Analytics dashboards and team performance ranking
+- Tag and label system for categorization
+- Secure authentication with password policies
+- Swagger-based REST API documentation
 
 
 ## Screenshots
@@ -53,10 +71,67 @@ List the ready features here:
 
 
 ## Setup
-What are the project requirements/dependencies? Where are they listed? A requirements.txt or a Pipfile.lock file perhaps? Where is it located?
+### 1 **Clone the repository**
+```bash
+git clone https://github.com/RockPiryt/Projekt_zespolowy_UG.git
+cd enerlink
+```
+###  2 Backend setup
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate   # on macOS/Linux
+venv\Scripts\activate      # on Windows
+pip install -r requirements.txt
+```
 
-Proceed to describe how to install / setup one's local environment / get started with the project.
+###  3 Set up PostgreSQL and configure environment variables (for example in .env file):
+```bash
+DATABASE_URL=postgresql://username:password@localhost:5432/enerlink_db
+FLASK_ENV=development
+SECRET_KEY=your_secret_key
+```
 
+Run database migrations (if you use Alembic or manually initialize tables):
+```bash
+flask shell
+>>> from app import db
+>>> db.create_all()
+>>> exit()
+```
+
+###  4 Frontend setup
+```bash
+cd ../frontend
+npm install
+npm start
+```
+
+### 5 Running the Application
+Start Backend (Flask)
+```bash
+cd backend
+flask run
+```
+
+Start Frontend (React)
+```bash
+cd frontend
+npm start
+```
+
+Now open your browser and go to http://localhost:3000
+
+
+📘 API Documentation (Swagger)
+
+EnerLink uses Swagger UI for live API documentation.
+Once the Flask server is running, open:
+
+🔗 http://localhost:5000/api/docs
+
+The Swagger YAML file is located at:
+backend/swagger/swagger.yaml
 
 ## Usage
 How does one go about using it?
