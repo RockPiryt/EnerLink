@@ -79,10 +79,17 @@ cd Projekt_zespolowy_UG
 ###  2 Backend setup
 ```bash
 cd backend
-python -m venv venv
+python -m venv venv        # create venv
 source venv/bin/activate   # on macOS/Linux
 venv\Scripts\activate      # on Windows
+
+# install 
 pip install -r requirements.txt
+
+# set
+FLASK_APP=wsgi.py
+FLASK_ENV=development
+
 ```
 
 ###  3 Set up PostgreSQL and configure environment variables (for example in .env file):
