@@ -17,7 +17,7 @@ def create_app():
     migrate.init_app(app, db)
 
     # Initialize Swagger
-    swagger = Swagger(app)
+    swagger = Swagger(app, template_file="../openapi.yaml")
 
     # Register blueprints
     from .routes.user_routes import user_bp
