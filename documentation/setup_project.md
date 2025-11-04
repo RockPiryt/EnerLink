@@ -43,6 +43,10 @@ flask db upgrade
 - flask db upgrade – applies all migrations to your database (creates tables and schema).
 
 ##  Frontend setup
+- Before running the frontend, please ensure you have Node.js version 24.0.0 or higher and npm version 11.0.0 or higher installed.
+- Create an .env file based on the .env.example template.
+- Install dependencies using npm install. If you occur any errors, try running npm install --legacy-peer-deps.
+
 ```bash
 cd ../frontend
 npm install

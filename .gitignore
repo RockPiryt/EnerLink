@@ -207,3 +207,21 @@ marimo/_lsp/
 __marimo__/
 
 backend/migrations
+
+# Node.js
+frontend/node_modules/
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/package-lock.json
+frontend/yarn.lock
+frontend/.pnpm-debug.log*
+
+# React / Frontend
+frontend/build/
+frontend/.cache/
+frontend/.vscode/
+frontend/.DS_Store
+frontend/*.swp
+frontend/*.swo
+frontend/*~
