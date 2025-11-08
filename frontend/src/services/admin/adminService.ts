@@ -1,13 +1,10 @@
 import axiosInstance from "../../interceptor/interceptor";
 
-export class AuthService {
+export class AdminService {
 
-    async login(email: string, password: string) {
+    async getUsers() {
         try {
-            const response = await axiosInstance.post('/auth/login', {
-                email,
-                password,
-            });
+            const response = await axiosInstance.get('/users/');
             return {
                 data: response.data,
                 status: response.status,

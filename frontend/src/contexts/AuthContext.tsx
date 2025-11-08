@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import {AuthService} from "../services/auth/authService";
 
 interface User {
   id: string;
@@ -23,7 +24,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
+  const authService = new AuthService();
   // Check if user is logged in on app start
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
@@ -38,25 +39,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      const response = await fetch('http://127.0.0.1:8080/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
+        const response = await authService.login(email, password);
+        console.log(response);
 
-      if (response.ok) {
-        const data = await response.json();
-        
-        if (data.user) {
-          setToken(data.token);
-          setUser(data.user);
-          
-          // Save to localStorage
-          localStorage.setItem('token', data.token);
-          localStorage.setItem('user', JSON.stringify(data.user));
-          
+      if (response.status === 200 && response.data.user.active) {
+
+        if (response.data.user) {
+          setToken(response.data);
+          setUser(response.data.user);
+
+          localStorage.setItem('token', response.data.token);
+          localStorage.setItem('user', JSON.stringify(response.data.user));
+
           return true;
         }
       }

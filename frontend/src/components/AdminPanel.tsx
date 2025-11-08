@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Table, Badge, Modal, Form, Tab, Tabs, Spinner } from 'react-bootstrap';
 import { useAuth } from '../contexts/AuthContext';
 import { Navigate, useNavigate } from 'react-router-dom';
+import {AdminService} from "../services/admin/adminService";
 
 interface BackendUser {
   id: string;
@@ -20,25 +21,17 @@ const AdminPanel: React.FC = () => {
   const [users, setUsers] = useState<BackendUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
+  const adminService = new AdminService();
 
-  // Fetch users from backend
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8080/api/users/', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
-        
-        if (response.ok) {
-          const userData = await response.json();
+          const response = await adminService.getUsers();
+
+          const userData = response.data;
           setUsers(userData);
-        } else {
-          setError('Failed to fetch users');
-        }
       } catch (err) {
-        setError('Error connecting to server');
+        setError('Error fetching users');
         console.error('Error fetching users:', err);
       } finally {
         setLoading(false);
