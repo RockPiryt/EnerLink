@@ -3,43 +3,46 @@ import { Container, Row, Col, Card, Button, Table, Badge, Modal, Form, Tab, Tabs
 import { useAuth } from '../contexts/AuthContext';
 import { Navigate, useNavigate } from 'react-router-dom';
 import {AdminService} from "../services/admin/adminService";
-
-interface BackendUser {
-  id: string;
-  first_name: string;
-  last_name: string;
-  e_mail: string;
-  role_name: string;
-  active: boolean;
-}
+import DeleteUserModal from "../dialogs/DeleteModal";
+import EditUserModal from "../dialogs/EditUserModal";
+import AddUserModal from "../dialogs/AddUserModal";
+import {User} from "../models/user";
 
 const AdminPanel: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [showUserModal, setShowUserModal] = useState(false);
   const [activeTab, setActiveTab] = useState('users');
-  const [users, setUsers] = useState<BackendUser[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
+  const [addLoading, setAddLoading] = useState(false);
+
   const adminService = new AdminService();
 
-  useEffect(() => {
     const fetchUsers = async () => {
-      try {
-          const response = await adminService.getUsers();
-
-          const userData = response.data;
-          setUsers(userData);
-      } catch (err) {
-        setError('Error fetching users');
-        console.error('Error fetching users:', err);
-      } finally {
-        setLoading(false);
-      }
+        setLoading(true);
+        try {
+            const response = await adminService.getUsers();
+            const userData = response?.data;
+            setUsers(userData);
+            setError('');
+        } catch (err) {
+            setError('Error fetching users');
+            console.error('Error fetching users:', err);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    fetchUsers();
-  }, []);
+    useEffect(() => {
+        fetchUsers();
+    }, []);
 
   // If user is not logged in or not admin, redirect
   if (!user) {
@@ -57,6 +60,80 @@ const AdminPanel: React.FC = () => {
   const handleBackToDashboard = () => {
     navigate('/dashboard');
   };
+
+    const handleDeleteClick = (userToDelete: User) => {
+        setSelectedUser(userToDelete);
+        setShowDeleteModal(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!selectedUser) return;
+
+        setDeleteLoading(true);
+        try {
+            await adminService.deleteUser(selectedUser.id);
+
+            setShowDeleteModal(false);
+            setSelectedUser(null);
+
+            await fetchUsers();
+        } catch (err) {
+            console.error('Error deleting user:', err);
+            setError('Failed to delete user. Please try again.');
+        } finally {
+            setDeleteLoading(false);
+        }
+    };
+
+    const handleCloseDeleteModal = () => {
+        setShowDeleteModal(false);
+        setSelectedUser(null);
+    };
+
+    const handleEditClick = (userToEdit: User) => {
+        setSelectedUser(userToEdit);
+        setShowEditModal(true);
+    };
+
+    const handleConfirmEdit = async (updatedUser: Partial<User>) => {
+        if (!selectedUser) return;
+
+        setEditLoading(true);
+        try {
+            await adminService.updateUser(Number(selectedUser.id), updatedUser);
+
+            setShowEditModal(false);
+            setSelectedUser(null);
+
+            await fetchUsers();
+
+            console.log('User updated successfully');
+        } catch (err) {
+            console.error('Error updating user:', err);
+            setError('Failed to update user. Please try again.');
+        } finally {
+            setEditLoading(false);
+        }
+    };
+
+    const handleCloseEditModal = () => {
+        setShowEditModal(false);
+        setSelectedUser(null);
+    };
+
+    const handleConfirmAdd = async (userData: any) => {
+        setAddLoading(true);
+        try {
+            await adminService.addUser(userData);
+            setShowUserModal(false);
+            await fetchUsers();
+        } catch (err) {
+            console.error('Error creating user:', err);
+            setError('Failed to create user. Please try again.');
+        } finally {
+            setAddLoading(false);
+        }
+    };
 
   return (
     <Container fluid className="py-4">
@@ -175,10 +252,18 @@ const AdminPanel: React.FC = () => {
                               </Badge>
                             </td>
                             <td>
-                              <Button variant="outline-primary" size="sm" className="me-2" disabled>
+                              <Button
+                                  variant="outline-primary"
+                                  size="sm"
+                                  className="me-2"
+                                  onClick={() => handleEditClick(user)}
+                              >
                                 Edit
                               </Button>
-                              <Button variant="outline-danger" size="sm" disabled>
+                              <Button variant="outline-danger"
+                                      size="sm"
+                                      onClick={() => handleDeleteClick(user)}
+                              >
                                 Delete
                               </Button>
                             </td>
@@ -276,50 +361,29 @@ const AdminPanel: React.FC = () => {
           </Card>
         </Col>
       </Row>
+        <AddUserModal
+            show={showUserModal}
+            onHide={() => setShowUserModal(false)}
+            onConfirm={handleConfirmAdd}
+            loading={addLoading}
+        />
 
-      {/* Add User Modal */}
-      <Modal show={showUserModal} onHide={() => setShowUserModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Add New User</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            <Form.Group className="mb-3">
-              <Form.Label>First Name</Form.Label>
-              <Form.Control type="text" placeholder="Enter first name" />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Last Name</Form.Label>
-              <Form.Control type="text" placeholder="Enter last name" />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Email</Form.Label>
-              <Form.Control type="email" placeholder="Enter email" />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Role</Form.Label>
-              <Form.Select>
-                <option>Select role</option>
-                <option value="Admin">Admin</option>
-                <option value="Manager">Manager</option>
-                <option value="User">User</option>
-              </Form.Select>
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Password</Form.Label>
-              <Form.Control type="password" placeholder="Enter password" />
-            </Form.Group>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowUserModal(false)}>
-            Cancel
-          </Button>
-          <Button variant="primary">
-            Create User
-          </Button>
-        </Modal.Footer>
-      </Modal>
+        <DeleteUserModal
+            show={showDeleteModal}
+            onHide={handleCloseDeleteModal}
+            onConfirm={handleConfirmDelete}
+            userName={selectedUser ? `${selectedUser.first_name} ${selectedUser.last_name}` : ''}
+            userEmail={selectedUser?.e_mail || ''}
+            loading={deleteLoading}
+        />
+
+        <EditUserModal
+            show={showEditModal}
+            onHide={handleCloseEditModal}
+            onConfirm={handleConfirmEdit}
+            user={selectedUser}
+            loading={editLoading}
+        />
     </Container>
   );
 };
