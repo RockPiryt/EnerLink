@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_migrate import Migrate
+from flask_cors import CORS
 from flasgger import Swagger
 from .config import Config
 from .db import db
@@ -11,6 +12,9 @@ def create_app():
     """Factory function to create a Flask app instance."""
     app = Flask(__name__)
     app.config.from_object(Config)
+
+    # Enable CORS for frontend communication
+    CORS(app, origins=["http://localhost:3000", "http://127.0.0.1:3000"])
 
     # Initialize database and migrations
     db.init_app(app)

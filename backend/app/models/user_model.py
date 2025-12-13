@@ -14,6 +14,14 @@ class Role(db.Model):
     def __repr__(self):
         return f"<Role {self.role_name}>"
 
+    def to_dict(self):
+        """Convert role object to dictionary for JSON serialization."""
+        return {
+            "id": self.id,
+            "role_name": self.role_name,
+            "active": self.active
+        }
+
 
 class Password(db.Model):
     __tablename__ = "password"
@@ -61,3 +69,16 @@ class User(db.Model):
 
     def __repr__(self):
         return f"<User {self.first_name} {self.last_name}>"
+
+    def to_dict(self):
+        """Convert user object to dictionary for JSON serialization."""
+        return {
+            "id": self.id,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "e_mail": self.e_mail,
+            "id_role": self.id_role,
+            "active": self.active,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "role_name": self.role.role_name if self.role else None
+        }

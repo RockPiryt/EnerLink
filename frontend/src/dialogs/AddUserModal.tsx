@@ -1,0 +1,250 @@
+import React, { useState } from 'react';
+import { Modal, Button, Form, Spinner } from 'react-bootstrap';
+import Role from "../enums/role";
+
+interface AddUserData {
+    first_name: string;
+    last_name: string;
+    e_mail: string;
+    role_name: string;
+    password: string;
+}
+
+interface AddUserModalProps {
+    show: boolean;
+    onHide: () => void;
+    onConfirm: (userData: AddUserData) => void;
+    loading?: boolean;
+}
+
+const AddUserModal: React.FC<AddUserModalProps> = ({
+                                                       show,
+                                                       onHide,
+                                                       onConfirm,
+                                                       loading = false
+                                                   }) => {
+    const [formData, setFormData] = useState<AddUserData>({
+        first_name: '',
+        last_name: '',
+        e_mail: '',
+        role_name: '',
+        password: ''
+    });
+
+    const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+    const handleChange = (e: any) => {
+        const { name, value } = e.target;
+
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+
+        if (errors[name]) {
+            setErrors(prev => {
+                const newErrors = { ...prev };
+                delete newErrors[name];
+                return newErrors;
+            });
+        }
+    };
+
+    const validateForm = (): boolean => {
+        const newErrors: { [key: string]: string } = {};
+
+        if (!formData.first_name.trim()) {
+            newErrors.first_name = 'First name is required';
+        }
+
+        if (!formData.last_name.trim()) {
+            newErrors.last_name = 'Last name is required';
+        }
+
+        if (!formData.e_mail.trim()) {
+            newErrors.e_mail = 'Email is required';
+        } else if (!/\S+@\S+\.\S+/.test(formData.e_mail)) {
+            newErrors.e_mail = 'Email is invalid';
+        }
+
+        if (!formData.role_name) {
+            newErrors.role_name = 'Role is required';
+        }
+
+        if (!formData.password.trim()) {
+            newErrors.password = 'Password is required';
+        } else if (formData.password.length < 6) {
+            newErrors.password = 'Password must be at least 6 characters';
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (validateForm()) {
+            onConfirm(formData);
+        }
+    };
+
+    const handleClose = () => {
+        setFormData({
+            first_name: '',
+            last_name: '',
+            e_mail: '',
+            role_name: '',
+            password: ''
+        });
+        setErrors({});
+        onHide();
+    };
+
+    return (
+        <Modal show={show} onHide={handleClose} centered size="lg">
+            <Modal.Header closeButton className="bg-success text-white">
+                <Modal.Title>
+                    <i className="fas fa-user-plus me-2"></i>
+                    Add New User
+                </Modal.Title>
+            </Modal.Header>
+            <Form onSubmit={handleSubmit}>
+                <Modal.Body>
+                    <Form.Group className="mb-3">
+                        <Form.Label>
+                            First Name <span className="text-danger">*</span>
+                        </Form.Label>
+                        <Form.Control
+                            type="text"
+                            name="first_name"
+                            value={formData.first_name}
+                            onChange={handleChange}
+                            isInvalid={!!errors.first_name}
+                            placeholder="Enter first name"
+                            disabled={loading}
+                        />
+                        <Form.Control.Feedback type="invalid">
+                            {errors.first_name}
+                        </Form.Control.Feedback>
+                    </Form.Group>
+
+                    <Form.Group className="mb-3">
+                        <Form.Label>
+                            Last Name <span className="text-danger">*</span>
+                        </Form.Label>
+                        <Form.Control
+                            type="text"
+                            name="last_name"
+                            value={formData.last_name}
+                            onChange={handleChange}
+                            isInvalid={!!errors.last_name}
+                            placeholder="Enter last name"
+                            disabled={loading}
+                        />
+                        <Form.Control.Feedback type="invalid">
+                            {errors.last_name}
+                        </Form.Control.Feedback>
+                    </Form.Group>
+
+                    <Form.Group className="mb-3">
+                        <Form.Label>
+                            Email <span className="text-danger">*</span>
+                        </Form.Label>
+                        <Form.Control
+                            type="email"
+                            name="e_mail"
+                            value={formData.e_mail}
+                            onChange={handleChange}
+                            isInvalid={!!errors.e_mail}
+                            placeholder="Enter email"
+                            disabled={loading}
+                        />
+                        <Form.Control.Feedback type="invalid">
+                            {errors.e_mail}
+                        </Form.Control.Feedback>
+                    </Form.Group>
+
+                    <Form.Group className="mb-3">
+                        <Form.Label>
+                            Role <span className="text-danger">*</span>
+                        </Form.Label>
+                        <Form.Select
+                            name="role_name"
+                            value={formData.role_name}
+                            onChange={handleChange}
+                            isInvalid={!!errors.role_name}
+                            disabled={loading}
+                        >
+                            <option value="">Select role</option>
+                            {Object.values(Role).map((role) => (
+                                <option key={role} value={role}>
+                                    {role}
+                                </option>
+                            ))}
+                        </Form.Select>
+                        <Form.Control.Feedback type="invalid">
+                            {errors.role_name}
+                        </Form.Control.Feedback>
+                    </Form.Group>
+
+                    <Form.Group className="mb-3">
+                        <Form.Label>
+                            Password <span className="text-danger">*</span>
+                        </Form.Label>
+                        <Form.Control
+                            type="password"
+                            name="password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            isInvalid={!!errors.password}
+                            placeholder="Enter password"
+                            disabled={loading}
+                        />
+                        <Form.Control.Feedback type="invalid">
+                            {errors.password}
+                        </Form.Control.Feedback>
+                        <Form.Text className="text-muted">
+                            Password must be at least 6 characters long
+                        </Form.Text>
+                    </Form.Group>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button
+                        variant="secondary"
+                        onClick={handleClose}
+                        disabled={loading}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        variant="success"
+                        type="submit"
+                        disabled={loading}
+                    >
+                        {loading ? (
+                            <>
+                                <Spinner
+                                    as="span"
+                                    animation="border"
+                                    size="sm"
+                                    role="status"
+                                    aria-hidden="true"
+                                    className="me-2"
+                                />
+                                Creating...
+                            </>
+                        ) : (
+                            <>
+                                <i className="fas fa-user-plus me-2"></i>
+                                Create User
+                            </>
+                        )}
+                    </Button>
+                </Modal.Footer>
+            </Form>
+        </Modal>
+    );
+};
+
+export default AddUserModal;
