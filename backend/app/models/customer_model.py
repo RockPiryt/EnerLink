@@ -25,3 +25,28 @@ class Customer(db.Model):
 
     def __repr__(self):
         return f"<Customer {self.name} {self.last_name}>"
+
+    # Convert model to dict for JSON API
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "last_name": self.last_name,
+            "company": self.company,
+            "email": self.e_mail,
+            "phone": self.phone,
+            "pesel": self.pesel,
+            "id_document": self.id_document,
+            "nip": self.nip,
+            "pkwiu": self.pkwiu.to_dict() if self.pkwiu else None,
+            "regon": self.regon,
+            "representative": self.representative,
+            "private_or_company": self.private_or_company,
+            "active": self.active,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+
+            # serialize all addresses (customer.addresses is a relationship list)
+            "addresses": [
+                addr.to_dict() for addr in self.addresses
+            ] if self.addresses else []
+        }
