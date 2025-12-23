@@ -227,4 +227,5 @@ frontend/.DS_Store
 frontend/*.swp
 frontend/*.swo
 frontend/*~
+frontend/.idea/
 backend/app/enerlink_dev.db
