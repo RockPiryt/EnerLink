@@ -17,7 +17,7 @@ pip install -r requirements.txt
 
 ### Set environment variables 
 
- macOS / Linux (bash / zsh)
+macOS / Linux (bash / zsh)
 ```bash
 FLASK_APP=wsgi.py
 FLASK_ENV=development
@@ -25,9 +25,11 @@ SECRET_KEY=your_secret_key
 ```
 
 Windows (PowerShell)
+```bash
 $env:FLASK_APP = "wsgi.py"
 $env:FLASK_ENV = "development"
 $env:SECRET_KEY="your_secret_key"
+```
 
 ## Initialize the database
 ```bash
