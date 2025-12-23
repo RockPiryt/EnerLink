@@ -5,6 +5,7 @@ from flasgger import Swagger
 from .config import Config
 from .db import db
 from . import models
+from .routes import register_routes
 
 migrate = Migrate()
 
@@ -24,11 +25,8 @@ def create_app():
     swagger = Swagger(app, template_file="../openapi.yaml")
 
     # Register blueprints
-    from .routes.user_routes import user_bp
-    app.register_blueprint(user_bp, url_prefix="/api/users")
+    register_routes(app)
 
-    from .routes.auth_routes import auth_bp
-    app.register_blueprint(auth_bp, url_prefix="/api/auth")
 
     @app.route("/api/health")
     def health_check():
