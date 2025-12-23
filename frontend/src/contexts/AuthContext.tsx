@@ -45,7 +45,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (response.status === 200 && response.data.user.active) {
 
         if (response.data.user) {
-          setToken(response.data);
+          setToken(response.data.token);
           setUser(response.data.user);
 
           localStorage.setItem('token', response.data.token);
