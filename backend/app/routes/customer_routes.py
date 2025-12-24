@@ -13,8 +13,6 @@ def get_customers():
     customers = Customer.query.all()
     return jsonify([c.to_dict() for c in customers]), 200
 
-
-
 # POST /api/customers – create new customer
 @customer_bp.route("/customers", methods=["POST"])
 def add_customer():
@@ -49,7 +47,7 @@ def add_customer():
             id_country=addr_data.get("id_country"),
         )
         db.session.add(address)
-        db.session.flush()  # ensures address.id
+        db.session.flush()
 
         link = CustomerAddress(
             id_customer=new_customer.id,
@@ -61,8 +59,6 @@ def add_customer():
 
     return jsonify({"message": "Customer created", "customer": new_customer.to_dict()}), 201
 
-
-
 # GET /api/customers/<id> – customer details
 @customer_bp.route("/customers/<int:id>", methods=["GET"])
 def get_customer(id):
@@ -70,8 +66,6 @@ def get_customer(id):
     if not customer:
         return jsonify({"error": "Customer not found"}), 404
     return jsonify(customer.to_dict()), 200
-
-
 
 # PUT /api/customers/<id> – update customer
 @customer_bp.route("/customers/<int:id>", methods=["PUT"])
@@ -117,8 +111,6 @@ def update_customer(id):
 
     db.session.commit()
     return jsonify({"message": "Customer updated", "customer": customer.to_dict()}), 200
-
-
 
 # PATCH /api/customers/<id> – activate/deactivate
 @customer_bp.route("/customers/<int:id>", methods=["PATCH"])
