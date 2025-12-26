@@ -5,7 +5,7 @@ from flasgger import swag_from
 
 user_bp = Blueprint("user_bp", __name__)
 
-@user_bp.route("/", methods=["GET"])
+@user_bp.route("/users", methods=["GET"])
 @swag_from({
     'tags': ['Users'],
     'summary': 'Get all users',
@@ -14,7 +14,7 @@ user_bp = Blueprint("user_bp", __name__)
             'description': 'List of all users',
             'examples': {
                 'application/json': [
-                    {"id": 1, "username": "admin", "email": "admin@example.com"}
+                    {"id": "ADM001", "first_name": "John", "e_mail": "admin@enerlink.com"}
                 ]
             }
         }
@@ -26,7 +26,7 @@ def get_users():
     return jsonify([user.to_dict() for user in users]), 200
 
 
-@user_bp.route("/", methods=["POST"])
+@user_bp.route("/users", methods=["POST"])
 @swag_from({
     'tags': ['Users'],
     'summary': 'Create new user',
@@ -52,22 +52,24 @@ def get_users():
 })
 def create_user():
     """Add a new user to the database."""
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
 
-    if not data or not data.get("username") or not data.get("email"):
+    username = data.get("username")
+    email = data.get("email")
+
+    if not username or not email:
         return jsonify({"error": "Missing username or email"}), 400
 
-    existing = User.query.filter(
-        (User.username == data["username"]) | (User.email == data["email"])
-    ).first()
+    existing = User.query.filter_by(e_mail=email).first()
     if existing:
         return jsonify({"error": "User already exists"}), 400
 
     try:
-        new_user = User(username=data["username"], email=data["email"])
+        new_user = User(first_name=username, e_mail=email, active=True)
         db.session.add(new_user)
         db.session.commit()
         return jsonify(new_user.to_dict()), 201
+
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
