@@ -98,12 +98,10 @@ Project is: _in progress_
 ## Room for Improvement
 
 - Add Docker configuration for easier deployment
-
 - Implement unit and integration tests
-
 - Enhance UI with modern dashboard components (charts, analytics)
-
 - Introduce JWT authentication
+- Use services (not only routes) - analytics_service.py, contract_service.py, customer_service.py, user_service.py
 
 
 ## Contact
