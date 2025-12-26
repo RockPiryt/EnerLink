@@ -1,67 +1,42 @@
 FUNCTIONAL REQUIREMENTS
-1. Administrator Panel – User Management
+## 1. Administrator Panel – User Management
 
-a) Roles
+### a) Roles
+- Create roles for users (e.g. sales representative, manager, administrator)
+- Change user roles
+- Assign permissions to roles
+- Modify permissions for roles
+- Maintain a history of role and permission changes
 
-Create roles for users (e.g. sales representative, manager, administrator)
+### b) Users
+- Create user (first name, last name, email, password, unique employee number, role)
+- Validate entered data
+- Edit user data (first name, last name, email, role)
+- Ability to block/unblock a user account
 
-Change user roles
-
-Assign permissions to roles
-
-Modify permissions for roles
-
-Maintain a history of role and permission changes
-
-b) Users
-
-Create user (first name, last name, email, password, unique employee number, role)
-
-Validate entered data
-
-Edit user data (first name, last name, email, role)
-
-Ability to block/unblock a user account
-
-2. User Login Panel
-
+## 2. User Login Panel
 a) Login
+- Enter user number and password to log in
+- Force first-time password change to a user-defined password
+- Force password change every 90 days
+- Allow user to change password
+- Password reset via link sent to email
+- Automatic account lock after 5 failed login attempts
+- Login and user status change history
 
-Enter user number and password to log in
+### 3. Addresses
 
-Force first-time password change to a user-defined password
+## a) City Database
+- Add cities to the database
+- Edit cities in the database
+- Deactivate/activate cities
+- Import cities automatically from external databases
 
-Force password change every 90 days
-
-Allow user to change password
-
-Password reset via link sent to email
-
-Automatic account lock after 5 failed login attempts
-
-Login and user status change history
-
-3. Dictionary Data Panel
-
-a) City Database
-
-Add cities to the database
-
-Edit cities in the database
-
-Deactivate/activate cities
-
-Import cities automatically from external databases
-
-b) Country Database
-
-Add countries to the database
-
-Edit countries in the database
-
-Deactivate/activate countries
-
-Import countries automatically from external databases
+## b) Country Database
+- Add countries to the database
+- Edit countries in the database
+- Deactivate/activate countries
+- Import countries automatically from external databases
 
 c) Province Database
 
@@ -192,9 +167,7 @@ Dashboard with charts on salesperson efficiency
 b) Reports and Analytics
 
 Generate sales reports
-
 Generate customer service reports
-
 Export data to XLSX files
 
 8. Tag and Label System
