@@ -1,5 +1,5 @@
 def test_manager_ranking_returns_expected_structure(client):
-    resp = client.get("/manager/ranking")
+    resp = client.get("/api/manager/ranking")
     assert resp.status_code == 200
     assert resp.is_json
     data = resp.get_json()
