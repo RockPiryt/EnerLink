@@ -11,3 +11,12 @@ The following diagram illustrates the complete database structure, showing all t
 The complete SQL schema definition can be found in the project documentation. It includes all table structures, foreign key relationships, indexes, and constraints necessary for the application.
 
 For the full SQL implementation, please refer to: [schema.sql](./documentation/other_formats/database.sql)
+
+## Postgres
+
+Initial script 
+sudo -u postgres psql -f init_enerlink.sql
+
+Check:
+psql -U ener -d enerlink_db -h localhost
+
