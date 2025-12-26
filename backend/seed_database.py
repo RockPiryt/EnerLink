@@ -11,6 +11,7 @@ from app.db import db
 
 from app.models.address_model import Country, City, District, Address
 from app.models.address_relation_model import CustomerAddress, SupplierAddress
+from app.models.assignment_model import Assignment
 from app.models.contract_model import Contract, ContractTimeline
 from app.models.customer_model import Customer
 from app.models.history_model import Action, UserLogHistory
@@ -318,6 +319,18 @@ def seed_database():
                 db.session.add(UserLogHistory(id_user=demo_user.id, id_action=login_action.id))
                 db.session.commit()
                 print("Added sample user_log_history")
+        # add assignments
+        if Assignment.query.count() == 0:
+            sales1 = User.query.filter_by(e_mail="michael.brown@enerlink.com").first()
+            sales2 = User.query.filter_by(e_mail="emily.davis@enerlink.com").first()
+            customers = Customer.query.all()
+
+            if sales1 and customers:
+                db.session.add(Assignment(customer_id=customers[0].id, sales_rep_id=sales1.id, active=True))
+            if sales2 and len(customers) > 1:
+                db.session.add(Assignment(customer_id=customers[1].id, sales_rep_id=sales2.id, active=True))
+
+            db.session.commit()
 
         print("Seeding completed successfully!")
 
