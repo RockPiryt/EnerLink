@@ -1,5 +1,6 @@
 from .address_model import Address, Country, City, District
 from .address_relation_model import CustomerAddress, SupplierAddress
+from .assignment_model import Assignment
 from .contract_model import Contract, ContractTimeline
 from .customer_model import Customer
 from .history_model import Action, UserChangeHistory, UserLogHistory, RoleChangeHistory

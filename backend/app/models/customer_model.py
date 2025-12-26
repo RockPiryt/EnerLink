@@ -39,6 +39,9 @@ class Customer(db.Model):
         cascade="all, delete-orphan"
     )
 
+    assignments = db.relationship("Assignment", back_populates="customer", cascade="all, delete-orphan")  # sales links
+
+
     def __repr__(self):
         return f"<Customer {self.name} {self.last_name}>"
 

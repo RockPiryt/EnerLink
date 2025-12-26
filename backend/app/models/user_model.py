@@ -59,6 +59,8 @@ class User(db.Model):
         cascade="all, delete-orphan"
     )
 
+    assignments = db.relationship("Assignment", back_populates="sales_rep", cascade="all, delete-orphan")  # assigned customers
+
     def to_dict(self):
         return {
             "id": self.id,
