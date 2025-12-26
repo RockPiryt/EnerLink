@@ -22,7 +22,7 @@ class Password(db.Model):
     __tablename__ = "password"
 
     id = db.Column(db.Integer, primary_key=True)
-    pass_hash = db.Column("pass", db.Column(db.String(255), nullable=False))
+    pass_hash = db.Column("pass", db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
     user = db.relationship("User", back_populates="password", uselist=False)
