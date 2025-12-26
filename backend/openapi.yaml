@@ -1,213 +1,170 @@
 swagger: "2.0"
+
 info:
   title: EnerLink API
   version: "1.0.0"
   description: >
-    REST API for EnerLink system (mock / backend contract).  
-    Backend port: **8080**, Frontend port: **3000**
+    REST API for EnerLink system (backend contract).
+    Backend port: 8080, Frontend port: 3000
 
-basePath: /api
 host: localhost:8080
+basePath: /api
 schemes:
   - http
 
-
+consumes:
+  - application/json
+produces:
+  - application/json
 
 paths:
 
-  # USER MANAGEMENT
+  # AUTH
+  /login:
+    post:
+      summary: "User login"
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: "#/definitions/LoginRequest"
+      responses:
+        200:
+          description: "Login successful"
+          schema:
+            $ref: "#/definitions/LoginResponse"
+        400:
+          description: "Email and password are required"
+        401:
+          description: "Invalid credentials / Account is deactivated"
+
+  /logout:
+    post:
+      summary: "Logout"
+      responses:
+        200:
+          description: "Logout successful"
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Logout successful"
+
+  # USERS
   /users:
     get:
       summary: "List of users"
       responses:
         200:
           description: "Returns a list of users"
-          content:
-            application/json:
-              example:
-                - id: 1
-                  first_name: John
-                  last_name: Smith
-                  email: john@company.com
-                  role: manager
-                - id: 2
-                  first_name: Anna
-                  last_name: Brown
-                  email: anna@company.com
-                  role: sales
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/User"
+
     post:
-      summary: "Add a new user"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            example:
-              first_name: John
-              last_name: Smith
-              email: john@company.com
-              role: sales
+      summary: "Create user (minimal payload: username + email)"
+      description: >
+        Current backend accepts {username, email} and maps it internally
+        to the User model (first_name/e_mail etc.). Depending on constraints,
+        it may return 500 if mandatory DB fields are missing.
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: "#/definitions/UserCreateRequest"
       responses:
         201:
           description: "User created"
+          schema:
+            $ref: "#/definitions/User"
+        400:
+          description: "Missing username or email / User already exists"
+        500:
+          description: "Internal server error"
 
-  /users/{id}:
+  # ROLES
+  /roles:
     get:
-      summary: "Get user details"
+      summary: "List roles"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Role"
+
+    post:
+      summary: "Create role"
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: "#/definitions/RoleCreateRequest"
+      responses:
+        201:
+          description: "Role created"
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              role:
+                $ref: "#/definitions/Role"
+        400:
+          description: "Field 'role_name' is required"
+
+  /roles/{id}:
+    get:
+      summary: "Get role details"
       parameters:
         - in: path
           name: id
-          schema: { type: integer }
+          type: integer
           required: true
       responses:
         200:
-          description: "User details"
-          content:
-            application/json:
-              example:
-                id: 1
-                first_name: John
-                last_name: Smith
-                email: john@company.com
-                role: manager
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Role"
+        404:
+          description: "Role not found"
+
     put:
-      summary: "Edit user data"
-      requestBody:
-        content:
-          application/json:
-            example:
-              first_name: John
-              last_name: Brown
-              role: manager
+      summary: "Update role"
+      parameters:
+        - in: path
+          name: id
+          type: integer
+          required: true
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: "#/definitions/RoleUpdateRequest"
       responses:
         200:
-          description: "User updated"
-    patch:
-      summary: "Block / unblock user"
-      responses:
-        200:
-          description: "User status changed"
+          description: "Role updated"
+        404:
+          description: "Role not found"
 
-  /users/history:
-    get:
-      summary: "User change history"
+    delete:
+      summary: "Delete role"
+      parameters:
+        - in: path
+          name: id
+          type: integer
+          required: true
       responses:
         200:
-          description: "Returns change history"
-          content:
-            application/json:
-              example:
-                - user_id: 1
-                  action: role_changed
-                  date: "2025-10-01T12:00:00Z"
-
-  /users/logs:
-    get:
-      summary: "User login history"
-      responses:
-        200:
-          description: "List of logins"
-          content:
-            application/json:
-              example:
-                - user_id: 1
-                  action: login
-                  date: "2025-10-01T08:00:00Z"
-
-  # AUTHENTICATION
-  /auth/login:
-    post:
-      summary: "User login"
-      requestBody:
-        content:
-          application/json:
-            example:
-              username: john
-              password: "123456"
-      responses:
-        200:
-          description: "Login successful"
-          content:
-            application/json:
-              example:
-                message: "Login successful"
-                token: "JWT_TOKEN"
-
-  /auth/logout:
-    post:
-      summary: "Logout"
-      responses:
-        200:
-          description: "Logged out successfully"
-
-  /auth/change-password:
-    post:
-      summary: "Change password"
-      requestBody:
-        content:
-          application/json:
-            example:
-              old_password: "1234"
-              new_password: "abcd"
-      responses:
-        200:
-          description: "Password changed"
-
-  /auth/reset-password:
-    post:
-      summary: "Reset password (email link)"
-      requestBody:
-        content:
-          application/json:
-            example:
-              email: john@company.com
-      responses:
-        200:
-          description: "Password reset link sent"
-
-  /auth/status:
-    get:
-      summary: "Check user status"
-      responses:
-        200:
-          description: "Current user status"
-          content:
-            application/json:
-              example:
-                user_id: 1
-                role: manager
-                active: true
-
-  # DICTIONARY DATA
-  /dictionary/countries:
-    get:
-      summary: "List of countries"
-      responses:
-        200:
-          description: "Returns list of countries"
-          content:
-            application/json:
-              example:
-                - id: 1
-                  name: Poland
-                  shortcut: PL
-    post:
-      summary: "Add country"
-      requestBody:
-        content:
-          application/json:
-            example:
-              name: Germany
-              shortcut: DE
-      responses:
-        201:
-          description: "Country added"
-
-  /dictionary/countries/{id}/status:
-    patch:
-      summary: "Activate / deactivate country"
-      responses:
-        200:
-          description: "Country status changed"
+          description: "Role deleted"
+        404:
+          description: "Role not found"
 
   # CUSTOMERS
   /customers:
@@ -215,24 +172,32 @@ paths:
       summary: "List of customers"
       responses:
         200:
-          content:
-            application/json:
-              example:
-                - id: 1
-                  company: "XYZ Ltd."
-                  email: "contact@xyz.com"
-                  active: true
+          description: "Returns a list of customers"
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Customer"
+
     post:
       summary: "Create customer"
-      requestBody:
-        content:
-          application/json:
-            example:
-              company: "New Company"
-              email: "info@newco.com"
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: "#/definitions/CustomerCreateRequest"
       responses:
         201:
           description: "Customer created"
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              customer:
+                $ref: "#/definitions/Customer"
+        400:
+          description: "Company and email are required"
 
   /customers/{id}:
     get:
@@ -240,42 +205,57 @@ paths:
       parameters:
         - in: path
           name: id
-          schema: { type: integer }
+          type: integer
           required: true
       responses:
         200:
-          content:
-            application/json:
-              example:
-                id: 1
-                company: "XYZ Ltd."
-                nip: "1234567890"
+          description: "Customer found"
+          schema:
+            $ref: "#/definitions/Customer"
+        404:
+          description: "Customer not found"
 
-  /contracts:
-    get:
-      summary: "List of contracts"
+    put:
+      summary: "Update customer"
+      parameters:
+        - in: path
+          name: id
+          type: integer
+          required: true
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: "#/definitions/CustomerUpdateRequest"
       responses:
         200:
-          content:
-            application/json:
-              example:
-                - id: 1
-                  contract_number: U001/2025
-                  provider: Energa
-                  status: signed
-    post:
-      summary: "Add contract"
-      requestBody:
-        content:
-          application/json:
-            example:
-              contract_number: U002/2025
-              customer_id: 1
-              tariff: G11
-              price_kwh: 0.70
+          description: "Customer updated"
+        404:
+          description: "Customer not found"
+
+    patch:
+      summary: "Activate/deactivate customer"
+      parameters:
+        - in: path
+          name: id
+          type: integer
+          required: true
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            required: [active]
+            properties:
+              active:
+                type: boolean
       responses:
-        201:
-          description: "Contract created"
+        200:
+          description: "Customer status updated"
+        400:
+          description: "'active' field is required"
+        404:
+          description: "Customer not found"
 
   # PROVIDERS
   /providers:
@@ -283,100 +263,555 @@ paths:
       summary: "List of energy providers"
       responses:
         200:
-          content:
-            application/json:
-              example:
-                - id: 1
-                  name: "Energa"
-                - id: 2
-                  name: "PGE"
+          description: "OK"
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/EnergySupplier"
+
     post:
       summary: "Add energy provider"
-      requestBody:
-        content:
-          application/json:
-            example:
-              name: "Enea"
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: "#/definitions/EnergySupplierCreateRequest"
       responses:
         201:
           description: "Provider added"
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              provider:
+                $ref: "#/definitions/EnergySupplier"
+        400:
+          description: "Field 'name' is required"
+        409:
+          description: "Provider already exists"
 
-  # SALES PANEL
+  # SALES
   /sales/customers:
     get:
-      summary: "List of sales representative customers"
+      summary: "List sales representative customers"
+      parameters:
+        - in: query
+          name: rep_id
+          type: string
+          required: false
       responses:
         200:
-          content:
-            application/json:
-              example:
-                - id: 1
-                  name: "XYZ Ltd."
-                  last_contact: "2025-09-15"
+          description: "OK"
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: integer
+                name:
+                  type: string
+
     post:
       summary: "Assign customer to representative"
-      requestBody:
-        content:
-          application/json:
-            example:
-              customer_id: 1
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: "#/definitions/SalesAssignmentRequest"
       responses:
         200:
           description: "Customer assigned"
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              customer_id:
+                type: integer
+              sales_rep_id:
+                type: string
+        400:
+          description: "customer_id or sales_rep_id missing"
 
   /sales/analytics/contracts:
     get:
       summary: "Contract statistics (monthly/yearly)"
+      parameters:
+        - in: query
+          name: year
+          type: integer
+          required: false
       responses:
         200:
           description: "Returns data for charts"
-          content:
-            application/json:
-              example:
-                monthly:
-                  - month: 9
-                    count: 4
-                  - month: 10
-                    count: 6
-                yearly:
-                  - year: 2025
-                    count: 33
+          schema:
+            type: object
+            properties:
+              monthly:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    month: { type: integer }
+                    count: { type: integer }
+              yearly:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    year: { type: integer }
+                    count: { type: integer }
 
-  # MANAGER PANEL
-  /manager/ranking:
+  # CONTRACTS
+  /contracts:
     get:
-      summary: "Sales ranking"
+      summary: "List contracts"
+      parameters:
+        - in: query
+          name: customer_id
+          type: integer
+          required: false
+        - in: query
+          name: user_id
+          type: string
+          required: false
+        - in: query
+          name: tag_id
+          type: integer
+          required: false
+        - in: query
+          name: include_deleted
+          type: string
+          required: false
+          default: "false"
       responses:
         200:
-          description: "Returns sales ranking"
-          content:
-            application/json:
-              example:
-                - name: John Smith
-                  sales: 32
-                - name: Anna Brown
-                  sales: 28
+          description: "OK"
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Contract"
 
-  # TAGS
-  /tags:
-    get:
-      summary: "List of tags"
-      responses:
-        200:
-          content:
-            application/json:
-              example:
-                - id: 1
-                  name: "VIP"
-                - id: 2
-                  name: "To Recover"
     post:
-      summary: "Add tag"
-      requestBody:
-        content:
-          application/json:
-            example:
-              name: "New Customer"
+      summary: "Create contract"
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: "#/definitions/ContractCreateRequest"
       responses:
         201:
-          description: "Tag added"
+          description: "Contract created"
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              contract:
+                $ref: "#/definitions/Contract"
+        400:
+          description: "Validation error"
+
+  /contracts/{id}:
+    get:
+      summary: "Contract details (+ timelines)"
+      parameters:
+        - in: path
+          name: id
+          type: integer
+          required: true
+      responses:
+        200:
+          description: "OK"
+          schema:
+            type: object
+        404:
+          description: "Contract not found"
+
+    put:
+      summary: "Update contract"
+      parameters:
+        - in: path
+          name: id
+          type: integer
+          required: true
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: "#/definitions/ContractUpdateRequest"
+      responses:
+        200:
+          description: "Contract updated"
+        400:
+          description: "Validation error"
+        404:
+          description: "Contract not found"
+
+  /contracts/{id}/deleted:
+    patch:
+      summary: "Soft delete / restore contract"
+      parameters:
+        - in: path
+          name: id
+          type: integer
+          required: true
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            required: [is_deleted]
+            properties:
+              is_deleted:
+                type: boolean
+      responses:
+        200:
+          description: "Contract deleted flag updated"
+        400:
+          description: "'is_deleted' field is required"
+        404:
+          description: "Contract not found"
+
+  /contracts/{id}/timeline:
+    get:
+      summary: "List contract timeline"
+      parameters:
+        - in: path
+          name: id
+          type: integer
+          required: true
+      responses:
+        200:
+          description: "OK"
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/ContractTimeline"
+        404:
+          description: "Contract not found"
+
+    post:
+      summary: "Add contract timeline entry"
+      parameters:
+        - in: path
+          name: id
+          type: integer
+          required: true
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: "#/definitions/ContractTimelineCreateRequest"
+      responses:
+        201:
+          description: "Timeline entry added"
+        400:
+          description: "status is required"
+        404:
+          description: "Contract not found"
+
+  # ADDRESS - COUNTRIES
+  /address/countries:
+    get:
+      summary: "List countries"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Country"
+
+    post:
+      summary: "Add country"
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: "#/definitions/CountryCreateRequest"
+      responses:
+        201:
+          description: "Country added"
+        400:
+          description: "name and shortcut are required"
+
+  /address/countries/{id}/status:
+    patch:
+      summary: "Activate / deactivate country"
+      parameters:
+        - in: path
+          name: id
+          type: integer
+          required: true
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            required: [is_active]
+            properties:
+              is_active:
+                type: boolean
+      responses:
+        200:
+          description: "Country status updated"
+        400:
+          description: "'is_active' field is required"
+        404:
+          description: "Country not found"
+
+definitions:
+
+  # AUTH
+  LoginRequest:
+    type: object
+    required: [email, password]
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+
+  LoginResponse:
+    type: object
+    properties:
+      message:
+        type: string
+      token:
+        type: string
+      user:
+        $ref: "#/definitions/User"
+
+  # USERS / ROLES
+  Role:
+    type: object
+    properties:
+      id: { type: integer }
+      role_name: { type: string }
+      active: { type: boolean }
+
+  User:
+    type: object
+    properties:
+      id: { type: string, example: "ADM001" }
+      first_name: { type: string }
+      last_name: { type: string }
+      e_mail: { type: string }
+      id_role: { type: integer }
+      role_name: { type: string }
+      active: { type: boolean }
+      created_at: { type: string }
+
+  UserCreateRequest:
+    type: object
+    required: [username, email]
+    properties:
+      username: { type: string }
+      email: { type: string }
+
+  RoleCreateRequest:
+    type: object
+    required: [role_name]
+    properties:
+      role_name: { type: string }
+
+  RoleUpdateRequest:
+    type: object
+    properties:
+      role_name: { type: string }
+      active: { type: boolean }
+
+  # CUSTOMERS / ADDRESS RELATIONS
+  Address:
+    type: object
+    properties:
+      id: { type: integer }
+      street_name: { type: string }
+      building_nr: { type: integer }
+      apartment_nr: { type: integer }
+      post_code: { type: string }
+      id_city: { type: integer }
+      id_district: { type: integer }
+      id_country: { type: integer }
+      created_at: { type: string }
+
+  CustomerAddress:
+    type: object
+    properties:
+      id: { type: integer }
+      id_customer: { type: integer }
+      id_address: { type: integer }
+      address:
+        $ref: "#/definitions/Address"
+
+  Customer:
+    type: object
+    properties:
+      id: { type: integer }
+      name: { type: string }
+      last_name: { type: string }
+      company: { type: string }
+      email: { type: string }
+      phone: { type: string }
+      pesel: { type: integer }
+      id_document: { type: string }
+      nip: { type: string }
+      regon: { type: integer }
+      pkwiu:
+        type: object
+      representative: { type: string }
+      private_or_company: { type: integer }
+      active: { type: boolean }
+      created_at: { type: string }
+      address:
+        $ref: "#/definitions/CustomerAddress"
+
+  CustomerCreateRequest:
+    type: object
+    required: [company, email]
+    properties:
+      company: { type: string }
+      email: { type: string }
+      nip: { type: string }
+      phone: { type: string }
+      address:
+        type: object
+        properties:
+          street_name: { type: string }
+          building_nr: { type: integer }
+          apartment_nr: { type: integer }
+          post_code: { type: string }
+          id_city: { type: integer }
+          id_district: { type: integer }
+          id_country: { type: integer }
+
+  CustomerUpdateRequest:
+    type: object
+    properties:
+      company: { type: string }
+      email: { type: string }
+      nip: { type: string }
+      phone: { type: string }
+      address:
+        type: object
+
+  # PROVIDERS / OFFERS
+  EnergySupplier:
+    type: object
+    properties:
+      id: { type: integer }
+      name: { type: string }
+      created_at: { type: string }
+
+  EnergySupplierCreateRequest:
+    type: object
+    required: [name]
+    properties:
+      name: { type: string }
+
+  SupplierOffer:
+    type: object
+    properties:
+      id: { type: integer }
+      id_supplier: { type: integer }
+      supplier:
+        $ref: "#/definitions/EnergySupplier"
+      id_tariff: { type: integer }
+      tariff:
+        type: object
+      price: { type: string }
+      active: { type: boolean }
+      start_date: { type: string }
+      end_date: { type: string }
+      created_at: { type: string }
+
+  # SALES
+  SalesAssignmentRequest:
+    type: object
+    required: [customer_id, sales_rep_id]
+    properties:
+      customer_id: { type: integer }
+      sales_rep_id: { type: string }
+
+  # CONTRACTS
+  Contract:
+    type: object
+    properties:
+      id: { type: integer }
+      id_user: { type: string }
+      id_customer: { type: integer }
+      contract_number: { type: string }
+      signed_at: { type: string }
+      contract_from: { type: string }
+      contract_to: { type: string }
+      id_tag: { type: integer }
+      id_supplier_offer: { type: integer }
+      is_deleted: { type: boolean }
+      created_at: { type: string }
+      updated_at: { type: string }
+
+  ContractCreateRequest:
+    type: object
+    required: [id_customer, contract_number]
+    properties:
+      id_customer: { type: integer }
+      contract_number: { type: string }
+      id_user: { type: string }
+      id_tag: { type: integer }
+      id_supplier_offer: { type: integer }
+      signed_at: { type: string, example: "2025-01-10" }
+      contract_from: { type: string, example: "2025-01-10" }
+      contract_to: { type: string, example: "2026-01-10" }
+      status: { type: string, example: "NEW" }
+      description: { type: string }
+
+  ContractUpdateRequest:
+    type: object
+    properties:
+      contract_number: { type: string }
+      id_user: { type: string }
+      id_tag: { type: integer }
+      id_supplier_offer: { type: integer }
+      signed_at: { type: string }
+      contract_from: { type: string }
+      contract_to: { type: string }
+
+  ContractTimeline:
+    type: object
+    properties:
+      id: { type: integer }
+      id_contract: { type: integer }
+      status: { type: string }
+      description: { type: string }
+      created_at: { type: string }
+
+  ContractTimelineCreateRequest:
+    type: object
+    required: [status]
+    properties:
+      status: { type: string }
+      description: { type: string }
+
+  # ADDRESS
+  Country:
+    type: object
+    properties:
+      id: { type: integer }
+      name: { type: string }
+      shortcut: { type: string }
+      is_active: { type: boolean }
+      created_at: { type: string }
+
+  CountryCreateRequest:
+    type: object
+    required: [name, shortcut]
+    properties:
+      name: { type: string }
+      shortcut: { type: string }
