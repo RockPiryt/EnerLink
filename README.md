@@ -96,6 +96,14 @@ More info abiut api:
 Pytest was used to test project.
 ```bash
 pytest -q
+pytest -q tests/test_address_routes.py
+pytest -q tests/test_address_routes.py::test_get_countries_empty
+
+-x do porażki
+-vv verbose
+--lf tylko nieudane
+
+
 ```
 
 
