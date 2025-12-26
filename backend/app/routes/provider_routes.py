@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+from sqlalchemy.exc import IntegrityError  # +++
 from app.models.supplier_model import EnergySupplier
 from app import db
 
@@ -13,7 +14,7 @@ def get_providers():
 # POST /providers – add new provider
 @provider_bp.route("/providers", methods=["POST"])
 def add_provider():
-    data = request.get_json() or {}
+    data = request.get_json(silent=True) or {}
     name = data.get("name")
 
     if not name:
@@ -21,10 +22,14 @@ def add_provider():
 
     new_provider = EnergySupplier(name=name)
     db.session.add(new_provider)
-    db.session.commit()
+
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({"error": "Provider already exists"}), 409
 
     return jsonify({
         "message": "Provider added",
         "provider": new_provider.to_dict()
     }), 201
- 
