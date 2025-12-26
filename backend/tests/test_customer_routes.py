@@ -1,12 +1,12 @@
 def test_get_customers_returns_list(client):
-    resp = client.get("/customers")
+    resp = client.get("/api/customers")
     assert resp.status_code == 200
     assert resp.is_json
     assert isinstance(resp.get_json(), list)
 
 
 def test_add_customer_missing_required_fields(client):
-    resp = client.post("/customers", json={})
+    resp = client.post("/api/customers", json={})
     assert resp.status_code == 400
     assert resp.get_json()["error"] == "Company and email are required"
 
@@ -18,7 +18,7 @@ def test_add_customer_success_without_address(client):
         "nip": "1234567890",
         "phone": "+48 500 600 700"
     }
-    resp = client.post("/customers", json=payload)
+    resp = client.post("/api/customers", json=payload)
     assert resp.status_code == 201
     data = resp.get_json()
     assert data["message"] == "Customer created"
@@ -41,27 +41,27 @@ def test_add_customer_success_with_address(client):
             "id_country": None
         }
     }
-    resp = client.post("/customers", json=payload)
+    resp = client.post("/api/customers", json=payload)
     assert resp.status_code == 201
     data = resp.get_json()
     assert data["message"] == "Customer created"
 
 
 def test_get_customer_not_found(client):
-    resp = client.get("/customers/999999")
+    resp = client.get("/api/customers/999999")
     assert resp.status_code == 404
     assert resp.get_json()["error"] == "Customer not found"
 
 
 def test_get_customer_success_after_create(client):
-    create = client.post("/customers", json={
+    create = client.post("/api/customers", json={
         "company": "Lookup Company",
         "email": "lookup@co.pl"
     })
     assert create.status_code == 201
 
     # spróbuj znaleźć nowo dodanego klienta poprzez listę
-    resp_list = client.get("/customers")
+    resp_list = client.get("/api/customers")
     assert resp_list.status_code == 200
     customers = resp_list.get_json()
     assert len(customers) > 0
@@ -69,20 +69,20 @@ def test_get_customer_success_after_create(client):
     # bierzemy ostatniego (najczęściej będzie to nowy rekord)
     customer_id = customers[-1]["id"]
 
-    resp_get = client.get(f"/customers/{customer_id}")
+    resp_get = client.get(f"/api/customers/{customer_id}")
     assert resp_get.status_code == 200
     data = resp_get.get_json()
     assert data["id"] == customer_id
 
 
 def test_update_customer_not_found(client):
-    resp = client.put("/customers/999999", json={"company": "X"})
+    resp = client.put("/api/customers/999999", json={"company": "X"})
     assert resp.status_code == 404
     assert resp.get_json()["error"] == "Customer not found"
 
 
 def test_update_customer_success_without_address(client):
-    create = client.post("/customers", json={
+    create = client.post("/api/customers", json={
         "company": "Update Company",
         "email": "update@co.pl",
         "nip": "1111111111",
@@ -90,7 +90,7 @@ def test_update_customer_success_without_address(client):
     })
     customer_id = create.get_json()["customer"]["id"]
 
-    resp = client.put(f"/customers/{customer_id}", json={
+    resp = client.put(f"/api/customers/{customer_id}", json={
         "company": "Update Company NEW",
         "email": "update_new@co.pl",
         "phone": "999"
@@ -102,13 +102,13 @@ def test_update_customer_success_without_address(client):
 
 
 def test_update_customer_adds_address_when_missing(client):
-    create = client.post("/customers", json={
+    create = client.post("/api/customers", json={
         "company": "No Address Co",
         "email": "noaddr@co.pl"
     })
     customer_id = create.get_json()["customer"]["id"]
 
-    resp = client.put(f"/customers/{customer_id}", json={
+    resp = client.put(f"/api/customers/{customer_id}", json={
         "address": {
             "street_name": "Grunwaldzka",
             "building_nr": 100,
@@ -124,25 +124,25 @@ def test_update_customer_adds_address_when_missing(client):
 
 
 def test_patch_customer_status_missing_field(client):
-    create = client.post("/customers", json={
+    create = client.post("/api/customers", json={
         "company": "Status Co",
         "email": "status@co.pl"
     })
     customer_id = create.get_json()["customer"]["id"]
 
-    resp = client.patch(f"/customers/{customer_id}", json={})
+    resp = client.patch(f"/api/customers/{customer_id}", json={})
     assert resp.status_code == 400
     assert resp.get_json()["error"] == "'active' field is required"
 
 
 def test_patch_customer_status_success(client):
-    create = client.post("/customers", json={
+    create = client.post("/api/customers", json={
         "company": "Status Co 2",
         "email": "status2@co.pl"
     })
     customer_id = create.get_json()["customer"]["id"]
 
-    resp = client.patch(f"/customers/{customer_id}", json={"active": False})
+    resp = client.patch(f"/api/customers/{customer_id}", json={"active": False})
     assert resp.status_code == 200
     data = resp.get_json()
     assert data["message"] == "Customer status updated"
@@ -150,6 +150,6 @@ def test_patch_customer_status_success(client):
 
 
 def test_patch_customer_status_not_found(client):
-    resp = client.patch("/customers/999999", json={"active": False})
+    resp = client.patch("/api/customers/999999", json={"active": False})
     assert resp.status_code == 404
     assert resp.get_json()["error"] == "Customer not found"
