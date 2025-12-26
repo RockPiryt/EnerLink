@@ -92,6 +92,13 @@ More info abiut api:
 [View Oneapi](./documentation/oneapi.md)
 [View Rest Api](./documentation/rest_api.md)
 
+## Test
+Pytest was used to test project.
+```bash
+pytest -q
+```
+
+
 ## Project Status
 Project is: _in progress_ 
 
