@@ -6,7 +6,7 @@ from app.models.customer_model import Customer
 from app.models.contract_model import Contract
 from app.models.assignment_model import Assignment  # import assignment
 
-sale_bp = Blueprint("sale_bp", __name__)
+sale_bp = Blueprint("sale_bp", __name__, url_prefix="/sales")
 
 # GET /sales/customers?rep_id=SAL001
 @sale_bp.route("/customers", methods=["GET"])
