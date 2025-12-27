@@ -5,12 +5,12 @@ from app.db import db
 class Role(db.Model):
     __tablename__ = "role"
 
-    id = db.Column(db.Integer, primary_key=True)  # role id
-    role_name = db.Column(db.String(30), nullable=False, unique=True)  # role name
-    active = db.Column(db.Boolean, default=True, nullable=False)  # role status
+    id = db.Column(db.Integer, primary_key=True)
+    role_name = db.Column(db.String(30), nullable=False, unique=True)
+    active = db.Column(db.Boolean, default=True, nullable=False)
 
-    users = db.relationship("User", back_populates="role")  # users with this role
-    role_changes = db.relationship("RoleChangeHistory", back_populates="role")  # history of role changes
+    users = db.relationship("User", back_populates="role")
+    role_changes = db.relationship("RoleChangeHistory", back_populates="role")
 
     def to_dict(self):
         return {"id": self.id, "role_name": self.role_name, "active": self.active}
@@ -19,22 +19,26 @@ class Role(db.Model):
 class Password(db.Model):
     __tablename__ = "password"
 
-    id = db.Column(db.Integer, primary_key=True)  # password id
-    pass_hash = db.Column("pass", db.String(255), nullable=False)  # password hash/plain for now
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)  # creation time
+    id = db.Column(db.Integer, primary_key=True)
+    pass_hash = db.Column("pass", db.String(255), nullable=False)  # will store a hash
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
-    user = db.relationship("User", back_populates="password", uselist=False)  # 1:1 user link
+    user = db.relationship("User", back_populates="password", uselist=False)
 
     def to_dict(self):
-        return {"id": self.id, "created_at": self.created_at.isoformat() if self.created_at else None}
+        return {
+            "id": self.id,
+            "created_at": self.created_at.isoformat() if self.created_at else None
+        }
 
 
 class User(db.Model):
     __tablename__ = "user"
 
-    id = db.Column(db.String(12), primary_key=True)  # business id (ADM001 etc.)
-    first_name = db.Column(db.String(50), nullable=False)  # first name
-    last_name = db.Column(db.String(50), nullable=False)  # last name
+    id = db.Column(db.String(12), primary_key=True)  # ADM001 etc.
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    first_name = db.Column(db.String(50), nullable=False)
+    last_name = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)  # email
 
     id_role = db.Column(db.Integer, db.ForeignKey("role.id"), nullable=False)  # role fk
