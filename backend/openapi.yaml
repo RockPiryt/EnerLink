@@ -23,6 +23,7 @@ paths:
   /login:
     post:
       summary: "User login"
+      description: "Login using email and password."
       parameters:
         - in: body
           name: body
@@ -65,11 +66,11 @@ paths:
               $ref: "#/definitions/User"
 
     post:
-      summary: "Create user (minimal payload: username + email)"
+      summary: "Create user"
       description: >
-        Current backend accepts {username, email} and maps it internally
-        to the User model (first_name/email etc.). Depending on constraints,
-        it may return 500 if mandatory DB fields are missing.
+        Creates user with required fields: username, email, password.
+        Backend stores password as hash (recommended).
+        Role may be auto-assigned (e.g. default Analyst) if not provided.
       parameters:
         - in: body
           name: body
@@ -82,9 +83,7 @@ paths:
           schema:
             $ref: "#/definitions/User"
         400:
-          description: "Missing username or email / User already exists"
-        500:
-          description: "Internal server error"
+          description: "Missing fields / User already exists"
 
   # ROLES
   /roles:
@@ -576,16 +575,20 @@ definitions:
     properties:
       email:
         type: string
+        example: "david.wilson@enerlink.com"
       password:
         type: string
+        example: "demo123"
 
   LoginResponse:
     type: object
     properties:
       message:
         type: string
+        example: "Login successful"
       token:
         type: string
+        example: "fake-jwt"
       user:
         $ref: "#/definitions/User"
 
@@ -601,6 +604,7 @@ definitions:
     type: object
     properties:
       id: { type: string, example: "ADM001" }
+      username: { type: string, example: "admin" }
       first_name: { type: string }
       last_name: { type: string }
       email: { type: string }
@@ -611,10 +615,15 @@ definitions:
 
   UserCreateRequest:
     type: object
-    required: [username, email]
+    required: [username, email, password]
     properties:
-      username: { type: string }
-      email: { type: string }
+      username: { type: string, example: "new.user" }
+      email: { type: string, example: "new.user@enerlink.com" }
+      password: { type: string, example: "StrongPass123!" }
+      id_role:
+        type: integer
+        description: "Optional. If omitted, backend may assign default role."
+        example: 4
 
   RoleCreateRequest:
     type: object
@@ -702,7 +711,7 @@ definitions:
       address:
         type: object
 
-  # PROVIDERS / OFFERS
+  # PROVIDERS
   EnergySupplier:
     type: object
     properties:
@@ -716,7 +725,7 @@ definitions:
     properties:
       name: { type: string }
 
-  SupplierOffer:
+        SupplierOffer:
     type: object
     properties:
       id: { type: integer }
