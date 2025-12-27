@@ -26,7 +26,7 @@ def add_customer():
 
     new_customer = Customer(
         company=company,
-        e_mail=email,                      
+        email=email,                      
         nip=data.get("nip"),
         phone=data.get("phone"),
         active=True
@@ -77,7 +77,7 @@ def update_customer(id):
     data = request.get_json(silent=True) or {}
 
     customer.company = data.get("company", customer.company)
-    customer.e_mail = data.get("email", customer.e_mail)
+    customer.email = data.get("email", customer.email)
     customer.nip = data.get("nip", customer.nip)
     customer.phone = data.get("phone", customer.phone)
 

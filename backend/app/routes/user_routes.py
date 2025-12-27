@@ -19,7 +19,7 @@ user_bp = Blueprint("user_bp", __name__)
                         "id": "ADM001",
                         "first_name": "John",
                         "last_name": "Smith",
-                        "e_mail": "admin@enerlink.com",
+                        "email": "admin@enerlink.com",
                         "id_role": 1,
                         "role_name": "Administrator",
                         "active": True,
@@ -86,7 +86,7 @@ def create_user():
     if not username or not email:
         return jsonify({"error": "Missing username or email"}), 400
 
-    existing = User.query.filter_by(e_mail=email).first()
+    existing = User.query.filter_by(email=email).first()
     if existing:
         return jsonify({"error": "User already exists"}), 400
 
@@ -95,7 +95,7 @@ def create_user():
             id=_generate_user_id(),
             first_name=str(username),
             last_name="User",              # wymagane przez model
-            e_mail=str(email),
+            email=str(email),
             id_role=_pick_default_role_id(),  # wymagane przez model
             active=True
         )

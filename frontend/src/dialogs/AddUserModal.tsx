@@ -5,7 +5,7 @@ import Role from "../enums/role";
 interface AddUserData {
     first_name: string;
     last_name: string;
-    e_mail: string;
+    email: string;
     role_name: string;
     password: string;
 }
@@ -26,7 +26,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
     const [formData, setFormData] = useState<AddUserData>({
         first_name: '',
         last_name: '',
-        e_mail: '',
+        email: '',
         role_name: '',
         password: ''
     });
@@ -61,10 +61,10 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
             newErrors.last_name = 'Last name is required';
         }
 
-        if (!formData.e_mail.trim()) {
-            newErrors.e_mail = 'Email is required';
-        } else if (!/\S+@\S+\.\S+/.test(formData.e_mail)) {
-            newErrors.e_mail = 'Email is invalid';
+        if (!formData.email.trim()) {
+            newErrors.email = 'Email is required';
+        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+            newErrors.email = 'Email is invalid';
         }
 
         if (!formData.role_name) {
@@ -93,7 +93,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
         setFormData({
             first_name: '',
             last_name: '',
-            e_mail: '',
+            email: '',
             role_name: '',
             password: ''
         });
@@ -153,15 +153,15 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                         </Form.Label>
                         <Form.Control
                             type="email"
-                            name="e_mail"
-                            value={formData.e_mail}
+                            name="email"
+                            value={formData.email}
                             onChange={handleChange}
-                            isInvalid={!!errors.e_mail}
+                            isInvalid={!!errors.email}
                             placeholder="Enter email"
                             disabled={loading}
                         />
                         <Form.Control.Feedback type="invalid">
-                            {errors.e_mail}
+                            {errors.email}
                         </Form.Control.Feedback>
                     </Form.Group>
 

@@ -244,7 +244,7 @@ const AdminPanel: React.FC = () => {
                           <tr key={user.id}>
                             <td>{user.id}</td>
                             <td>{user.first_name} {user.last_name}</td>
-                            <td>{user.e_mail}</td>
+                            <td>{user.email}</td>
                             <td><Badge bg="secondary">{user.role_name}</Badge></td>
                             <td>
                               <Badge bg={user.active ? 'success' : 'danger'}>
@@ -373,7 +373,7 @@ const AdminPanel: React.FC = () => {
             onHide={handleCloseDeleteModal}
             onConfirm={handleConfirmDelete}
             userName={selectedUser ? `${selectedUser.first_name} ${selectedUser.last_name}` : ''}
-            userEmail={selectedUser?.e_mail || ''}
+            userEmail={selectedUser?.email || ''}
             loading={deleteLoading}
         />
 

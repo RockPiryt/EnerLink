@@ -68,7 +68,7 @@ paths:
       summary: "Create user (minimal payload: username + email)"
       description: >
         Current backend accepts {username, email} and maps it internally
-        to the User model (first_name/e_mail etc.). Depending on constraints,
+        to the User model (first_name/email etc.). Depending on constraints,
         it may return 500 if mandatory DB fields are missing.
       parameters:
         - in: body
@@ -603,7 +603,7 @@ definitions:
       id: { type: string, example: "ADM001" }
       first_name: { type: string }
       last_name: { type: string }
-      e_mail: { type: string }
+      email: { type: string }
       id_role: { type: integer }
       role_name: { type: string }
       active: { type: boolean }

@@ -35,7 +35,7 @@ class User(db.Model):
     id = db.Column(db.String(12), primary_key=True)  # business id (ADM001 etc.)
     first_name = db.Column(db.String(50), nullable=False)  # first name
     last_name = db.Column(db.String(50), nullable=False)  # last name
-    e_mail = db.Column(db.String(100), unique=True, nullable=False)  # email
+    email = db.Column(db.String(100), unique=True, nullable=False)  # email
 
     id_role = db.Column(db.Integer, db.ForeignKey("role.id"), nullable=False)  # role fk
     id_pass = db.Column(db.Integer, db.ForeignKey("password.id"), unique=True, nullable=True)  # password fk
@@ -87,7 +87,7 @@ class User(db.Model):
             "id": self.id,
             "first_name": self.first_name,
             "last_name": self.last_name,
-            "e_mail": self.e_mail,
+            "email": self.email,
             "id_role": self.id_role,
             "role_name": self.role.role_name if self.role else None,
             "active": self.active,

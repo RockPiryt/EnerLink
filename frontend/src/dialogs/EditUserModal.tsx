@@ -6,7 +6,7 @@ interface BackendUser {
     id: string;
     first_name: string;
     last_name: string;
-    e_mail: string;
+    email: string;
     role_name: string;
     active: boolean;
 }
@@ -29,7 +29,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
     const [formData, setFormData] = useState({
         first_name: '',
         last_name: '',
-        e_mail: '',
+        email: '',
         role_name: '',
         active: true
     });
@@ -41,7 +41,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
             setFormData({
                 first_name: user.first_name,
                 last_name: user.last_name,
-                e_mail: user.e_mail,
+                email: user.email,
                 role_name: user.role_name,
                 active: user.active
             });
@@ -77,10 +77,10 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
             newErrors.last_name = 'Last name is required';
         }
 
-        if (!formData.e_mail.trim()) {
-            newErrors.e_mail = 'Email is required';
-        } else if (!/\S+@\S+\.\S+/.test(formData.e_mail)) {
-            newErrors.e_mail = 'Email is invalid';
+        if (!formData.email.trim()) {
+            newErrors.email = 'Email is required';
+        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+            newErrors.email = 'Email is invalid';
         }
 
         if (!formData.role_name) {
@@ -103,7 +103,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
         setFormData({
             first_name: '',
             last_name: '',
-            e_mail: '',
+            email: '',
             role_name: '',
             active: true
         });
@@ -170,15 +170,15 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
                         </Form.Label>
                         <Form.Control
                             type="email"
-                            name="e_mail"
-                            value={formData.e_mail}
+                            name="email"
+                            value={formData.email}
                             onChange={handleChange}
-                            isInvalid={!!errors.e_mail}
+                            isInvalid={!!errors.email}
                             placeholder="Enter email"
                             disabled={loading}
                         />
                         <Form.Control.Feedback type="invalid">
-                            {errors.e_mail}
+                            {errors.email}
                         </Form.Control.Feedback>
                     </Form.Group>
 

@@ -6,7 +6,7 @@ def test_login_success(client, seeded_app):
     assert resp.status_code == 200
     data = resp.get_json()
     assert data["message"] == "Login successful"
-    assert data["user"]["e_mail"] == "david.wilson@enerlink.com"
+    assert data["user"]["email"] == "david.wilson@enerlink.com"
     assert "token" in data
 
 
@@ -39,7 +39,7 @@ def test_login_deactivated_user(client, app):
     from app.models.user_model import User
 
     with app.app_context():
-        user = User.query.filter_by(e_mail="david.wilson@enerlink.com").first()
+        user = User.query.filter_by(email="david.wilson@enerlink.com").first()
         user.active = False
         db.session.commit()
 

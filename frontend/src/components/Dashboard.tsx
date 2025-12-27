@@ -69,7 +69,7 @@ const Dashboard: React.FC = () => {
               <Row>
                 <Col md={6}>
                   <p><strong>Name:</strong> {user.first_name} {user.last_name}</p>
-                  <p><strong>Email:</strong> {user.e_mail}</p>
+                  <p><strong>Email:</strong> {user.email}</p>
                 </Col>
                 <Col md={6}>
                   <p><strong>Role:</strong> <Badge bg="secondary">{user.role_name || 'User'}</Badge></p>

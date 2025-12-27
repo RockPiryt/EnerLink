@@ -65,11 +65,11 @@ def seed_database():
             pass_list = Password.query.order_by(Password.id.asc()).all()
 
             db.session.add_all([
-                User(id="ADM001", first_name="John", last_name="Smith", e_mail="admin@enerlink.com", id_role=admin_role.id, id_pass=pass_list[0].id, active=True),
-                User(id="MGR001", first_name="Sarah", last_name="Johnson", e_mail="sarah.johnson@enerlink.com", id_role=manager_role.id, id_pass=pass_list[1].id, active=True),
-                User(id="SAL001", first_name="Michael", last_name="Brown", e_mail="michael.brown@enerlink.com", id_role=sales_role.id, id_pass=pass_list[2].id, active=True),
-                User(id="SAL002", first_name="Emily", last_name="Davis", e_mail="emily.davis@enerlink.com", id_role=sales_role.id, id_pass=pass_list[3].id, active=True),
-                User(id="ANA001", first_name="David", last_name="Wilson", e_mail="david.wilson@enerlink.com", id_role=analyst_role.id, id_pass=pass_list[4].id, active=True),
+                User(id="ADM001", first_name="John", last_name="Smith", email="admin@enerlink.com", id_role=admin_role.id, id_pass=pass_list[0].id, active=True),
+                User(id="MGR001", first_name="Sarah", last_name="Johnson", email="sarah.johnson@enerlink.com", id_role=manager_role.id, id_pass=pass_list[1].id, active=True),
+                User(id="SAL001", first_name="Michael", last_name="Brown", email="michael.brown@enerlink.com", id_role=sales_role.id, id_pass=pass_list[2].id, active=True),
+                User(id="SAL002", first_name="Emily", last_name="Davis", email="emily.davis@enerlink.com", id_role=sales_role.id, id_pass=pass_list[3].id, active=True),
+                User(id="ANA001", first_name="David", last_name="Wilson", email="david.wilson@enerlink.com", id_role=analyst_role.id, id_pass=pass_list[4].id, active=True),
             ])
             db.session.commit()
             print("Added users")
@@ -281,7 +281,7 @@ def seed_database():
             print("Tags already exist - skipping")
 
         # add contract + timeline
-        user = User.query.filter_by(e_mail="michael.brown@enerlink.com").first()
+        user = User.query.filter_by(email="michael.brown@enerlink.com").first()
         customer = Customer.query.first()
         tag = Tag.query.first()
         offer = SupplierOffer.query.first()
@@ -314,15 +314,15 @@ def seed_database():
         # add sample user log
         if UserLogHistory.query.count() == 0:
             login_action = Action.query.filter_by(name="LOGIN").first()
-            demo_user = User.query.filter_by(e_mail="admin@enerlink.com").first()
+            demo_user = User.query.filter_by(email="admin@enerlink.com").first()
             if login_action and demo_user:
                 db.session.add(UserLogHistory(id_user=demo_user.id, id_action=login_action.id))
                 db.session.commit()
                 print("Added sample user_log_history")
         # add assignments
         if Assignment.query.count() == 0:
-            sales1 = User.query.filter_by(e_mail="michael.brown@enerlink.com").first()
-            sales2 = User.query.filter_by(e_mail="emily.davis@enerlink.com").first()
+            sales1 = User.query.filter_by(email="michael.brown@enerlink.com").first()
+            sales2 = User.query.filter_by(email="emily.davis@enerlink.com").first()
             customers = Customer.query.all()
 
             if sales1 and customers:

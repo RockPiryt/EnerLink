@@ -10,7 +10,7 @@ class Customer(db.Model):
     name = db.Column(db.String(30))
     last_name = db.Column(db.String(50))
     company = db.Column(db.String(300))
-    e_mail = db.Column(db.String(100))
+    email = db.Column(db.String(100))
     phone = db.Column(db.String(20))
 
     # Identifiers
@@ -51,7 +51,7 @@ class Customer(db.Model):
             "name": self.name,
             "last_name": self.last_name,
             "company": self.company,
-            "email": self.e_mail,
+            "email": self.email,
             "phone": self.phone,
             "pesel": self.pesel,
             "id_document": self.id_document,
