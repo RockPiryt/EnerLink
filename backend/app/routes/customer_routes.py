@@ -10,8 +10,15 @@ customer_bp = Blueprint("customer_bp", __name__)
 # GET /api/customers – list of customers
 @customer_bp.route("/customers", methods=["GET"])
 def get_customers():
-    customers = Customer.query.all()
+    include_deleted = (request.args.get("include_deleted", "false").lower() == "true")
+
+    q = Customer.query
+    if not include_deleted and hasattr(Customer, "is_deleted"):
+        q = q.filter(Customer.is_deleted.is_(False))
+
+    customers = q.all()
     return jsonify([c.to_dict() for c in customers]), 200
+
 
 # POST /api/customers – create new customer
 @customer_bp.route("/customers", methods=["POST"])
@@ -26,14 +33,18 @@ def add_customer():
 
     new_customer = Customer(
         company=company,
-        email=email,                      
+        email=email,
         nip=data.get("nip"),
         phone=data.get("phone"),
-        active=True
+        active=True,
+        id_user=data.get("id_user"),
+        id_tag=data.get("id_tag"),
+        description=data.get("description"),
+        is_deleted=bool(data.get("is_deleted")) if "is_deleted" in data else False,
     )
 
     db.session.add(new_customer)
-    db.session.flush()  
+    db.session.flush()
 
     addr_data = data.get("address")
     if addr_data:
@@ -56,20 +67,21 @@ def add_customer():
         db.session.add(link)
 
     db.session.commit()
-
     return jsonify({"message": "Customer created", "customer": new_customer.to_dict()}), 201
 
 # GET /api/customers/<id> – customer details
 @customer_bp.route("/customers/<int:id>", methods=["GET"])
-def get_customer(id):
+def get_customer(id: int):
     customer = Customer.query.get(id)
     if not customer:
         return jsonify({"error": "Customer not found"}), 404
+
     return jsonify(customer.to_dict()), 200
+
 
 # PUT /api/customers/<id> – update customer
 @customer_bp.route("/customers/<int:id>", methods=["PUT"])
-def update_customer(id):
+def update_customer(id: int):
     customer = Customer.query.get(id)
     if not customer:
         return jsonify({"error": "Customer not found"}), 404
@@ -80,6 +92,15 @@ def update_customer(id):
     customer.email = data.get("email", customer.email)
     customer.nip = data.get("nip", customer.nip)
     customer.phone = data.get("phone", customer.phone)
+
+    if "id_user" in data:
+        customer.id_user = data.get("id_user")
+    if "id_tag" in data:
+        customer.id_tag = data.get("id_tag")
+    if "description" in data:
+        customer.description = data.get("description")
+    if "is_deleted" in data:
+        customer.is_deleted = bool(data.get("is_deleted"))
 
     addr_data = data.get("address")
     if addr_data is not None:
@@ -112,9 +133,10 @@ def update_customer(id):
     db.session.commit()
     return jsonify({"message": "Customer updated", "customer": customer.to_dict()}), 200
 
+
 # PATCH /api/customers/<id> – activate/deactivate
 @customer_bp.route("/customers/<int:id>", methods=["PATCH"])
-def toggle_customer_status(id):
+def toggle_customer_status(id: int):
     customer = Customer.query.get(id)
     if not customer:
         return jsonify({"error": "Customer not found"}), 404

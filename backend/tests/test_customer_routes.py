@@ -24,6 +24,14 @@ def test_add_customer_success_without_address(client):
     assert data["message"] == "Customer created"
     assert "customer" in data
 
+    cust = data["customer"]
+    assert cust["company"] == "Test Company Sp. z o.o."
+    assert cust["email"] == "contact@testco.pl"
+    assert "is_deleted" in cust
+    assert "updated_at" in cust
+    assert "ppes" in cust
+    assert isinstance(cust["ppes"], list)
+
 
 def test_add_customer_success_with_address(client):
     payload = {
@@ -60,13 +68,11 @@ def test_get_customer_success_after_create(client):
     })
     assert create.status_code == 201
 
-    # spróbuj znaleźć nowo dodanego klienta poprzez listę
     resp_list = client.get("/api/customers")
     assert resp_list.status_code == 200
     customers = resp_list.get_json()
     assert len(customers) > 0
 
-    # bierzemy ostatniego (najczęściej będzie to nowy rekord)
     customer_id = customers[-1]["id"]
 
     resp_get = client.get(f"/api/customers/{customer_id}")
@@ -93,12 +99,14 @@ def test_update_customer_success_without_address(client):
     resp = client.put(f"/api/customers/{customer_id}", json={
         "company": "Update Company NEW",
         "email": "update_new@co.pl",
-        "phone": "999"
+        "phone": "999",
+        "description": "Updated description"
     })
     assert resp.status_code == 200
     data = resp.get_json()
     assert data["message"] == "Customer updated"
     assert data["customer"]["id"] == customer_id
+    assert data["customer"]["description"] == "Updated description"
 
 
 def test_update_customer_adds_address_when_missing(client):
@@ -153,3 +161,28 @@ def test_patch_customer_status_not_found(client):
     resp = client.patch("/api/customers/999999", json={"active": False})
     assert resp.status_code == 404
     assert resp.get_json()["error"] == "Customer not found"
+
+
+def test_get_customers_excludes_deleted_by_default_and_includes_with_flag(client):
+    # create and soft-delete
+    create = client.post("/api/customers", json={
+        "company": "Deleted Co",
+        "email": "deleted@co.pl"
+    })
+    cid = create.get_json()["customer"]["id"]
+
+    upd = client.put(f"/api/customers/{cid}", json={"is_deleted": True})
+    assert upd.status_code == 200
+    assert upd.get_json()["customer"]["is_deleted"] is True
+
+    # default list should not include deleted
+    resp_list = client.get("/api/customers")
+    assert resp_list.status_code == 200
+    ids_default = [c["id"] for c in resp_list.get_json()]
+    assert cid not in ids_default
+
+    # include_deleted should include it
+    resp_list2 = client.get("/api/customers?include_deleted=true")
+    assert resp_list2.status_code == 200
+    ids_incl = [c["id"] for c in resp_list2.get_json()]
+    assert cid in ids_incl
