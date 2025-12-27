@@ -4,6 +4,8 @@ import sys
 import os
 from datetime import date
 
+from werkzeug.security import generate_password_hash
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from app import create_app
@@ -19,7 +21,7 @@ from app.models.pkwiu_model import Pkwiu
 from app.models.ppe_model import PPE
 from app.models.supplier_model import (
     EnergySupplier, EnergyTariff, PowerUnit, CurrencyUnit, SupplierOffer
-)  # suppliers and offers
+)
 from app.models.tag_model import Tag
 from app.models.user_model import User, Role, Password
 
@@ -42,21 +44,22 @@ def seed_database():
         else:
             print("Roles already exist - skipping")
 
-        # add passwords
+        # add passwords (HASHED)
+        # NOTE: passwords are not unique by requirement; but Password.id is unique 1:1 with User via unique FK
         if Password.query.count() == 0:
             db.session.add_all([
-                Password(pass_hash="admin123"),
-                Password(pass_hash="manager123"),
-                Password(pass_hash="sales123"),
-                Password(pass_hash="analyst123"),
-                Password(pass_hash="demo123"),
+                Password(pass_hash=generate_password_hash("admin123")),
+                Password(pass_hash=generate_password_hash("manager123")),
+                Password(pass_hash=generate_password_hash("sales123")),
+                Password(pass_hash=generate_password_hash("analyst123")),
+                Password(pass_hash=generate_password_hash("demo123")),
             ])
             db.session.commit()
-            print("Added passwords")
+            print("Added passwords (hashed)")
         else:
             print("Passwords already exist - skipping")
 
-        # add users
+        # add users (now include username; email unique)
         if User.query.count() == 0:
             admin_role = Role.query.filter_by(role_name="Administrator").first()
             manager_role = Role.query.filter_by(role_name="Manager").first()
@@ -65,11 +68,56 @@ def seed_database():
             pass_list = Password.query.order_by(Password.id.asc()).all()
 
             db.session.add_all([
-                User(id="ADM001", first_name="John", last_name="Smith", email="admin@enerlink.com", id_role=admin_role.id, id_pass=pass_list[0].id, active=True),
-                User(id="MGR001", first_name="Sarah", last_name="Johnson", email="sarah.johnson@enerlink.com", id_role=manager_role.id, id_pass=pass_list[1].id, active=True),
-                User(id="SAL001", first_name="Michael", last_name="Brown", email="michael.brown@enerlink.com", id_role=sales_role.id, id_pass=pass_list[2].id, active=True),
-                User(id="SAL002", first_name="Emily", last_name="Davis", email="emily.davis@enerlink.com", id_role=sales_role.id, id_pass=pass_list[3].id, active=True),
-                User(id="ANA001", first_name="David", last_name="Wilson", email="david.wilson@enerlink.com", id_role=analyst_role.id, id_pass=pass_list[4].id, active=True),
+                User(
+                    id="ADM001",
+                    username="admin",
+                    first_name="John",
+                    last_name="Smith",
+                    email="admin@enerlink.com",
+                    id_role=admin_role.id,
+                    id_pass=pass_list[0].id,
+                    active=True
+                ),
+                User(
+                    id="MGR001",
+                    username="sarah.johnson",
+                    first_name="Sarah",
+                    last_name="Johnson",
+                    email="sarah.johnson@enerlink.com",
+                    id_role=manager_role.id,
+                    id_pass=pass_list[1].id,
+                    active=True
+                ),
+                User(
+                    id="SAL001",
+                    username="michael.brown",
+                    first_name="Michael",
+                    last_name="Brown",
+                    email="michael.brown@enerlink.com",
+                    id_role=sales_role.id,
+                    id_pass=pass_list[2].id,
+                    active=True
+                ),
+                User(
+                    id="SAL002",
+                    username="emily.davis",
+                    first_name="Emily",
+                    last_name="Davis",
+                    email="emily.davis@enerlink.com",
+                    id_role=sales_role.id,
+                    id_pass=pass_list[3].id,
+                    active=True
+                ),
+                User(
+                    id="ANA001",
+                    username="david.wilson",
+                    first_name="David",
+                    last_name="Wilson",
+                    email="david.wilson@enerlink.com",
+                    id_role=analyst_role.id,
+                    id_pass=pass_list[4].id,
+                    active=True
+                ),
             ])
             db.session.commit()
             print("Added users")
@@ -142,19 +190,73 @@ def seed_database():
             pom = District.query.filter_by(name="Pomorskie").first()
 
             db.session.add_all([
-                Address(street_name="Długa", building_nr=1, apartment_nr=2, post_code="80-001", id_city=gd.id, id_district=pom.id, id_country=pl.id),
-                Address(street_name="Grunwaldzka", building_nr=100, apartment_nr=None, post_code="80-244", id_city=gd.id, id_district=pom.id, id_country=pl.id),
+                Address(
+                    street_name="Długa",
+                    building_nr=1,
+                    apartment_nr=2,
+                    post_code="80-001",
+                    id_city=gd.id,
+                    id_district=pom.id,
+                    id_country=pl.id
+                ),
+                Address(
+                    street_name="Grunwaldzka",
+                    building_nr=100,
+                    apartment_nr=None,
+                    post_code="80-244",
+                    id_city=gd.id,
+                    id_district=pom.id,
+                    id_country=pl.id
+                ),
             ])
             db.session.commit()
             print("Added addresses")
         else:
             print("Addresses already exist - skipping")
 
-        # add customers
-        if Customer.query.count() == 0:
+        # add tags (needed before customers if we want to attach tag)
+        if Tag.query.count() == 0:
             db.session.add_all([
-                Customer(name="Demo Customer A"),
-                Customer(name="Demo Customer B"),
+                Tag(name="Nowy klient"),
+                Tag(name="Umowa kończy się za pół roku"),
+                Tag(name="Klient VIP"),
+                Tag(name="Możliwi klienci"),
+            ])
+            db.session.commit()
+            print("Added tags")
+        else:
+            print("Tags already exist - skipping")
+
+        # add customers (now include optional id_user/id_tag/description/is_deleted)
+        if Customer.query.count() == 0:
+            sales1 = User.query.filter_by(email="michael.brown@enerlink.com").first()
+            tag_first = Tag.query.first()
+
+            db.session.add_all([
+                Customer(
+                    name="Demo",
+                    last_name="CustomerA",
+                    company="Demo Customer A Sp. z o.o.",
+                    email="demoA@enerlink.com",
+                    phone="+48 500 600 700",
+                    active=True,
+                    is_deleted=False,
+                    description="Seeded demo customer A",
+                    id_user=sales1.id if sales1 else None,
+                    id_tag=tag_first.id if tag_first else None,
+                ),
+                Customer(
+                    name="Demo",
+                    last_name="CustomerB",
+                    company="Demo Customer B S.A.",
+                    email="demoB@enerlink.com",
+                    phone="+48 111 222 333",
+                    active=True,
+                    is_deleted=False,
+                    description="Seeded demo customer B",
+                    id_user=sales1.id if sales1 else None,
+                    id_tag=tag_first.id if tag_first else None,
+                ),
             ])
             db.session.commit()
             print("Added customers")
@@ -267,19 +369,6 @@ def seed_database():
         else:
             print("PPE already exist - skipping")
 
-        # add tags
-        if Tag.query.count() == 0:
-            db.session.add_all([
-                Tag(name="Nowy klient"),
-                Tag(name="Umowa kończy się za pół roku"),
-                Tag(name="Klient VIP"),
-                Tag(name="Możliwi klienci"),
-            ])
-            db.session.commit()
-            print("Added tags")
-        else:
-            print("Tags already exist - skipping")
-
         # add contract + timeline
         user = User.query.filter_by(email="michael.brown@enerlink.com").first()
         customer = Customer.query.first()
@@ -319,6 +408,7 @@ def seed_database():
                 db.session.add(UserLogHistory(id_user=demo_user.id, id_action=login_action.id))
                 db.session.commit()
                 print("Added sample user_log_history")
+
         # add assignments
         if Assignment.query.count() == 0:
             sales1 = User.query.filter_by(email="michael.brown@enerlink.com").first()
@@ -331,6 +421,7 @@ def seed_database():
                 db.session.add(Assignment(customer_id=customers[1].id, sales_rep_id=sales2.id, active=True))
 
             db.session.commit()
+            print("Added assignments")
 
         print("Seeding completed successfully!")
 
