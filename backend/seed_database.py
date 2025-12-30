@@ -5,6 +5,7 @@ import os
 from datetime import date
 
 from werkzeug.security import generate_password_hash
+from sqlalchemy import or_
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -31,100 +32,95 @@ def seed_database():
     with app.app_context():
         print("Starting database seeding...")
 
-        # add roles
-        if Role.query.count() == 0:
-            db.session.add_all([
-                Role(role_name="Administrator", active=True),
-                Role(role_name="Manager", active=True),
-                Role(role_name="Sales Representative", active=True),
-                Role(role_name="Analyst", active=True),
-            ])
-            db.session.commit()
-            print("Added roles")
-        else:
-            print("Roles already exist - skipping")
+        # ---------- ROLES ----------
+        role_names = ["Administrator", "Manager", "Sales Representative", "Analyst"]
+        existing_roles = {r.role_name for r in Role.query.all()}
+        for name in role_names:
+            if name not in existing_roles:
+                db.session.add(Role(role_name=name, active=True))
+        db.session.commit()
 
-        # add passwords (HASHED)
-        # NOTE: passwords are not unique by requirement; but Password.id is unique 1:1 with User via unique FK
-        if Password.query.count() == 0:
-            db.session.add_all([
-                Password(pass_hash=generate_password_hash("admin123")),
-                Password(pass_hash=generate_password_hash("manager123")),
-                Password(pass_hash=generate_password_hash("sales123")),
-                Password(pass_hash=generate_password_hash("analyst123")),
-                Password(pass_hash=generate_password_hash("demo123")),
-            ])
-            db.session.commit()
-            print("Added passwords (hashed)")
-        else:
-            print("Passwords already exist - skipping")
+        roles = {r.role_name: r for r in Role.query.all()}
 
-        # add users (now include username; email unique)
-        if User.query.count() == 0:
-            admin_role = Role.query.filter_by(role_name="Administrator").first()
-            manager_role = Role.query.filter_by(role_name="Manager").first()
-            sales_role = Role.query.filter_by(role_name="Sales Representative").first()
-            analyst_role = Role.query.filter_by(role_name="Analyst").first()
-            pass_list = Password.query.order_by(Password.id.asc()).all()
+        # ---------- USERS + PASSWORDS ----------
+        users_seed = [
+            {
+                "id": "ADM001",
+                "username": "admin",
+                "first_name": "John",
+                "last_name": "Smith",
+                "email": "admin@enerlink.com",
+                "role_name": "Administrator",
+                "password": "admin123",
+            },
+            {
+                "id": "MGR001",
+                "username": "sarah.johnson",
+                "first_name": "Sarah",
+                "last_name": "Johnson",
+                "email": "sarah.johnson@enerlink.com",
+                "role_name": "Manager",
+                "password": "manager123",
+            },
+            {
+                "id": "SAL001",
+                "username": "michael.brown",
+                "first_name": "Michael",
+                "last_name": "Brown",
+                "email": "michael.brown@enerlink.com",
+                "role_name": "Sales Representative",
+                "password": "sales123",
+            },
+            {
+                "id": "SAL002",
+                "username": "emily.davis",
+                "first_name": "Emily",
+                "last_name": "Davis",
+                "email": "emily.davis@enerlink.com",
+                "role_name": "Sales Representative",
+                "password": "sales123",
+            },
+            {
+                "id": "ANA001",
+                "username": "david.wilson",
+                "first_name": "David",
+                "last_name": "Wilson",
+                "email": "david.wilson@enerlink.com",
+                "role_name": "Analyst",
+                "password": "analyst123",
+            },
+        ]
 
-            db.session.add_all([
-                User(
-                    id="ADM001",
-                    username="admin",
-                    first_name="John",
-                    last_name="Smith",
-                    email="admin@enerlink.com",
-                    id_role=admin_role.id,
-                    id_pass=pass_list[0].id,
-                    active=True
-                ),
-                User(
-                    id="MGR001",
-                    username="sarah.johnson",
-                    first_name="Sarah",
-                    last_name="Johnson",
-                    email="sarah.johnson@enerlink.com",
-                    id_role=manager_role.id,
-                    id_pass=pass_list[1].id,
-                    active=True
-                ),
-                User(
-                    id="SAL001",
-                    username="michael.brown",
-                    first_name="Michael",
-                    last_name="Brown",
-                    email="michael.brown@enerlink.com",
-                    id_role=sales_role.id,
-                    id_pass=pass_list[2].id,
-                    active=True
-                ),
-                User(
-                    id="SAL002",
-                    username="emily.davis",
-                    first_name="Emily",
-                    last_name="Davis",
-                    email="emily.davis@enerlink.com",
-                    id_role=sales_role.id,
-                    id_pass=pass_list[3].id,
-                    active=True
-                ),
-                User(
-                    id="ANA001",
-                    username="david.wilson",
-                    first_name="David",
-                    last_name="Wilson",
-                    email="david.wilson@enerlink.com",
-                    id_role=analyst_role.id,
-                    id_pass=pass_list[4].id,
-                    active=True
-                ),
-            ])
-            db.session.commit()
-            print("Added users")
-        else:
-            print("Users already exist - skipping")
+        for u in users_seed:
+            exists = User.query.filter(
+                or_(User.email == u["email"], User.username == u["username"])
+            ).first()
 
-        # add actions
+            if exists:
+                continue
+
+            role = roles[u["role_name"]]
+
+            pw = Password(pass_hash=generate_password_hash(u["password"]))
+            db.session.add(pw)
+            db.session.flush()
+
+            user = User(
+                id=u["id"],
+                username=u["username"],
+                first_name=u["first_name"],
+                last_name=u["last_name"],
+                email=u["email"],
+                id_role=role.id,
+                id_pass=pw.id,
+                active=True,
+            )
+            db.session.add(user)
+
+        db.session.commit()
+        print("Seeded users & roles")
+
+        # ---------- ACTIONS ----------
         if Action.query.count() == 0:
             db.session.add_all([
                 Action(name="LOGIN"),
@@ -138,7 +134,7 @@ def seed_database():
         else:
             print("Actions already exist - skipping")
 
-        # add pkwiu
+        # ---------- PKWIU ----------
         if Pkwiu.query.count() == 0:
             db.session.add_all([
                 Pkwiu(pkwiu_nr="35.11.10.0", pkwiu_name="Electricity generation services"),
@@ -150,29 +146,23 @@ def seed_database():
         else:
             print("Pkwiu already exist - skipping")
 
-        # add countries
+        # ---------- COUNTRIES ----------
         if Country.query.count() == 0:
             db.session.add_all([
                 Country(name="Poland", shortcut="PL", is_active=True),
                 Country(name="Germany", shortcut="DE", is_active=True),
             ])
             db.session.commit()
-            print("Added countries")
-        else:
-            print("Countries already exist - skipping")
 
-        # add cities
+        # ---------- CITIES ----------
         if City.query.count() == 0:
             db.session.add_all([
                 City(name="Gdańsk", is_active=True),
                 City(name="Warsaw", is_active=True),
             ])
             db.session.commit()
-            print("Added cities")
-        else:
-            print("Cities already exist - skipping")
 
-        # add districts
+        # ---------- DISTRICTS ----------
         if District.query.count() == 0:
             db.session.add_all([
                 District(name="Pomorskie", is_active=True),
@@ -183,7 +173,7 @@ def seed_database():
         else:
             print("Districts already exist - skipping")
 
-        # add addresses
+        # ---------- ADDRESSES ----------
         if Address.query.count() == 0:
             pl = Country.query.filter_by(shortcut="PL").first()
             gd = City.query.filter_by(name="Gdańsk").first()
@@ -214,7 +204,7 @@ def seed_database():
         else:
             print("Addresses already exist - skipping")
 
-        # add tags (needed before customers if we want to attach tag)
+        # ---------- TAGS ----------
         if Tag.query.count() == 0:
             db.session.add_all([
                 Tag(name="Nowy klient"),
@@ -227,7 +217,7 @@ def seed_database():
         else:
             print("Tags already exist - skipping")
 
-        # add customers (now include optional id_user/id_tag/description/is_deleted)
+        # ---------- CUSTOMERS ----------
         if Customer.query.count() == 0:
             sales1 = User.query.filter_by(email="michael.brown@enerlink.com").first()
             tag_first = Tag.query.first()
