@@ -20,3 +20,7 @@
 5. Use Case - Customer Management
 ![Use Case Dictionary Management](./documentation/images/use_case_customer_management.png)
 📄 [Download PDF Vesrion](./documentation/other_formats/use_case_customer_management.pdf)
+
+6. Use Case - Contract Management
+![Use Case Dictionary Management](./documentation/images/use_case_contract_management.png)
+📄 [Download PDF Vesrion](./documentation/other_formats/use_case_contract_management.pdf)
