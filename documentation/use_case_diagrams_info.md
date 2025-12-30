@@ -24,3 +24,10 @@
 6. Use Case - Contract Management
 ![Use Case Dictionary Management](./documentation/images/use_case_contract_management.png)
 📄 [Download PDF Vesrion](./documentation/other_formats/use_case_contract_management.pdf)
+
+7. Use Case - Report and Analitics Management
+![Use Case Dictionary Management](./documentation/images/use_case_reports_analitics.png)
+📄 [Download PDF Vesrion](./documentation/other_formats/use_case_reports_analitics.pdf)
+
+
+
