@@ -29,5 +29,8 @@
 ![Use Case Dictionary Management](./documentation/images/use_case_reports_analitics.png)
 📄 [Download PDF Vesrion](./documentation/other_formats/use_case_reports_analitics.pdf)
 
+8. Use Case - Tags
+![Use Case Dictionary Management](./documentation/images/use_case_tags.png)
+📄 [Download PDF Vesrion](./documentation/other_formats/use_case_tags.pdf)
 
 
