@@ -10,6 +10,10 @@
 ![Use Case User Management](./documentation/images/use_case_user_management.png)
 📄 [Download PDF Vesrion](./documentation/other_formats/use_case_user_management.pdf)
 
+2. Use Case - Login
+![Use Case Login](./documentation/images/use_case_login.png)
+📄 [Download PDF Vesrion](./documentation/other_formats/use_case_login.pdf)
+
 
 ## Entity Relationship Diagram
 The following diagram illustrates the complete database structure, showing all tables, their relationships, and key constraints.
