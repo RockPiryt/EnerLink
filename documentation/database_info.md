@@ -1,5 +1,13 @@
 # Database Schema
 
+## Use Case Diagrams
+1. Use Case Overview Diagram - showing all actors and main functional blocks in the system, without going into details of each panel.
+
+![Use Case Overview](./documentation/images/use_case_overview.png)
+📄 [Download PDF Vesrion](./documentation/other_formats/use_case_overview.pdf)
+
+
+
 ## Entity Relationship Diagram
 The following diagram illustrates the complete database structure, showing all tables, their relationships, and key constraints.
 
