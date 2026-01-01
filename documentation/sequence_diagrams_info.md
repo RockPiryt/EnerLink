@@ -14,3 +14,7 @@ b) Edit User diagram
 c) Create Role diagram
 ![Create Role](./documentation/images/user_management_scenario3.png)
 📄 [Download PDF Vesrion](./documentation/other_formats/user_management_scenario3.pdf)
+
+d) Edit Role diagram
+![Edit Role](./documentation/images/user_management_scenario4.png)
+📄 [Download PDF Vesrion](./documentation/other_formats/user_management_scenario4.pdf)
