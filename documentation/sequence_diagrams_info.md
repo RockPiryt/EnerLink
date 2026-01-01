@@ -22,3 +22,10 @@ d) Edit Role diagram
 e) Block/Unblock User diagram
 ![Block](./documentation/images/user_management_scenario5.png)
 📄 [Download PDF Vesrion](./documentation/other_formats/user_management_scenario5.pdf)
+
+
+2. Login diagrams
+
+a) Login Successfull diagram
+![Login Successfull](./documentation/images/login_scenario1.png)
+📄 [Download PDF Vesrion](./documentation/other_formats/login_scenario1.pdf)
