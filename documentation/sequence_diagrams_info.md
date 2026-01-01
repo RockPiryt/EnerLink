@@ -29,3 +29,7 @@ e) Block/Unblock User diagram
 a) Login Successfull diagram
 ![Login Successfull](./documentation/images/login_scenario1.png)
 📄 [Download PDF Vesrion](./documentation/other_formats/login_scenario1.pdf)
+
+b) Login Failed diagram
+![Login Failed](./documentation/images/login_scenario2.png)
+📄 [Download PDF Vesrion](./documentation/other_formats/login_scenario2.pdf)
