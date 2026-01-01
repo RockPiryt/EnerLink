@@ -33,3 +33,7 @@ a) Login Successfull diagram
 b) Login Failed diagram
 ![Login Failed](./documentation/images/login_scenario2.png)
 📄 [Download PDF Vesrion](./documentation/other_formats/login_scenario2.pdf)
+
+c) Login Failed diagram
+![Password reset](./documentation/images/login_scenario3.png)
+📄 [Download PDF Vesrion](./documentation/other_formats/login_scenario3.pdf)
