@@ -8,5 +8,9 @@ a) Create User diagram
 📄 [Download PDF Vesrion](./documentation/other_formats/user_management_scenario1.pdf)
 
 b) Edit User diagram
-![Create User](./documentation/images/user_management_scenario2.png)
+![Edit User](./documentation/images/user_management_scenario2.png)
 📄 [Download PDF Vesrion](./documentation/other_formats/user_management_scenario2.pdf)
+
+c) Create Role diagram
+![Create Role](./documentation/images/user_management_scenario3.png)
+📄 [Download PDF Vesrion](./documentation/other_formats/user_management_scenario3.pdf)
