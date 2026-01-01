@@ -18,3 +18,7 @@ c) Create Role diagram
 d) Edit Role diagram
 ![Edit Role](./documentation/images/user_management_scenario4.png)
 📄 [Download PDF Vesrion](./documentation/other_formats/user_management_scenario4.pdf)
+
+e) Block/Unblock User diagram
+![Block](./documentation/images/user_management_scenario5.png)
+📄 [Download PDF Vesrion](./documentation/other_formats/user_management_scenario5.pdf)
