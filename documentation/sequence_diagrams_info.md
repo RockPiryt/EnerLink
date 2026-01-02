@@ -37,3 +37,14 @@ b) Login Failed diagram
 c) Login Failed diagram
 ![Password reset](./documentation/images/login_scenario3.png)
 📄 [Download PDF Vesrion](./documentation/other_formats/login_scenario3.pdf)
+
+
+3. Dictionary Management
+
+a) Dictionary Management
+![Dictionary Management](./documentation/images/dictionary_management_sequence.png)
+📄 [Download PDF Vesrion](./documentation/other_formats/dictionary_management_sequence.pdf)
+
+b) Energy Seller Dictionary Management
+![Energy Seller Dictionary Management](./documentation/images/seller_management_sequence.png)
+📄 [Download PDF Vesrion](./documentation/other_formats/seller_management_sequence.pdf)
