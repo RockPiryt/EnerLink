@@ -7,11 +7,11 @@
 2. ![Login](./documentation/images/login_activity_diagram.png)
 📄 [Download PDF Vesrion](./documentation/other_formats/login_activity_diagram.pdf)
 
-3. 
+3. Dictionary Management
 a) Dictionary Management
 ![Dictionary Management](./documentation/images/dictionary_management_activity_diagram.png)
 📄 [Download PDF Vesrion](./documentation/other_formats/dictionary_management_activity_diagram.pdf)
 
-b) Seller Management
-![Seller Management](./documentation/images/dictionary_management_activity_diagram.png)
-📄 [Download PDF Vesrion](./documentation/other_formats/dictionary_management_activity_diagram.pdf)
+b) Energy Seller Management
+![Energy Seller Management](./documentation/images/seller_management_activity_diagram.png)
+📄 [Download PDF Vesrion](./documentation/other_formats/seller_management_activity_diagram.pdf)
