@@ -20,6 +20,10 @@ const Dashboard: React.FC = () => {
     navigate('/admin');
   };
 
+  const handleUsersList = () => {
+    navigate('/users');
+  };
+
   return (
     <Container className="py-4">
       {/* Header */}
@@ -94,6 +98,9 @@ const Dashboard: React.FC = () => {
             </Card.Header>
             <Card.Body>
               <div className="d-grid gap-2 d-md-flex justify-content-md-start">
+                <Button variant="outline-primary" size="lg" onClick={handleUsersList}>
+                  View Users
+                </Button>
                 <Button variant="primary" size="lg" disabled>
                   Energy Reports
                 </Button>
