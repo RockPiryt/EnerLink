@@ -7,3 +7,11 @@
 2. ![Login](./documentation/images/login_activity_diagram.png)
 📄 [Download PDF Vesrion](./documentation/other_formats/login_activity_diagram.pdf)
 
+3. 
+a) Dictionary Management
+![Dictionary Management](./documentation/images/dictionary_management_activity_diagram.png)
+📄 [Download PDF Vesrion](./documentation/other_formats/dictionary_management_activity_diagram.pdf)
+
+b) Seller Management
+![Seller Management](./documentation/images/dictionary_management_activity_diagram.png)
+📄 [Download PDF Vesrion](./documentation/other_formats/dictionary_management_activity_diagram.pdf)
