@@ -5,8 +5,8 @@ A single, illustrative activity diagram for CRUD operations has been prepared. D
 ![User Create](/documentation/images/activity_user_create.png)
 📄 [Download PDF Vesrion](/documentation/other_formats/activity_user_create.pdf)
 
-2. ![Login](/documentation/images/login_activity_diagram.png)
-📄 [Download PDF Vesrion](/documentation/other_formats/login_activity_diagram.pdf)
+2. ![Login](/documentation/images/activity_login.png)
+📄 [Download PDF Vesrion](/documentation/other_formats/activity_login.pdf)
 
 3. Dictionary Management
 a) Dictionary Management
