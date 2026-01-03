@@ -45,11 +45,13 @@ export class AdminService {
         }
     }
 
-    async updateUser(userId:number, updatedUser:any) {
+    async updateUser(userId: string, updatedUser: any) {
         try {
-            await axiosInstance.patch(''); //TODO: set up correct endpoint when backend will be ready
+            const response = await axiosInstance.patch(`/api/users/${userId}`, updatedUser);
+            return response.data;
         } catch (error) {
             console.error('Error updating user:', error);
+            throw error;
         }
     }
 }

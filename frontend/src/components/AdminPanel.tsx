@@ -101,7 +101,7 @@ const AdminPanel: React.FC = () => {
 
         setEditLoading(true);
         try {
-            await adminService.updateUser(Number(selectedUser.id), updatedUser);
+            await adminService.updateUser(selectedUser.id, updatedUser);
 
             setShowEditModal(false);
             setSelectedUser(null);
