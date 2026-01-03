@@ -15,3 +15,7 @@ a) Dictionary Management
 b) Energy Seller Management
 ![Energy Seller Management](/documentation/images/seller_management_activity.png)
 📄 [Download PDF Vesrion](/documentation/other_formats/seller_management_activity.pdf)
+
+4. Customer Management
+![Customer Management](/documentation/images/customer_management_activity.png)
+📄 [Download PDF Vesrion](/documentation/other_formats/customer_management_activity.pdf)
