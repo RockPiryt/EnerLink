@@ -19,3 +19,14 @@ b) Energy Seller Management
 4. Customer Management
 ![Customer Management](/documentation/images/customer_management_activity.png)
 📄 [Download PDF Vesrion](/documentation/other_formats/customer_management_activity.pdf)
+
+
+5.
+
+
+6.
+
+
+7. Tags Management
+![Tags Management](/documentation/images/tags_management_activity.png)
+📄 [Download PDF Vesrion](/documentation/other_formats/tags_management_activity.pdf)
