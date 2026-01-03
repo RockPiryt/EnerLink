@@ -48,3 +48,8 @@ a) Dictionary Management
 b) Energy Seller Dictionary Management
 ![Energy Seller Dictionary Management](/documentation/images/seller_management_sequence.png)
 📄 [Download PDF Vesrion](/documentation/other_formats/seller_management_sequence.pdf)
+
+
+4. Customer Management
+![Customer Management](/documentation/images/customer_management_sequence.png)
+📄 [Download PDF Vesrion](/documentation/other_formats/customer_management_sequence.pdf)
