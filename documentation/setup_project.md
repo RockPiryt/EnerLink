@@ -15,6 +15,33 @@ venv\Scripts\activate      # on Windows
 pip install -r requirements.txt
 ```
 
+### Troubleshooting common Windows install issue (psycopg2)
+
+On Windows you may see an error about `pg_config` missing when installing `psycopg2`/`psycopg2-binary`.
+Possible fixes:
+
+- Install PostgreSQL (includes `pg_config`) and add its `bin` folder to your PATH, for example:
+
+```powershell
+# temporary for current PowerShell session (replace <version>)
+$env:Path += ";C:\Program Files\PostgreSQL\<version>\bin"
+```
+
+- Upgrade packaging tools and prefer prebuilt wheels before trying to build from source:
+
+```powershell
+python -m pip install --upgrade pip setuptools wheel
+pip install --only-binary :all: psycopg2-binary==2.9.9
+```
+
+- If you cannot use wheels for your Python version, install Microsoft Visual C++ Build Tools and PostgreSQL development files, or use a Conda environment and run:
+
+```powershell
+conda install -c anaconda psycopg2
+```
+
+If you still get build errors, installing PostgreSQL and ensuring `pg_config.exe` is discoverable by `PATH` is the most reliable solution on Windows.
+
 ### Set environment variables 
 
 macOS / Linux (bash / zsh)

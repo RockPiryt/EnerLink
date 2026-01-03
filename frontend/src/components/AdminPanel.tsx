@@ -11,6 +11,7 @@ import {User} from "../models/user";
 const AdminPanel: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  // State for Add User modal
   const [showUserModal, setShowUserModal] = useState(false);
   const [activeTab, setActiveTab] = useState('users');
   const [users, setUsers] = useState<User[]>([]);
@@ -121,18 +122,22 @@ const AdminPanel: React.FC = () => {
         setSelectedUser(null);
     };
 
+    /**
+     * Handle confirming the creation of a new user from the AddUserModal.
+     * @param userData - Data for the new user
+     */
     const handleConfirmAdd = async (userData: any) => {
-        setAddLoading(true);
-        try {
-            await adminService.addUser(userData);
-            setShowUserModal(false);
-            await fetchUsers();
-        } catch (err) {
-            console.error('Error creating user:', err);
-            setError('Failed to create user. Please try again.');
-        } finally {
-            setAddLoading(false);
-        }
+      setAddLoading(true);
+      try {
+        await adminService.addUser(userData);
+        setShowUserModal(false);
+        await fetchUsers();
+      } catch (err: any) {
+        // Show error message if user creation fails
+        setError(err.response?.data?.error || 'Failed to create user. Please try again.');
+      } finally {
+        setAddLoading(false);
+      }
     };
 
   return (
@@ -212,12 +217,20 @@ const AdminPanel: React.FC = () => {
                 <Tab eventKey="users" title="Users Management">
                   <div className="d-flex justify-content-between align-items-center mb-3">
                     <h5>User Management</h5>
+                    {/* Button to open Add User modal */}
                     <Button 
                       variant="primary" 
                       onClick={() => setShowUserModal(true)}
                     >
                       Add New User
                     </Button>
+                        {/* Add User Modal */}
+                        <AddUserModal
+                          show={showUserModal}
+                          onHide={() => setShowUserModal(false)}
+                          onConfirm={handleConfirmAdd}
+                          loading={addLoading}
+                        />
                   </div>
                   
                   {loading ? (
