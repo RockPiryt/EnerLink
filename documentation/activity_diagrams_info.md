@@ -1,8 +1,9 @@
 ## Activity Diagrams
 
-1. Activity diagram for user creation showing necessary administrator decisions
-![User Management](/documentation/images/user_management_activity_diagram.png)
-📄 [Download PDF Vesrion](/documentation/other_formats/user_management_activity_diagram.pdf)
+1. Activity diagram for user creation showing necessary administrator decisions.
+A single, illustrative activity diagram for CRUD operations has been prepared. Detailed CRUD operations are reflected in sequence diagrams.
+![User Create](/documentation/images/activity_user_create.png)
+📄 [Download PDF Vesrion](/documentation/other_formats/activity_user_create.pdf)
 
 2. ![Login](/documentation/images/login_activity_diagram.png)
 📄 [Download PDF Vesrion](/documentation/other_formats/login_activity_diagram.pdf)

@@ -4,24 +4,24 @@
 1. User Management diagrams
 
 a) Create User diagram
-![Create User](/documentation/images/user_management_scenario1.png)
-📄 [Download PDF Vesrion](/documentation/other_formats/user_management_scenario1.pdf)
+![Create User](/documentation/images/sequence_create_user.png)
+📄 [Download PDF Vesrion](/documentation/other_formats/sequence_create_user.pdf)
 
 b) Edit User diagram
-![Edit User](/documentation/images/user_management_scenario2.png)
-📄 [Download PDF Vesrion](/documentation/other_formats/user_management_scenario2.pdf)
+![Edit User](/documentation/images/sequence_edit_user.png)
+📄 [Download PDF Vesrion](/documentation/other_formats/sequence_edit_user.pdf)
 
 c) Create Role diagram
-![Create Role](/documentation/images/user_management_scenario3.png)
-📄 [Download PDF Vesrion](/documentation/other_formats/user_management_scenario3.pdf)
+![Create Role](/documentation/images/sequence_create_role.png)
+📄 [Download PDF Vesrion](/documentation/other_formats/sequence_create_role.pdf)
 
 d) Edit Role diagram
-![Edit Role](/documentation/images/user_management_scenario4.png)
-📄 [Download PDF Vesrion](/documentation/other_formats/user_management_scenario4.pdf)
+![Edit Role](/documentation/images/sequence_edit_role.png)
+📄 [Download PDF Vesrion](/documentation/other_formats/sequence_edit_role.pdf)
 
 e) Block/Unblock User diagram
-![Block](/documentation/images/user_management_scenario5.png)
-📄 [Download PDF Vesrion](/documentation/other_formats/user_management_scenario5.pdf)
+![Block](/documentation/images/sequence_block_user.png)
+📄 [Download PDF Vesrion](/documentation/other_formats/sequence_block_user.pdf)
 
 
 2. Login diagrams
