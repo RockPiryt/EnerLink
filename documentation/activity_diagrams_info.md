@@ -18,8 +18,8 @@ b) Energy Seller Management
 📄 [Download PDF Vesrion](/documentation/other_formats/seller_management_activity.pdf)
 
 4. Customer Management
-![Customer Management](/documentation/images/customer_management_activity.png)
-📄 [Download PDF Vesrion](/documentation/other_formats/customer_management_activity.pdf)
+![Customer Management](/documentation/images/activity_customer_management.png)
+📄 [Download PDF Vesrion](/documentation/other_formats/activity_customer_management.pdf)
 
 
 5.

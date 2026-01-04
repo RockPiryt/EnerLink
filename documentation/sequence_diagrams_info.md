@@ -51,8 +51,8 @@ b) Energy Seller Dictionary Management
 
 
 4. Customer Management
-![Customer Management](/documentation/images/customer_management_sequence.png)
-📄 [Download PDF Vesrion](/documentation/other_formats/customer_management_sequence.pdf)
+![Customer Management](/documentation/images/sequence_customer_management.png)
+📄 [Download PDF Vesrion](/documentation/other_formats/sequence_customer_management.pdf)
 
 
 5.
