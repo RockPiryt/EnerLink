@@ -10,8 +10,8 @@ A single, illustrative activity diagram for CRUD operations has been prepared. D
 
 3. Dictionary Management
 a) Dictionary Management
-![Dictionary Management](/documentation/images/dictionary_management_activity.png)
-📄 [Download PDF Vesrion](/documentation/other_formats/dictionary_management_activity.pdf)
+![Dictionary Management](/documentation/images/activity_dictionary_management.png)
+📄 [Download PDF Vesrion](/documentation/other_formats/activity_dictionary_management.pdf)
 
 b) Energy Seller Management
 ![Energy Seller Management](/documentation/images/seller_management_activity.png)

@@ -42,8 +42,8 @@ c) Login Failed diagram
 3. Dictionary Management
 
 a) Dictionary Management
-![Dictionary Management](/documentation/images/dictionary_management_sequence.png)
-📄 [Download PDF Vesrion](/documentation/other_formats/dictionary_management_sequence.pdf)
+![Dictionary Management](/documentation/images/sequence_dictionary_management.png)
+📄 [Download PDF Vesrion](/documentation/other_formats/sequence_dictionary_management.pdf)
 
 b) Energy Seller Dictionary Management
 ![Energy Seller Dictionary Management](/documentation/images/seller_management_sequence.png)
