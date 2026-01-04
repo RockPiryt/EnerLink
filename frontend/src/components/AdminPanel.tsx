@@ -7,6 +7,7 @@ import DeleteUserModal from "../dialogs/DeleteModal";
 import EditUserModal from "../dialogs/EditUserModal";
 import AddUserModal from "../dialogs/AddUserModal";
 import {User} from "../models/user";
+import RoleList from './RoleList';
 
 const AdminPanel: React.FC = () => {
   const { user, logout } = useAuth();
@@ -285,6 +286,11 @@ const AdminPanel: React.FC = () => {
                       </tbody>
                     </Table>
                   )}
+                </Tab>
+
+                {/* Roles Management */}
+                <Tab eventKey="roles" title="Roles Management">
+                  <RoleList />
                 </Tab>
 
                 {/* Device Management */}
