@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form, Alert, Spinner } from 'react-bootstrap';
-import Role from "../enums/role";
+import { RoleService } from '../services/roleService';
+import { Role } from '../models/role';
 
 interface BackendUser {
     id: string;
@@ -35,6 +36,22 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
         role_name: '',
         active: true
     });
+    const [roles, setRoles] = useState<Role[]>([]);
+    const [rolesLoading, setRolesLoading] = useState(true);
+    useEffect(() => {
+        const fetchRoles = async () => {
+            setRolesLoading(true);
+            try {
+                const data = await new RoleService().getRoles();
+                setRoles(data);
+            } catch (e) {
+                setRoles([]);
+            } finally {
+                setRolesLoading(false);
+            }
+        };
+        fetchRoles();
+    }, []);
 
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -212,12 +229,12 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
                             value={formData.role_name}
                             onChange={handleChange}
                             isInvalid={!!errors.role_name}
-                            disabled={loading}
+                            disabled={loading || rolesLoading}
                         >
-                            <option value="">Select role</option>
-                            {Object.values(Role).map((role) => (
-                                <option key={role} value={role}>
-                                    {role}
+                            <option value="">{rolesLoading ? 'Loading roles...' : 'Select role'}</option>
+                            {roles.map((role) => (
+                                <option key={role.id} value={role.role_name}>
+                                    {role.role_name}
                                 </option>
                             ))}
                         </Form.Select>
