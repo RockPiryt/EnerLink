@@ -21,15 +21,15 @@
 ![Use Case Customer Management](/documentation/images/use_case_customer_management.png)
 📄 [Download PDF Vesrion](/documentation/other_formats/use_case_customer_management.pdf)
 
-6. Use Case - Contract Management
-![Use Case Contract Management](/documentation/images/use_case_contract_management.png)
-📄 [Download PDF Vesrion](/documentation/other_formats/use_case_contract_management.pdf)
+6. Energy Seller Management
+![Energy Seller Management](/documentation/images/use_case_seller_management.png)
+📄 [Download PDF Vesrion](/documentation/other_formats/use_case_seller_management.pdf)
 
-7. Use Case - Report and Analitics Management
-![Use Case Report and Analitics](/documentation/images/use_case_reports_analitics.png)
-📄 [Download PDF Vesrion](/documentation/other_formats/use_case_reports_analitics.pdf)
+7
 
-8. Use Case - Tags
+8
+
+9. Use Case - Tags
 ![Use Case Tags](/documentation/images/use_case_tags.png)
 📄 [Download PDF Vesrion](/documentation/other_formats/use_case_tags.pdf)
 

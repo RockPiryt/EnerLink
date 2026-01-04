@@ -13,21 +13,21 @@ a) Dictionary Management
 ![Dictionary Management](/documentation/images/activity_dictionary_management.png)
 📄 [Download PDF Vesrion](/documentation/other_formats/activity_dictionary_management.pdf)
 
-b) Energy Seller Management
-![Energy Seller Management](/documentation/images/seller_management_activity.png)
-📄 [Download PDF Vesrion](/documentation/other_formats/seller_management_activity.pdf)
 
 4. Customer Management
 ![Customer Management](/documentation/images/activity_customer_management.png)
 📄 [Download PDF Vesrion](/documentation/other_formats/activity_customer_management.pdf)
 
 
-5.
+5. Energy Seller Management
+![Energy Seller Management](/documentation/images/activity_seller_management.png)
+📄 [Download PDF Vesrion](/documentation/other_formats/activity_seller_management.pdf)
 
 
 6.
 
+7.
 
-7. Tags Management
+8. Tags Management
 ![Tags Management](/documentation/images/tags_management_activity.png)
 📄 [Download PDF Vesrion](/documentation/other_formats/tags_management_activity.pdf)

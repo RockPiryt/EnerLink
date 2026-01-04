@@ -45,22 +45,21 @@ a) Dictionary Management
 ![Dictionary Management](/documentation/images/sequence_dictionary_management.png)
 📄 [Download PDF Vesrion](/documentation/other_formats/sequence_dictionary_management.pdf)
 
-b) Energy Seller Dictionary Management
-![Energy Seller Dictionary Management](/documentation/images/seller_management_sequence.png)
-📄 [Download PDF Vesrion](/documentation/other_formats/seller_management_sequence.pdf)
-
 
 4. Customer Management
 ![Customer Management](/documentation/images/sequence_customer_management.png)
 📄 [Download PDF Vesrion](/documentation/other_formats/sequence_customer_management.pdf)
 
 
-5.
+5. Energy Seller Management
+![Energy Seller Management](/documentation/images/sequence_seller_management.png)
+📄 [Download PDF Vesrion](/documentation/other_formats/sequence_seller_management.pdf)
 
 
 6.
 
+7
 
-7. Tags Management
+8. Tags Management
 ![Tags Management](/documentation/images/tags_management_sequence.png)
 📄 [Download PDF Vesrion](/documentation/other_formats/tags_management_sequence.pdf)
