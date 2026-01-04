@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import {AuthService} from "../services/auth/authService";
+import { AuthService } from "../services/auth/authService";
 
 interface User {
   id: string;
@@ -21,22 +21,35 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // DEMO MODE: always logged in as admin
-  const demoAdmin: User = {
-    id: 'DBG001',
-    first_name: 'Debug',
-    last_name: 'Admin',
-    email: 'debug_admin@enerlink.com',
-    role_name: 'Administrator',
-    active: true,
-  };
-  const [user, setUser] = useState<User | null>(demoAdmin);
-  const [token, setToken] = useState<string | null>('demo-token');
+
+  const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // login/logout do nothing in demo mode
-  const login = async () => true;
-  const logout = () => {};
+  const authService = new AuthService();
+  const login = async (email: string, password: string): Promise<boolean> => {
+    setIsLoading(true);
+    try {
+      const result = await authService.login(email, password);
+      if (result.token && result.user) {
+        setToken(result.token);
+        setUser(result.user);
+        setIsLoading(false);
+        return true;
+      } else {
+        setIsLoading(false);
+        return false;
+      }
+    } catch (err) {
+      setIsLoading(false);
+      return false;
+    }
+  };
+
+  const logout = () => {
+    setToken(null);
+    setUser(null);
+  };
 
   return (
     <AuthContext.Provider value={{ user, token, login, logout, isLoading }}>
