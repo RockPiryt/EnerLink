@@ -16,6 +16,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/admin" element={<AdminPanel />} />
+            <Route path="/users" element={<UsersList />} />
             <Route path="/" element={<Navigate to="/login" replace />} />
           </Routes>
         </div>

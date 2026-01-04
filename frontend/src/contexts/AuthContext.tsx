@@ -21,52 +21,22 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const authService = new AuthService();
-  // Check if user is logged in on app start
-  useEffect(() => {
-    const storedToken = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-    
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
-  }, []);
-
-  const login = async (email: string, password: string): Promise<boolean> => {
-    try {
-        const response = await authService.login(email, password);
-        console.log(response);
-
-      if (response.status === 200 && response.data.user.active) {
-
-        if (response.data.user) {
-          setToken(response.data.token);
-          setUser(response.data.user);
-
-          localStorage.setItem('token', response.data.token);
-          localStorage.setItem('user', JSON.stringify(response.data.user));
-
-          return true;
-        }
-      }
-      return false;
-    } catch (error) {
-      console.error('Login error:', error);
-      return false;
-    }
+  // DEMO MODE: always logged in as admin
+  const demoAdmin: User = {
+    id: 'DBG001',
+    first_name: 'Debug',
+    last_name: 'Admin',
+    email: 'debug_admin@enerlink.com',
+    role_name: 'Administrator',
+    active: true,
   };
+  const [user, setUser] = useState<User | null>(demoAdmin);
+  const [token, setToken] = useState<string | null>('demo-token');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const logout = () => {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-  };
+  // login/logout do nothing in demo mode
+  const login = async () => true;
+  const logout = () => {};
 
   return (
     <AuthContext.Provider value={{ user, token, login, logout, isLoading }}>

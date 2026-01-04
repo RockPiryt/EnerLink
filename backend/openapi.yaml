@@ -725,7 +725,7 @@ definitions:
     properties:
       name: { type: string }
 
-        SupplierOffer:
+  SupplierOffer:
     type: object
     properties:
       id: { type: integer }
