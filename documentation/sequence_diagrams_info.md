@@ -54,7 +54,9 @@ c) Login Failed diagram
 📄 [Download PDF Vesrion](/documentation/other_formats/sequence_seller_management.pdf)
 
 
-6.
+6. Report and Analytics
+![Report](/documentation/images/sequence_reports_analytics.png)
+📄 [Download PDF Vesrion](/documentation/other_formats/sequence_reports_analytics.pdf)
 
 7
 

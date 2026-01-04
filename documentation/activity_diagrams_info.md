@@ -23,7 +23,10 @@ A single, illustrative activity diagram for CRUD operations has been prepared. D
 📄 [Download PDF Vesrion](/documentation/other_formats/activity_seller_management.pdf)
 
 
-6.
+6. Report and Analytics
+![Report](/documentation/images/activity_reports_analytics.png)
+📄 [Download PDF Vesrion](/documentation/other_formats/activity_reports_analytics.pdf)
+
 
 7.
 

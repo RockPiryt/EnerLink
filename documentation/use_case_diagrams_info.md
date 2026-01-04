@@ -25,9 +25,13 @@
 ![Energy Seller Management](/documentation/images/use_case_seller_management.png)
 📄 [Download PDF Vesrion](/documentation/other_formats/use_case_seller_management.pdf)
 
-7
+7. Report and Analytics
+![Report](/documentation/images/use_case_reports_analytics.png)
+📄 [Download PDF Vesrion](/documentation/other_formats/use_case_reports_analytics.pdf)
+
 
 8
+
 
 9. Use Case - Tags
 ![Use Case Tags](/documentation/images/use_case_tag.png)
