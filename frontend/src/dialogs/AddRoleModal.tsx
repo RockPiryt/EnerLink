@@ -22,7 +22,7 @@ const AddRoleModal: React.FC<AddRoleModalProps> = ({ show, onHide, onRoleAdded }
       onRoleAdded();
       onHide();
     } catch (err: any) {
-      setError('Błąd podczas dodawania roli');
+      setError('Error while adding role');
     } finally {
       setLoading(false);
     }
@@ -31,13 +31,13 @@ const AddRoleModal: React.FC<AddRoleModalProps> = ({ show, onHide, onRoleAdded }
   return (
     <Modal show={show} onHide={onHide}>
       <Modal.Header closeButton>
-        <Modal.Title>Dodaj rolę</Modal.Title>
+        <Modal.Title>Add role</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         {error && <Alert variant="danger">{error}</Alert>}
         <Form>
           <Form.Group>
-            <Form.Label>Nazwa roli</Form.Label>
+            <Form.Label>Role name</Form.Label>
             <Form.Control
               type="text"
               value={roleName}
@@ -48,8 +48,8 @@ const AddRoleModal: React.FC<AddRoleModalProps> = ({ show, onHide, onRoleAdded }
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={onHide} disabled={loading}>Anuluj</Button>
-        <Button variant="primary" onClick={handleAdd} disabled={loading || !roleName}>Dodaj</Button>
+        <Button variant="secondary" onClick={onHide} disabled={loading}>Cancel</Button>
+        <Button variant="primary" onClick={handleAdd} disabled={loading || !roleName}>Add</Button>
       </Modal.Footer>
     </Modal>
   );
