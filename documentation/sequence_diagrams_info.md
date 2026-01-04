@@ -40,8 +40,6 @@ c) Login Failed diagram
 
 
 3. Dictionary Management
-
-a) Dictionary Management
 ![Dictionary Management](/documentation/images/sequence_dictionary_management.png)
 📄 [Download PDF Vesrion](/documentation/other_formats/sequence_dictionary_management.pdf)
 
@@ -61,5 +59,5 @@ a) Dictionary Management
 7
 
 8. Tags Management
-![Tags Management](/documentation/images/tags_management_sequence.png)
-📄 [Download PDF Vesrion](/documentation/other_formats/tags_management_sequence.pdf)
+![Tags Management](/documentation/images/sequence_tag_management.png)
+📄 [Download PDF Vesrion](/documentation/other_formats/sequence_tag_management.pdf)

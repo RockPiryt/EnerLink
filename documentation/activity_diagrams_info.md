@@ -9,7 +9,6 @@ A single, illustrative activity diagram for CRUD operations has been prepared. D
 📄 [Download PDF Vesrion](/documentation/other_formats/activity_login.pdf)
 
 3. Dictionary Management
-a) Dictionary Management
 ![Dictionary Management](/documentation/images/activity_dictionary_management.png)
 📄 [Download PDF Vesrion](/documentation/other_formats/activity_dictionary_management.pdf)
 
@@ -29,5 +28,5 @@ a) Dictionary Management
 7.
 
 8. Tags Management
-![Tags Management](/documentation/images/tags_management_activity.png)
-📄 [Download PDF Vesrion](/documentation/other_formats/tags_management_activity.pdf)
+![Tags Management](/documentation/images/activity_tag_management.png)
+📄 [Download PDF Vesrion](/documentation/other_formats/activity_tag_management.pdf)

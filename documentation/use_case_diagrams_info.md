@@ -30,7 +30,7 @@
 8
 
 9. Use Case - Tags
-![Use Case Tags](/documentation/images/use_case_tags.png)
-📄 [Download PDF Vesrion](/documentation/other_formats/use_case_tags.pdf)
+![Use Case Tags](/documentation/images/use_case_tag.png)
+📄 [Download PDF Vesrion](/documentation/other_formats/use_case_tag.pdf)
 
 
