@@ -86,7 +86,7 @@ const RoleList: React.FC = () => {
           <tbody>
             {roles.map(role => (
               <tr key={role.id}>
-                <td>{role.name}</td>
+                <td>{role.role_name}</td>
                 <td>
                   <Button size="sm" onClick={() => handleEditRole(role)} className="me-2">Edytuj</Button>
                   <Button size="sm" variant="danger" onClick={() => handleDeleteRole(role)}>Delete</Button>
@@ -105,7 +105,7 @@ const RoleList: React.FC = () => {
           show={showDeleteModal}
           onHide={() => { setShowDeleteModal(false); setRoleToDelete(null); }}
           onConfirm={handleConfirmDelete}
-          roleName={roleToDelete.name}
+          roleName={roleToDelete.role_name}
           loading={deleteLoading}
           error={error}
         />

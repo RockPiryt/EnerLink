@@ -17,7 +17,7 @@ const AddRoleModal: React.FC<AddRoleModalProps> = ({ show, onHide, onRoleAdded }
     setLoading(true);
     setError('');
     try {
-      await new RoleService().addRole({ name: roleName });
+      await new RoleService().addRole({ role_name: roleName });
       setRoleName('');
       onRoleAdded();
       onHide();

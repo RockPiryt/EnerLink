@@ -4,6 +4,7 @@ import Role from "../enums/role";
 
 interface BackendUser {
     id: string;
+    username: string;
     first_name: string;
     last_name: string;
     email: string;
@@ -27,6 +28,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
                                                          loading = false
                                                      }) => {
     const [formData, setFormData] = useState({
+        username: '',
         first_name: '',
         last_name: '',
         email: '',
@@ -39,6 +41,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
     useEffect(() => {
         if (user) {
             setFormData({
+                username: user.username || '',
                 first_name: user.first_name,
                 last_name: user.last_name,
                 email: user.email,
@@ -69,20 +72,20 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
     const validateForm = (): boolean => {
         const newErrors: { [key: string]: string } = {};
 
+        if (!formData.username.trim()) {
+            newErrors.username = 'Username is required';
+        }
         if (!formData.first_name.trim()) {
             newErrors.first_name = 'First name is required';
         }
-
         if (!formData.last_name.trim()) {
             newErrors.last_name = 'Last name is required';
         }
-
         if (!formData.email.trim()) {
             newErrors.email = 'Email is required';
         } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
             newErrors.email = 'Email is invalid';
         }
-
         if (!formData.role_name) {
             newErrors.role_name = 'Role is required';
         }
@@ -101,12 +104,30 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
 
     const handleClose = () => {
         setFormData({
+            username: '',
             first_name: '',
             last_name: '',
             email: '',
             role_name: '',
             active: true
         });
+                            <Form.Group className="mb-3">
+                                <Form.Label>
+                                    Username <span className="text-danger">*</span>
+                                </Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    name="username"
+                                    value={formData.username}
+                                    onChange={handleChange}
+                                    isInvalid={!!errors.username}
+                                    placeholder="Enter username"
+                                    disabled={loading}
+                                />
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.username}
+                                </Form.Control.Feedback>
+                            </Form.Group>
         setErrors({});
         onHide();
     };

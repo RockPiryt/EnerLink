@@ -3,11 +3,13 @@ import { Modal, Button, Form, Spinner } from 'react-bootstrap';
 import Role from "../enums/role";
 
 interface AddUserData {
+    username: string;
     first_name: string;
     last_name: string;
     email: string;
     role_name: string;
     password: string;
+    active: boolean;
 }
 
 interface AddUserModalProps {
@@ -24,11 +26,13 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                                                        loading = false
                                                    }) => {
     const [formData, setFormData] = useState<AddUserData>({
+        username: '',
         first_name: '',
         last_name: '',
         email: '',
         role_name: '',
-        password: ''
+        password: '',
+        active: true
     });
 
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -53,24 +57,24 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
     const validateForm = (): boolean => {
         const newErrors: { [key: string]: string } = {};
 
+
+        if (!formData.username.trim()) {
+            newErrors.username = 'Username is required';
+        }
         if (!formData.first_name.trim()) {
             newErrors.first_name = 'First name is required';
         }
-
         if (!formData.last_name.trim()) {
             newErrors.last_name = 'Last name is required';
         }
-
         if (!formData.email.trim()) {
             newErrors.email = 'Email is required';
         } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
             newErrors.email = 'Email is invalid';
         }
-
         if (!formData.role_name) {
             newErrors.role_name = 'Role is required';
         }
-
         if (!formData.password.trim()) {
             newErrors.password = 'Password is required';
         } else if (formData.password.length < 6) {
@@ -91,11 +95,13 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
 
     const handleClose = () => {
         setFormData({
+            username: '',
             first_name: '',
             last_name: '',
             email: '',
             role_name: '',
-            password: ''
+            password: '',
+            active: true
         });
         setErrors({});
         onHide();
@@ -111,6 +117,33 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
             </Modal.Header>
             <Form onSubmit={handleSubmit}>
                 <Modal.Body>
+                    <Form.Group className="mb-3">
+                        <Form.Label>
+                            Username <span className="text-danger">*</span>
+                        </Form.Label>
+                        <Form.Control
+                            type="text"
+                            name="username"
+                            value={formData.username}
+                            onChange={handleChange}
+                            isInvalid={!!errors.username}
+                            placeholder="Enter username"
+                            disabled={loading}
+                        />
+                        <Form.Control.Feedback type="invalid">
+                            {errors.username}
+                        </Form.Control.Feedback>
+                    </Form.Group>
+                    <Form.Group className="mb-3">
+                        <Form.Check
+                            type="checkbox"
+                            name="active"
+                            label="Active user"
+                            checked={formData.active}
+                            onChange={handleChange}
+                            disabled={loading}
+                        />
+                    </Form.Group>
                     <Form.Group className="mb-3">
                         <Form.Label>
                             First Name <span className="text-danger">*</span>

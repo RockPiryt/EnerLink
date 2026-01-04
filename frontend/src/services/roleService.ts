@@ -1,9 +1,6 @@
-import axiosInstance from "../interceptor/interceptor";
 
-export interface Role {
-  id: string;
-  name: string;
-}
+import axiosInstance from "../interceptor/interceptor";
+import { Role } from "../models/role";
 
 export class RoleService {
   async getRoles(): Promise<Role[]> {
@@ -11,12 +8,12 @@ export class RoleService {
     return response.data.items || response.data;
   }
 
-  async addRole(role: { name: string }): Promise<void> {
+  async addRole(role: { role_name: string }): Promise<void> {
     await axiosInstance.post("/api/roles", role);
   }
 
-  async editRole(roleId: string, role: { name: string }): Promise<void> {
-    await axiosInstance.patch(`/api/roles/${roleId}`, role);
+  async editRole(roleId: string, role: { role_name: string; active?: boolean }): Promise<void> {
+    await axiosInstance.put(`/api/roles/${roleId}`, role);
   }
 
   async deleteRole(roleId: string): Promise<void> {

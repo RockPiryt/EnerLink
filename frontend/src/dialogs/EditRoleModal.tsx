@@ -11,7 +11,7 @@ interface EditRoleModalProps {
 }
 
 const EditRoleModal: React.FC<EditRoleModalProps> = ({ show, onHide, role, onRoleUpdated }) => {
-  const [roleName, setRoleName] = useState(role.name);
+  const [roleName, setRoleName] = useState(role.role_name);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -19,7 +19,7 @@ const EditRoleModal: React.FC<EditRoleModalProps> = ({ show, onHide, role, onRol
     setLoading(true);
     setError('');
     try {
-      await new RoleService().editRole(role.id, { name: roleName });
+      await new RoleService().editRole(role.id, { role_name: roleName });
       onRoleUpdated();
       onHide();
     } catch (err: any) {
