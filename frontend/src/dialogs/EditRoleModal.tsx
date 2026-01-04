@@ -11,7 +11,7 @@ interface EditRoleModalProps {
 }
 
 const EditRoleModal: React.FC<EditRoleModalProps> = ({ show, onHide, role, onRoleUpdated }) => {
-  const [roleName, setRoleName] = useState(role.name);
+  const [roleName, setRoleName] = useState(role.role_name);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -19,11 +19,11 @@ const EditRoleModal: React.FC<EditRoleModalProps> = ({ show, onHide, role, onRol
     setLoading(true);
     setError('');
     try {
-      await new RoleService().editRole(role.id, { name: roleName });
+      await new RoleService().editRole(role.id, { role_name: roleName });
       onRoleUpdated();
       onHide();
     } catch (err: any) {
-      setError('Błąd podczas edycji roli');
+      setError('Error while editing role');
     } finally {
       setLoading(false);
     }
@@ -32,13 +32,13 @@ const EditRoleModal: React.FC<EditRoleModalProps> = ({ show, onHide, role, onRol
   return (
     <Modal show={show} onHide={onHide}>
       <Modal.Header closeButton>
-        <Modal.Title>Edytuj rolę</Modal.Title>
+        <Modal.Title>Edit role</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         {error && <Alert variant="danger">{error}</Alert>}
         <Form>
           <Form.Group>
-            <Form.Label>Nazwa roli</Form.Label>
+            <Form.Label>Role name</Form.Label>
             <Form.Control
               type="text"
               value={roleName}
@@ -49,8 +49,8 @@ const EditRoleModal: React.FC<EditRoleModalProps> = ({ show, onHide, role, onRol
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={onHide} disabled={loading}>Anuluj</Button>
-        <Button variant="primary" onClick={handleEdit} disabled={loading || !roleName}>Zapisz</Button>
+        <Button variant="secondary" onClick={onHide} disabled={loading}>Cancel</Button>
+        <Button variant="primary" onClick={handleEdit} disabled={loading || !roleName}>Save</Button>
       </Modal.Footer>
     </Modal>
   );

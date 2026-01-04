@@ -16,17 +16,22 @@ const Login: React.FC = () => {
     return <Navigate to="/dashboard" replace />;
   }
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
-    const success = await login(email, password);
-    
-    if (!success) {
-      setError('Invalid login credentials');
+    try {
+      const success = await login(email, password);
+      if (!success) {
+        // Show specific error from backend if available
+        // AuthService throws error string if backend returns error
+        setError('Invalid login credentials or account is deactivated');
+      }
+    } catch (err: any) {
+      setError(typeof err === 'string' ? err : 'Login failed');
     }
-    
     setIsLoading(false);
   };
 
@@ -85,15 +90,12 @@ const Login: React.FC = () => {
               
               <Card className="bg-light">
                 <Card.Body className="p-3">
-                  <h6 className="text-muted mb-2">Test Accounts:</h6>
+                  <h6 className="text-muted mb-2">Test Account:</h6>
                   <div className="small">
-                    <p className="mb-1"><strong>Administrator:</strong></p>
-                    <p className="mb-1">Email: <code>admin@enerlink.com</code></p>
-                    <p className="mb-2">Password: <code>admin123</code></p>
-                    
-                    <p className="mb-1"><strong>Manager:</strong></p>
-                    <p className="mb-1">Email: <code>sarah.johnson@enerlink.com</code></p>
-                    <p className="mb-0">Password: <code>manager123</code></p>
+                    <p className="mb-1"><strong>Administrator (Debug):</strong></p>
+                    <p className="mb-1">Email: <code>debug_admin@enerlink.com</code></p>
+                    <p className="mb-2">Password: <code>test1234</code></p>
+                    <p className="mb-2 text-muted">If login fails, reset admin user via <code>/api/debug_reset_admin</code> endpoint.</p>
                   </div>
                 </Card.Body>
               </Card>
