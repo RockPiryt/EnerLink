@@ -36,7 +36,7 @@ b) Login Failed diagram
 
 c) Login Failed diagram
 ![Password reset](/documentation/images/login_scenario3.png)
-📄 [Download PDF Vesrion]/documentation/other_formats/login_scenario3.pdf)
+📄 [Download PDF Vesrion](/documentation/other_formats/login_scenario3.pdf)
 
 
 3. Dictionary Management
