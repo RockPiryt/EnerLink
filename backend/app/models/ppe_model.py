@@ -15,7 +15,7 @@ class PPE(db.Model):
     active = db.Column(db.Boolean, default=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
-    customer = db.relationship("Customer")
+    customer = db.relationship("Customer", overlaps="customer_ref,ppes")
     address = db.relationship("Address")
 
     def to_dict(self):

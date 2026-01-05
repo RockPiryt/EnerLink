@@ -38,7 +38,12 @@ const CustomerList: React.FC = () => {
     <Container className="py-4">
       <Card>
         <Card.Header className="d-flex justify-content-between align-items-center">
-          <h2 className="mb-0">Customer List</h2>
+          <div className="d-flex align-items-center">
+            <Button variant="outline-secondary" className="me-3" onClick={() => navigate('/dashboard')}>
+              &larr; Back to Dashboard
+            </Button>
+            <h2 className="mb-0">Customer List</h2>
+          </div>
           <Button variant="primary" onClick={() => navigate('/customers/new')}>
             Add Customer
           </Button>
@@ -55,6 +60,7 @@ const CustomerList: React.FC = () => {
                   <th>Email</th>
                   <th>Phone</th>
                   <th>Status</th>
+                                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -65,6 +71,15 @@ const CustomerList: React.FC = () => {
                     <td>{c.email}</td>
                     <td>{c.phone || '-'}</td>
                     <td>{c.active ? 'Active' : 'Inactive'}</td>
+                    <td>
+                      <Button
+                        variant="outline-primary"
+                        size="sm"
+                        onClick={() => navigate(`/customers/${c.id}`)}
+                      >
+                        Edit
+                      </Button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
