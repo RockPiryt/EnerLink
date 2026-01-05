@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Modal } from 'react-bootstrap';
 import { Container, Card, Table, Spinner, Alert, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 
@@ -14,6 +15,8 @@ interface Customer {
 
 const CustomerList: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -60,7 +63,7 @@ const CustomerList: React.FC = () => {
                   <th>Email</th>
                   <th>Phone</th>
                   <th>Status</th>
-                                  <th>Actions</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -76,8 +79,16 @@ const CustomerList: React.FC = () => {
                         variant="outline-primary"
                         size="sm"
                         onClick={() => navigate(`/customers/${c.id}`)}
+                        className="me-2"
                       >
                         Edit
+                      </Button>
+                      <Button
+                        variant="outline-danger"
+                        size="sm"
+                        onClick={() => { setCustomerToDelete(c); setShowConfirm(true); }}
+                      >
+                        Delete
                       </Button>
                     </td>
                   </tr>
@@ -85,6 +96,31 @@ const CustomerList: React.FC = () => {
               </tbody>
             </Table>
           )}
+          <Modal show={showConfirm} onHide={() => setShowConfirm(false)}>
+            <Modal.Header closeButton>
+              <Modal.Title>Delete Customer</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              Are you sure you want to delete this customer?
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="secondary" onClick={() => setShowConfirm(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="danger"
+                onClick={() => {
+                  if (customerToDelete) {
+                    setCustomers(customers.filter(c => c.id !== customerToDelete.id));
+                  }
+                  setShowConfirm(false);
+                  setCustomerToDelete(null);
+                }}
+              >
+                Delete
+              </Button>
+            </Modal.Footer>
+          </Modal>
         </Card.Body>
       </Card>
     </Container>
