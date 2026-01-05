@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Card, Table, Spinner, Alert } from 'react-bootstrap';
+import { Container, Card, Table, Spinner, Alert, Button } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 
 interface Customer {
   id: number;
@@ -10,10 +11,12 @@ interface Customer {
   active?: boolean;
 }
 
+
 const CustomerList: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch('http://localhost:8080/api/customers')
@@ -34,8 +37,11 @@ const CustomerList: React.FC = () => {
   return (
     <Container className="py-4">
       <Card>
-        <Card.Header>
+        <Card.Header className="d-flex justify-content-between align-items-center">
           <h2 className="mb-0">Customer List</h2>
+          <Button variant="primary" onClick={() => navigate('/customers/new')}>
+            Add Customer
+          </Button>
         </Card.Header>
         <Card.Body>
           {loading && <Spinner animation="border" variant="primary" />}
