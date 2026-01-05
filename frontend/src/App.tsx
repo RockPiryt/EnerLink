@@ -2,11 +2,11 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 
-import Login from './components/Login';
-import Dashboard from './components/Dashboard';
-import AdminPanel from './components/AdminPanel';
-import UsersList from './components/UsersList';
-import RoleList from './components/RoleList';
+import Login from './components/authorisation/Login';
+import Dashboard from './components/dashboard/Dashboard';
+import AdminPanel from './components/admin/AdminPanel';
+import UsersList from './components/user/UsersList';
+import RoleList from './components/role/RoleList';
 import CountryList from './components/dictionary/CountryList';
 import CityList from './components/dictionary/CityList';
 import ProvinceList from './components/dictionary/ProvinceList';

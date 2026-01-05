@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Table, Badge, Modal, Form, Tab, Tabs, Spinner } from 'react-bootstrap';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { Navigate, useNavigate } from 'react-router-dom';
-import {AdminService} from "../services/admin/adminService";
-import DeleteUserModal from "../dialogs/DeleteModal";
-import EditUserModal from "../dialogs/EditUserModal";
-import AddUserModal from "../dialogs/AddUserModal";
-import {User} from "../models/user";
-import RoleList from './RoleList';
+import {AdminService} from "../../services/admin/adminService";
+import DeleteUserModal from "../../dialogs/DeleteModal";
+import EditUserModal from "../../dialogs/EditUserModal";
+import AddUserModal from "../../dialogs/AddUserModal";
+import {User} from "../../models/user";
+import RoleList from '../role/RoleList';
 
 const AdminPanel: React.FC = () => {
   const { user, logout } = useAuth();

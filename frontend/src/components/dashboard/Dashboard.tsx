@@ -1,6 +1,6 @@
 import React from 'react';
 import { Container, Row, Col, Card, Button, Badge } from 'react-bootstrap';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { Navigate, useNavigate } from 'react-router-dom';
 
 const Dashboard: React.FC = () => {

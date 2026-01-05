@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Table, Button, Form, InputGroup, Alert, Spinner, Badge } from 'react-bootstrap';
-import { UserService, User } from '../services/userService';
+import { UserService, User } from '../../services/userService';
 
 const UsersList: React.FC = () => {
     const [users, setUsers] = useState<User[]>([]);

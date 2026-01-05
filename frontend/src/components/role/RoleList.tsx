@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Button, Spinner, Alert } from 'react-bootstrap';
-import AddRoleModal from '../dialogs/AddRoleModal';
-import EditRoleModal from '../dialogs/EditRoleModal';
-import DeleteRoleModal from '../dialogs/DeleteRoleModal';
-import { Role } from '../models/role';
-import { RoleService } from '../services/roleService';
+import AddRoleModal from '../../dialogs/AddRoleModal';
+import EditRoleModal from '../../dialogs/EditRoleModal';
+import DeleteRoleModal from '../../dialogs/DeleteRoleModal';
+import { Role } from '../../models/role';
+import { RoleService } from '../../services/roleService';
 
 const RoleList: React.FC = () => {
   const [roles, setRoles] = useState<Role[]>([]);
