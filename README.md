@@ -8,7 +8,6 @@ The goal of the CRM system is to improve sales, marketing, and customer service 
 > Live demo [_here_](https://www.enerlink.com).
 
 ## Table of Contents
-* [Functional Requierements](#Functional Requierements)
 * [General Info](#general-information)
 * [Technologies Used](#technologies-used)
 * [Features](#features)
@@ -31,6 +30,18 @@ The system supports multiple user roles — **administrators, managers, and sale
 ## Functional Requierements
 Detailed functional requirements are described in the following document:  
 [View Functional Requirements](./documentation/functional_requirements.md)
+
+## Use case Diagrams 
+Use case diagrams in the following document:
+[View Use case diagrams](./documentation/use_case_diagrams_info.md)
+
+## Activity Diagrams 
+Activity diagrams in the following document:
+[View Activity diagrams](./documentation/activity_diagrams_info.md)
+
+## Sequence Diagrams 
+Sequence diagrams in the following document:
+[View Sequence diagrams](./documentation/sequence_diagrams_info.md)
 
 ## Database
 Database is described in the following document:  
