@@ -89,32 +89,29 @@ const Dashboard: React.FC = () => {
         </Col>
       </Row>
 
-      {/* Quick Actions */}
+      {/* Navigation to all subpages */}
       <Row>
         <Col>
           <Card>
             <Card.Header>
-              <h5 className="mb-0">Available Actions</h5>
+              <h5 className="mb-0">System Navigation</h5>
             </Card.Header>
             <Card.Body>
-              <div className="d-grid gap-2 d-md-flex justify-content-md-start">
-                <Button variant="outline-primary" size="lg" onClick={handleUsersList}>
-                  View Users
-                </Button>
-                <Button variant="primary" size="lg" disabled>
-                  Energy Reports
-                </Button>
-                <Button variant="success" size="lg" disabled>
-                  Device Monitoring
-                </Button>
-                <Button variant="info" size="lg" disabled>
-                  Analytics
-                </Button>
-              </div>
-              <div className="mt-3">
-                <small className="text-muted">
-                  These features will be implemented in future releases.
-                </small>
+              <div className="d-grid gap-2 d-md-flex flex-wrap">
+                <Button variant="outline-primary" size="lg" onClick={() => navigate('/users')}>Users</Button>
+                <Button variant="outline-secondary" size="lg" onClick={() => navigate('/roles')}>Roles</Button>
+                <Button variant="outline-success" size="lg" onClick={() => navigate('/customers')}>Customers</Button>
+                <Button variant="outline-info" size="lg" onClick={() => navigate('/contracts')}>Contracts</Button>
+                <Button variant="outline-warning" size="lg" onClick={() => navigate('/providers')}>Energy Providers</Button>
+                <Button variant="outline-dark" size="lg" onClick={() => navigate('/sales')}>Sales Representatives</Button>
+                <Button variant="outline-primary" size="lg" onClick={() => navigate('/tags')}>Tags</Button>
+                <Button variant="outline-secondary" size="lg" onClick={() => navigate('/analytics')}>Analytics</Button>
+                <Button variant="outline-success" size="lg" onClick={() => navigate('/manager')}>Manager Panel</Button>
+                <Button variant="outline-info" size="lg" onClick={() => navigate('/dictionary/countries')}>Country Dictionary</Button>
+                <Button variant="outline-info" size="lg" onClick={() => navigate('/dictionary/cities')}>City Dictionary</Button>
+                <Button variant="outline-info" size="lg" onClick={() => navigate('/dictionary/provinces')}>Province Dictionary</Button>
+                <Button variant="outline-info" size="lg" onClick={() => navigate('/dictionary/pkwiu')}>PKWiU Dictionary</Button>
+                <Button variant="outline-info" size="lg" onClick={() => navigate('/dictionary/tariffs')}>Tariff Dictionary</Button>
               </div>
             </Card.Body>
           </Card>
