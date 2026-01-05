@@ -1,7 +1,0 @@
-Deleted files:
-- logo.svg
-- reportWebVitals.ts
-- setupTests.ts
-- react-app-env.d.ts
-
-These files were removed as part of frontend cleanup. If you need to restore them, use git history.
