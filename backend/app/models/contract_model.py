@@ -32,6 +32,11 @@ class Contract(db.Model):
     timelines = db.relationship("ContractTimeline", back_populates="contract", cascade="all, delete-orphan")
 
     def to_dict(self):
+        # Get latest status from timelines (by created_at desc)
+        latest_status = None
+        if self.timelines:
+            latest = max(self.timelines, key=lambda t: t.created_at)
+            latest_status = latest.status
         return {
             "id": self.id,
             "id_user": self.id_user,
@@ -45,6 +50,7 @@ class Contract(db.Model):
             "is_deleted": self.is_deleted,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "status": latest_status,
         }
 
 

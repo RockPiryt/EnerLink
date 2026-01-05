@@ -14,6 +14,7 @@ import CustomerList from './components/customer/CustomerList';
 import CustomerForm from './components/customer/CustomerForm';
 import CustomerDetails from './components/customer/CustomerDetails';
 import ContractList from './components/contract/ContractList';
+import ContractForm from './components/contract/ContractForm';
 import ProviderList from './components/provider/ProviderList';
 import SalesList from './components/sales/SalesList';
 import TagList from './components/tag/TagList';
@@ -46,6 +47,7 @@ function App() {
             <Route path="/customers/:id" element={<CustomerDetails />} />
             {/* Contracts */}
             <Route path="/contracts" element={<ContractList />} />
+            <Route path="/contracts/new" element={<ContractForm />} />
             {/* Providers */}
             <Route path="/providers" element={<ProviderList />} />
             {/* Sales */}

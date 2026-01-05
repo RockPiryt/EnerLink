@@ -13,7 +13,8 @@ def get_contracts():
     tag_id = request.args.get("tag_id", type=int)
     include_deleted = (request.args.get("include_deleted", "false").lower() == "true")
 
-    q = Contract.query
+    from sqlalchemy.orm import joinedload
+    q = Contract.query.options(joinedload(Contract.timelines))
 
     if not include_deleted:
         q = q.filter(Contract.is_deleted.is_(False))
@@ -59,24 +60,25 @@ def add_contract():
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 
-    contract = Contract(
-        id_customer=int(id_customer),
-        contract_number=str(contract_number),
-        id_user=data.get("id_user"),
-        id_tag=data.get("id_tag"),
-        id_supplier_offer=data.get("id_supplier_offer"),
-        signed_at=signed_at,
-        contract_from=contract_from,
-        contract_to=contract_to,
-        is_deleted=False
-    )
 
-    db.session.add(contract)
-    db.session.commit()
+    try:
+        contract = Contract(
+            id_customer=int(id_customer),
+            contract_number=str(contract_number),
+            id_user=data.get("id_user"),
+            id_tag=data.get("id_tag"),
+            id_supplier_offer=data.get("id_supplier_offer"),
+            signed_at=signed_at,
+            contract_from=contract_from,
+            contract_to=contract_to,
+            is_deleted=False
+        )
+        db.session.add(contract)
+        db.session.commit()
 
-    status = data.get("status")  # e.g. "NEW"
-    description = data.get("description")
-    if status:
+
+        status = data.get("status") or "Signed"  # Default to 'Signed' if not provided
+        description = data.get("description")
         tl = ContractTimeline(
             id_contract=contract.id,
             status=str(status),
@@ -84,8 +86,16 @@ def add_contract():
         )
         db.session.add(tl)
         db.session.commit()
-
-    return jsonify({"message": "Contract created", "contract": contract.to_dict()}), 201
+        db.session.refresh(contract)  # Ensure timelines are up to date
+        # Re-query contract to ensure timelines are loaded
+        contract = Contract.query.get(contract.id)
+        return jsonify({"message": "Contract created", "contract": contract.to_dict()}), 201
+    except Exception as e:
+        import traceback
+        print("[ERROR] add_contract exception:", e)
+        traceback.print_exc()
+        db.session.rollback()
+        return jsonify({"error": f"Internal server error: {str(e)}"}), 500
 
 
 

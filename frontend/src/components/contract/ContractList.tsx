@@ -20,9 +20,15 @@ const ContractList: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // TODO: Fetch contracts from API when backend is ready
-    setContracts([]);
-    setLoading(false);
+    setLoading(true);
+    fetch('http://localhost:8080/api/contracts')
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch contracts');
+        return res.json();
+      })
+      .then(data => setContracts(data))
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false));
   }, []);
 
   return (
@@ -35,7 +41,7 @@ const ContractList: React.FC = () => {
             </Button>
             <h2 className="mb-0">Contract List</h2>
           </div>
-          <Button variant="primary">Add Contract</Button>
+          <Button variant="primary" onClick={() => navigate('/contracts/new')}>Add Contract</Button>
         </Card.Header>
         <Card.Body>
           {loading && <Spinner animation="border" variant="primary" />}
