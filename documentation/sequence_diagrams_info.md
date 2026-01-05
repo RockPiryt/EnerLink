@@ -58,7 +58,11 @@ c) Login Failed diagram
 ![Report](/documentation/images/sequence_reports_analytics.png)
 📄 [Download PDF Vesrion](/documentation/other_formats/sequence_reports_analytics.pdf)
 
-7
+
+7. Contract Management
+![Contract Management](/documentation/images/sequence_contract_management.png)
+📄 [Download PDF Vesrion](/documentation/other_formats/sequence_contract_management.pdf)
+
 
 8. Tags Management
 ![Tags Management](/documentation/images/sequence_tag_management.png)

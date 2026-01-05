@@ -5,8 +5,10 @@ A single, illustrative activity diagram for CRUD operations has been prepared. D
 ![User Create](/documentation/images/activity_user_create.png)
 📄 [Download PDF Vesrion](/documentation/other_formats/activity_user_create.pdf)
 
+
 2. ![Login](/documentation/images/activity_login.png)
 📄 [Download PDF Vesrion](/documentation/other_formats/activity_login.pdf)
+
 
 3. Dictionary Management
 ![Dictionary Management](/documentation/images/activity_dictionary_management.png)
@@ -28,7 +30,10 @@ A single, illustrative activity diagram for CRUD operations has been prepared. D
 📄 [Download PDF Vesrion](/documentation/other_formats/activity_reports_analytics.pdf)
 
 
-7.
+7. Contract Management
+![Contract Management](/documentation/images/activity_contract_management.png)
+📄 [Download PDF Vesrion](/documentation/other_formats/activity_contract_management.pdf)
+
 
 8. Tags Management
 ![Tags Management](/documentation/images/activity_tag_management.png)
