@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Table, Button, Spinner, Alert } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 import { getCountries, Country } from '../../services/countryService';
 import AddCountryModal from '../../dialogs/AddCountryModal';
 import EditCountryModal from '../../dialogs/EditCountryModal';
@@ -13,6 +14,7 @@ const CountryList: React.FC = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [success, setSuccess] = useState('');
   const [showEditModal, setShowEditModal] = useState(false);
+  const navigate = useNavigate();
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [countryToDelete, setCountryToDelete] = useState<Country | null>(null);
@@ -61,8 +63,17 @@ const CountryList: React.FC = () => {
 
   return (
     <div>
-      <h2>Zarządzanie krajami</h2>
-      <Button onClick={() => setShowAddModal(true)} className="mb-3">Dodaj kraj</Button>
+      <div className="d-flex align-items-center justify-content-between mb-3">
+        <div>
+          <h2 className="mb-0">Zarządzanie krajami</h2>
+        </div>
+        <div>
+          <Button variant="secondary" className="me-2" onClick={() => navigate('/dashboard')}>
+            Powrót do dashboard
+          </Button>
+          <Button onClick={() => setShowAddModal(true)} variant="primary">Dodaj kraj</Button>
+        </div>
+      </div>
       {error && <Alert variant="danger">{error}</Alert>}
       {success && <Alert variant="success">{success}</Alert>}
       {loading ? (
