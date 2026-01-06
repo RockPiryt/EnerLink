@@ -24,6 +24,7 @@ import PKWiUList from './components/pkwiu/PKWiUList';
 import TariffList from './components/tariff/TariffList';
 import './App.css';
 import ContractDetails from "./components/contract/ContractDetails";
+import ProviderForm from "./components/provider/ProviderForm";
 
 function App() {
   return (
@@ -52,6 +53,7 @@ function App() {
               <Route path="/contracts/:id" element={<ContractDetails />} />
             {/* Providers */}
             <Route path="/providers" element={<ProviderList />} />
+              <Route path="/providers/new" element={<ProviderForm />} />
             {/* Sales */}
             <Route path="/sales" element={<SalesList />} />
             {/* Tags */}
