@@ -23,6 +23,7 @@ import ManagerDashboard from './components/manager/ManagerDashboard';
 import PKWiUList from './components/pkwiu/PKWiUList';
 import TariffList from './components/tariff/TariffList';
 import './App.css';
+import ContractDetails from "./components/contract/ContractDetails";
 
 function App() {
   return (
@@ -48,6 +49,7 @@ function App() {
             {/* Contracts */}
             <Route path="/contracts" element={<ContractList />} />
             <Route path="/contracts/new" element={<ContractForm />} />
+              <Route path="/contracts/:id" element={<ContractDetails />} />
             {/* Providers */}
             <Route path="/providers" element={<ProviderList />} />
             {/* Sales */}

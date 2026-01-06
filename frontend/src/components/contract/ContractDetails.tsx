@@ -1,14 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Card, Form, Button, Alert, Spinner } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
 
-interface ContractFormData {
-    id_customer: string;
+interface ContractData {
+    id: number;
+    id_customer: number;
     contract_number: string;
     signed_at?: string;
     contract_from?: string;
     contract_to?: string;
     status?: string;
+    customer?: {
+        id: number;
+        company?: string;
+        name?: string;
+    };
 }
 
 interface CustomerOption {
@@ -17,16 +23,36 @@ interface CustomerOption {
     name?: string;
 }
 
-const ContractForm: React.FC = () => {
-    const [form, setForm] = useState<ContractFormData>({ id_customer: '', contract_number: '' });
-    const [customers, setCustomers] = useState<CustomerOption[]>([]);
-    const [customersLoading, setCustomersLoading] = useState(true);
-    const [success, setSuccess] = useState<string | null>(null);
-    const [error, setError] = useState<string | null>(null);
-    const [loading, setLoading] = useState(false);
+const ContractDetails: React.FC = () => {
+    const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    const [contract, setContract] = useState<ContractData | null>(null);
+    const [form, setForm] = useState<ContractData | null>(null);
+    const [customers, setCustomers] = useState<CustomerOption[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [customersLoading, setCustomersLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<string | null>(null);
 
     useEffect(() => {
+        // Fetch contract details
+        setLoading(true);
+        fetch(`http://localhost:8080/api/contracts/${id}`)
+            .then((res) => {
+                if (!res.ok) throw new Error('Failed to fetch contract');
+                return res.json();
+            })
+            .then((data) => {
+                setContract(data);
+                setForm(data);
+                setLoading(false);
+            })
+            .catch((err) => {
+                setError(err.message);
+                setLoading(false);
+            });
+
         // Fetch customers for select
         setCustomersLoading(true);
         fetch('http://localhost:8080/api/customers')
@@ -34,30 +60,31 @@ const ContractForm: React.FC = () => {
             .then(data => setCustomers(data))
             .catch(() => setCustomers([]))
             .finally(() => setCustomersLoading(false));
-    }, []);
+    }, [id]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        setForm({ ...form, [name]: value });
+        if (!form) return;
+
+        if (name === 'id_customer') {
+            setForm({ ...form, [name]: parseInt(value, 10) });
+        } else {
+            setForm({ ...form, [name]: value });
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setLoading(true);
         setError(null);
         setSuccess(null);
+        setSaving(true);
         try {
-            // Convert id_customer to number before sending, always send status (default 'Signed')
-            const payload = {
-                ...form,
-                id_customer: form.id_customer ? parseInt(form.id_customer, 10) : undefined,
-                status: form.status || 'Signed',
-            };
-            const res = await fetch('http://localhost:8080/api/contracts', {
-                method: 'POST',
+            const res = await fetch(`http://localhost:8080/api/contracts/${id}`, {
+                method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
+                body: JSON.stringify(form),
             });
+
             let data;
             const contentType = res.headers.get('content-type');
             if (contentType && contentType.includes('application/json')) {
@@ -65,23 +92,57 @@ const ContractForm: React.FC = () => {
             } else {
                 data = { error: await res.text() };
             }
+
             if (!res.ok) {
-                throw new Error(data.error || 'Failed to add contract');
+                throw new Error(data.error || 'Failed to update contract');
             }
-            setSuccess('Contract added successfully!');
-            setTimeout(() => {
-                navigate('/contracts');
-            }, 1000);
+            setSuccess('Contract updated successfully!');
         } catch (err: any) {
             setError(err.message);
         } finally {
-            setLoading(false);
+            setSaving(false);
         }
     };
 
     const handleBackToContracts = () => {
         navigate('/contracts');
     };
+
+    if (loading) {
+        return (
+            <Container fluid className="py-4">
+                <Row>
+                    <Col>
+                        <div className="text-center py-4">
+                            <Spinner animation="border" variant="primary" />
+                            <div className="mt-2">Loading contract details...</div>
+                        </div>
+                    </Col>
+                </Row>
+            </Container>
+        );
+    }
+
+    if (error && !form) {
+        return (
+            <Container fluid className="py-4">
+                <Row>
+                    <Col>
+                        <Alert variant="danger">
+                            Error: {error}
+                            <div className="mt-2">
+                                <Button variant="outline-secondary" onClick={handleBackToContracts}>
+                                    Back to Contract List
+                                </Button>
+                            </div>
+                        </Alert>
+                    </Col>
+                </Row>
+            </Container>
+        );
+    }
+
+    if (!form) return null;
 
     return (
         <Container fluid className="py-4">
@@ -96,9 +157,9 @@ const ContractForm: React.FC = () => {
                                     onClick={handleBackToContracts}
                                     className="me-3"
                                 >
-                                    &larr; Back to Contract Management
+                                    &larr; Back to Contract List
                                 </Button>
-                                <h4 className="mb-0">Add New Contract</h4>
+                                <h4 className="mb-0">Edit Contract</h4>
                             </div>
                         </Card.Header>
 
@@ -106,7 +167,7 @@ const ContractForm: React.FC = () => {
                             {/* Error Alert */}
                             {error && (
                                 <Alert variant="danger" className="mb-3">
-                                    {error}Contract Management
+                                    {error}
                                 </Alert>
                             )}
 
@@ -127,7 +188,7 @@ const ContractForm: React.FC = () => {
                                                 <Form.Label>Customer *</Form.Label>
                                                 <Form.Select
                                                     name="id_customer"
-                                                    value={form.id_customer}
+                                                    value={form.id_customer || ''}
                                                     onChange={handleChange}
                                                     required
                                                     disabled={customersLoading}
@@ -157,7 +218,7 @@ const ContractForm: React.FC = () => {
                                                     name="contract_number"
                                                     value={form.contract_number}
                                                     onChange={handleChange}
-                                                    placeholder="Enter contract number"
+                                                    placeholder="Enter contract number (e.g., CNTR-2025-001)"
                                                     required
                                                 />
                                             </Form.Group>
@@ -226,7 +287,7 @@ const ContractForm: React.FC = () => {
                                                     value={form.status || ''}
                                                     onChange={handleChange}
                                                 >
-                                                    <option value="">Select status (defaults to Signed)</option>
+                                                    <option value="">Select status</option>
                                                     <option value="Signed">Signed</option>
                                                     <option value="Pending">Pending</option>
                                                     <option value="Cancelled">Cancelled</option>
@@ -244,17 +305,17 @@ const ContractForm: React.FC = () => {
                                     <Button
                                         variant="primary"
                                         type="submit"
-                                        disabled={loading}
+                                        disabled={saving}
                                         className="d-flex align-items-center gap-2"
                                     >
-                                        {loading && <Spinner as="span" animation="border" size="sm" />}
-                                        {loading ? 'Adding Contract...' : 'Add Contract'}
+                                        {saving && <Spinner as="span" animation="border" size="sm" />}
+                                        {saving ? 'Saving Changes...' : 'Save Changes'}
                                     </Button>
                                     <Button
                                         variant="outline-secondary"
                                         type="button"
                                         onClick={handleBackToContracts}
-                                        disabled={loading}
+                                        disabled={saving}
                                     >
                                         Cancel
                                     </Button>
@@ -268,4 +329,4 @@ const ContractForm: React.FC = () => {
     );
 };
 
-export default ContractForm;
+export default ContractDetails;
