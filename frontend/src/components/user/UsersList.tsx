@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Table, Button, Form, InputGroup, Alert, Spinner, Badge } from 'react-bootstrap';
 import { UserService, User } from '../../services/userService';
+import { useNavigate } from 'react-router-dom';
 
 const UsersList: React.FC = () => {
     const [users, setUsers] = useState<User[]>([]);
@@ -13,6 +14,8 @@ const UsersList: React.FC = () => {
     const [totalUsers, setTotalUsers] = useState(0);
 
     const userService = new UserService();
+
+    const navigate = useNavigate();
 
     const loadUsers = async (page: number = 1, search: string = '', active?: boolean) => {
         setLoading(true);
@@ -78,7 +81,10 @@ const UsersList: React.FC = () => {
             <Row>
                 <Col>
                     <Card>
-                        <Card.Header className="bg-primary text-white">
+                        <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
+                            <Button variant="light" className="me-3" onClick={() => navigate('/dashboard')}>
+                                &larr; Back to Dashboard
+                            </Button>
                             <h4 className="mb-0">Users Management</h4>
                         </Card.Header>
                         
