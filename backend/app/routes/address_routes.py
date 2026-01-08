@@ -141,3 +141,110 @@ def delete_city(id):
     db.session.commit()
 
     return jsonify({"message": "City deleted successfully"}), 200
+
+# GET /api/address/districts
+@address_bp.route("/address/districts", methods=["GET"])
+def get_districts():
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)
+    search = request.args.get('q', '', type=str)
+    active = request.args.get('active', type=str)
+
+    query = District.query
+
+    if search:
+        query = query.filter(District.name.ilike(f'%{search}%'))
+
+    if active is not None:
+        is_active = active.lower() == 'true'
+        query = query.filter(District.is_active == is_active)
+
+    districts = query.paginate(
+        page=page,
+        per_page=per_page,
+        error_out=False
+    )
+
+    return jsonify({
+        "items": [d.to_dict() for d in districts.items],
+        "total": districts.total,
+        "pages": districts.pages,
+        "current_page": districts.page,
+        "per_page": districts.per_page
+    }), 200
+
+# POST /api/address/districts
+@address_bp.route("/address/districts", methods=["POST"])
+def add_district():
+    data = request.get_json(silent=True) or {}
+
+    name = data.get("name")
+
+    if not name:
+        return jsonify({"error": "name is required"}), 400
+
+    new_district = District(
+        name=name,
+        is_active=True
+    )
+
+    db.session.add(new_district)
+    db.session.commit()
+
+    return jsonify({"message": "District added", "district": new_district.to_dict()}), 201
+
+# GET /api/address/districts/<id>
+@address_bp.route("/address/districts/<int:id>", methods=["GET"])
+def get_district(id):
+    district = District.query.get(id)
+    if not district:
+        return jsonify({"error": "District not found"}), 404
+
+    return jsonify(district.to_dict()), 200
+
+# PUT /api/address/districts/<id>
+@address_bp.route("/address/districts/<int:id>", methods=["PUT"])
+def update_district(id):
+    district = District.query.get(id)
+    if not district:
+        return jsonify({"error": "District not found"}), 404
+
+    data = request.get_json(silent=True) or {}
+
+    if "name" in data:
+        district.name = data["name"]
+
+    if "is_active" in data:
+        district.is_active = bool(data["is_active"])
+
+    db.session.commit()
+
+    return jsonify({"message": "District updated", "district": district.to_dict()}), 200
+
+# DELETE /api/address/districts/<id>
+@address_bp.route("/address/districts/<int:id>", methods=["DELETE"])
+def delete_district(id):
+    district = District.query.get(id)
+    if not district:
+        return jsonify({"error": "District not found"}), 404
+
+    db.session.delete(district)
+    db.session.commit()
+
+    return jsonify({"message": "District deleted successfully"}), 200
+
+# PATCH /api/address/districts/<id>/status
+@address_bp.route("/address/districts/<int:id>/status", methods=["PATCH"])
+def update_district_status(id):
+    district = District.query.get(id)
+    if not district:
+        return jsonify({"error": "District not found"}), 404
+
+    data = request.get_json(silent=True) or {}
+    if "is_active" not in data:
+        return jsonify({"error": "'is_active' field is required"}), 400
+
+    district.is_active = bool(data["is_active"])
+    db.session.commit()
+
+    return jsonify({"message": "District status updated", "is_active": district.is_active}), 200
