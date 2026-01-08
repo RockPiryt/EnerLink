@@ -33,3 +33,44 @@ def add_provider():
         "message": "Provider added",
         "provider": new_provider.to_dict()
     }), 201
+
+# GET /providers/<id> – get single provider
+@provider_bp.route("/providers/<int:id>", methods=["GET"])
+def get_provider(id):
+    provider = EnergySupplier.query.get(id)
+    if not provider:
+        return jsonify({"error": "Provider not found"}), 404
+
+    return jsonify(provider.to_dict()), 200
+
+# PUT /providers/<id> – update provider
+@provider_bp.route("/providers/<int:id>", methods=["PUT"])
+def update_provider(id):
+    provider = EnergySupplier.query.get(id)
+    if not provider:
+        return jsonify({"error": "Provider not found"}), 404
+
+    data = request.get_json(silent=True) or {}
+
+    if "name" in data:
+        provider.name = data["name"]
+
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({"error": "Provider name already exists"}), 409
+
+    return jsonify({"message": "Provider updated", "provider": provider.to_dict()}), 200
+
+# DELETE /providers/<id> – delete provider
+@provider_bp.route("/providers/<int:id>", methods=["DELETE"])
+def delete_provider(id):
+    provider = EnergySupplier.query.get(id)
+    if not provider:
+        return jsonify({"error": "Provider not found"}), 404
+
+    db.session.delete(provider)
+    db.session.commit()
+
+    return jsonify({"message": "Provider deleted successfully"}), 200
