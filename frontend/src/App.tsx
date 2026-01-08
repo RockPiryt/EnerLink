@@ -13,6 +13,7 @@ import ProvinceList from './components/dictionary/ProvinceList';
 import CustomerList from './components/customer/CustomerList';
 import CustomerForm from './components/customer/CustomerForm';
 import CustomerDetails from './components/customer/CustomerDetails';
+import MyCustomers from './components/customer/MyCustomers';
 import ContractList from './components/contract/ContractList';
 import ContractForm from './components/contract/ContractForm';
 import ProviderList from './components/provider/ProviderList';
@@ -47,6 +48,7 @@ function App() {
             <Route path="/customers" element={<CustomerList />} />
             <Route path="/customers/new" element={<CustomerForm />} />
             <Route path="/customers/:id" element={<CustomerDetails />} />
+            <Route path="/my-customers" element={<MyCustomers />} />
             {/* Contracts */}
             <Route path="/contracts" element={<ContractList />} />
             <Route path="/contracts/new" element={<ContractForm />} />
