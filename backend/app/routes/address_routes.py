@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from app.models.address_model import Country
+from app.models.address_model import Country, City
 from app.db import db
 
 address_bp = Blueprint("address_bp", __name__)
@@ -47,3 +47,97 @@ def update_country_status(id):
     db.session.commit()
 
     return jsonify({"message": "Country status updated", "is_active": country.is_active}), 200
+
+# GET /api/address/cities
+@address_bp.route("/address/cities", methods=["GET"])
+def get_cities():
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)
+    search = request.args.get('q', '', type=str)
+    active = request.args.get('active', type=str)
+
+    query = City.query
+
+    # Search filter
+    if search:
+        query = query.filter(City.name.ilike(f'%{search}%'))
+
+    # Active filter
+    if active is not None:
+        is_active = active.lower() == 'true'
+        query = query.filter(City.is_active == is_active)
+
+    # Pagination
+    cities = query.paginate(
+        page=page,
+        per_page=per_page,
+        error_out=False
+    )
+
+    return jsonify({
+        "items": [c.to_dict() for c in cities.items],
+        "total": cities.total,
+        "pages": cities.pages,
+        "current_page": cities.page,
+        "per_page": cities.per_page
+    }), 200
+
+# POST /api/address/cities
+@address_bp.route("/address/cities", methods=["POST"])
+def add_city():
+    data = request.get_json(silent=True) or {}
+
+    name = data.get("name")
+
+    if not name:
+        return jsonify({"error": "name is required"}), 400
+
+    new_city = City(
+        name=name,
+        is_active=True
+    )
+
+    db.session.add(new_city)
+    db.session.commit()
+
+    return jsonify({"message": "City added", "city": new_city.to_dict()}), 201
+
+# GET /api/address/cities/<id>
+@address_bp.route("/address/cities/<int:id>", methods=["GET"])
+def get_city(id):
+    city = City.query.get(id)
+    if not city:
+        return jsonify({"error": "City not found"}), 404
+
+    return jsonify(city.to_dict()), 200
+
+# PUT /api/address/cities/<id>
+@address_bp.route("/address/cities/<int:id>", methods=["PUT"])
+def update_city(id):
+    city = City.query.get(id)
+    if not city:
+        return jsonify({"error": "City not found"}), 404
+
+    data = request.get_json(silent=True) or {}
+
+    if "name" in data:
+        city.name = data["name"]
+
+    if "is_active" in data:
+        city.is_active = bool(data["is_active"])
+
+    db.session.commit()
+
+    return jsonify({"message": "City updated", "city": city.to_dict()}), 200
+
+# DELETE /api/address/cities/<id>
+@address_bp.route("/address/cities/<int:id>", methods=["DELETE"])
+def delete_city(id):
+    city = City.query.get(id)
+    if not city:
+        return jsonify({"error": "City not found"}), 404
+
+    db.session.delete(city)
+    db.session.commit()
+
+    return jsonify({"message": "City deleted successfully"}), 200
