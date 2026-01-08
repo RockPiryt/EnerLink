@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Card, Form, Button, Alert, Spinner } from 'react-bootstrap';
+import ContractHistoryModal from './ContractHistoryModal';
 
 interface ContractData {
     id: number;
@@ -34,6 +35,9 @@ const ContractDetails: React.FC = () => {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
+
+    // State for contract history modal
+    const [showHistory, setShowHistory] = useState(false);
 
     useEffect(() => {
         // Fetch contract details
@@ -160,6 +164,14 @@ const ContractDetails: React.FC = () => {
                                     &larr; Back to Contract List
                                 </Button>
                                 <h4 className="mb-0">Edit Contract</h4>
+                                <Button
+                                    variant="outline-light"
+                                    size="sm"
+                                    className="ms-3"
+                                    onClick={() => setShowHistory(true)}
+                                >
+                                    Show Change History
+                                </Button>
                             </div>
                         </Card.Header>
 
@@ -325,6 +337,15 @@ const ContractDetails: React.FC = () => {
                     </Card>
                 </Col>
             </Row>
+
+            {/* Contract History Modal */}
+            {form && form.id && (
+                <ContractHistoryModal
+                    contractId={form.id}
+                    show={showHistory}
+                    onHide={() => setShowHistory(false)}
+                />
+            )}
         </Container>
     );
 };

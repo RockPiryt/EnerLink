@@ -1,8 +1,39 @@
+
 from flask import Blueprint, request, jsonify
 from app.db import db
 from app.models.contract_model import Contract, ContractTimeline
+from app.models.user_model import User
 
 contract_bp = Blueprint("contract_bp", __name__)
+
+# GET /api/contracts/<id>/history – contract change history
+@contract_bp.route("/contracts/<int:id>/history", methods=["GET"])
+def get_contract_history(id: int):
+    contract = Contract.query.get(id)
+    if not contract:
+        return jsonify({"error": "Contract not found"}), 404
+
+    # Join ContractTimeline with User (if possible)
+    history = []
+    for t in contract.timelines:
+        # Try to get user who changed status (if such info is available)
+        # For now, fallback to None or 'System'
+        changed_by = "System"
+        # If you store user_id in timeline, you can fetch user here
+        # Example: changed_by = User.query.get(t.id_user).username if t.id_user else "System"
+        history.append({
+            "id": t.id,
+            "contract_id": t.id_contract,
+            "changed_at": t.created_at.isoformat() if t.created_at else None,
+            "changed_by": changed_by,
+            "field": "status",
+            "old_value": None,  # Not tracked in current model
+            "new_value": t.status,
+            "description": t.description,
+        })
+    # Sort by date ascending
+    history.sort(key=lambda x: x["changed_at"])
+    return jsonify(history), 200
 
 
 # GET /api/contracts – list contracts
