@@ -8,6 +8,7 @@ from .role_routes import role_bp
 from .sales_routes import sale_bp
 from .tag_routes import tag_bp
 from .user_routes import user_bp
+from .supplier_routes import supplier_bp
 
 def register_routes(app):
     app.register_blueprint(address_bp, url_prefix="/api")
@@ -20,3 +21,4 @@ def register_routes(app):
     app.register_blueprint(sale_bp, url_prefix="/api")
     app.register_blueprint(tag_bp, url_prefix="/api")
     app.register_blueprint(user_bp, url_prefix="/api")
+    app.register_blueprint(supplier_bp, url_prefix='/api')
