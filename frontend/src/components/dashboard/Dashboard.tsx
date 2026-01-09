@@ -109,7 +109,7 @@ const Dashboard: React.FC = () => {
                 <Button variant="outline-success" size="lg" onClick={() => navigate('/manager')}>Manager Panel</Button>
                 <Button variant="outline-info" size="lg" onClick={() => navigate('/dictionary/countries')}>Country Dictionary</Button>
                 <Button variant="outline-info" size="lg" onClick={() => navigate('/dictionary/cities')}>City Dictionary</Button>
-                <Button variant="outline-info" size="lg" onClick={() => navigate('/dictionary/provinces')}>Province Dictionary</Button>
+                <Button variant="outline-info" size="lg" onClick={() => navigate('/dictionary/districts')}>District Dictionary</Button>
                 <Button variant="outline-info" size="lg" onClick={() => navigate('/dictionary/pkwiu')}>PKWiU Dictionary</Button>
                 <Button variant="outline-info" size="lg" onClick={() => navigate('/dictionary/tariffs')}>Tariff Dictionary</Button>
               </div>

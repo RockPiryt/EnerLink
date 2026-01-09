@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from app.models.address_model import Country, City
+from app.models.address_model import Country, City, District
 from app.db import db
 
 address_bp = Blueprint("address_bp", __name__)

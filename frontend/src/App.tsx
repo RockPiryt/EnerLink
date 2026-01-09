@@ -9,7 +9,6 @@ import UsersList from './components/user/UsersList';
 import RoleList from './components/role/RoleList';
 import CountryList from './components/dictionary/CountryList';
 import CityList from './components/dictionary/CityList';
-import ProvinceList from './components/dictionary/ProvinceList';
 import CustomerList from './components/customer/CustomerList';
 import CustomerForm from './components/customer/CustomerForm';
 import CustomerDetails from './components/customer/CustomerDetails';
@@ -26,6 +25,7 @@ import TariffList from './components/tariff/TariffList';
 import './App.css';
 import ContractDetails from "./components/contract/ContractDetails";
 import ProviderForm from "./components/provider/ProviderForm";
+import DistrictList from "./components/dictionary/DistrictList";
 
 function App() {
   return (
@@ -41,7 +41,7 @@ function App() {
             {/* Dictionary */}
             <Route path="/dictionary/countries" element={<CountryList />} />
             <Route path="/dictionary/cities" element={<CityList />} />
-            <Route path="/dictionary/provinces" element={<ProvinceList />} />
+            <Route path="/dictionary/districts" element={<DistrictList />} />
             <Route path="/dictionary/pkwiu" element={<PKWiUList />} />
             <Route path="/dictionary/tariffs" element={<TariffList />} />
             {/* Customers */}
