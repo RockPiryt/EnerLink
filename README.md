@@ -44,7 +44,7 @@ Sequence diagrams in the following document:
 [View Sequence diagrams](./documentation/sequence_diagrams_info.md)
 
 ## Class Diagram 
-Sequence diagrams in the following document:
+Class diagram in the following document:
 [View Class diagram](./documentation/class_diagram_info.md)
 
 ## Database
