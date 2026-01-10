@@ -1,10 +1,12 @@
 import React from 'react';
+import ManagerRanking from './ManagerRanking';
 
 const ManagerDashboard: React.FC = () => {
   return (
-    <div>
+    <div style={{ padding: '32px' }}>
       <h2>Manager Dashboard</h2>
-      {/* Rankings, reports, dashboards will appear here */}
+      <ManagerRanking />
+      {/* Możesz dodać tu kolejne sekcje: statystyki, listy, wykresy */}
     </div>
   );
 };
