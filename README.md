@@ -41,7 +41,7 @@ The goal of the CRM system is to improve sales, marketing, and customer service 
 ### Screenshots
 To see screensots from application, please visit: [Screenshots](./documentation/screenshots.md)
 
-## Functional Requierements
+## Functional Requirements
 Detailed functional requirements are described in the following document:  
 [View Functional Requirements](./documentation/functional_requirements.md)
 
