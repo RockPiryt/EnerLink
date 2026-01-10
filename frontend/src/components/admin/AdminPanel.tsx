@@ -293,19 +293,6 @@ const AdminPanel: React.FC = () => {
                   <RoleList />
                 </Tab>
 
-                {/* Device Management */}
-                <Tab eventKey="devices" title="Device Management">
-                  <div className="d-flex justify-content-between align-items-center mb-3">
-                    <h5>Device Management</h5>
-                    <Button variant="success" disabled>
-                      Add New Device
-                    </Button>
-                  </div>
-                  <div className="alert alert-info">
-                    <i className="fas fa-info-circle me-2"></i>
-                    Device management functionality will be available in a future version.
-                  </div>
-                </Tab>
 
                 {/* System Settings */}
                 <Tab eventKey="settings" title="System Settings">

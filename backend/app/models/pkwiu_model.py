@@ -9,3 +9,10 @@ class Pkwiu(db.Model):
 
     def __repr__(self):
         return f"<PKWiU {self.pkwiu_nr}>"
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "pkwiu_nr": self.pkwiu_nr,
+            "pkwiu_name": self.pkwiu_name
+        }
