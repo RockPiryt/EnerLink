@@ -11,9 +11,14 @@ const Login: React.FC = () => {
   
   const { login, user } = useAuth();
 
-  // If user is logged in, redirect to dashboard
-  if (user) {
-    return <Navigate to="/dashboard" replace />;
+  if (user && user.role_name=='Administrator') {
+    return <Navigate to="/admin" replace />;
+  }
+  else if (user && user.role_name=='Manager') {
+      return <Navigate to="/manager" replace />;
+  }
+  else if (user && user.role_name=='User'){
+      return <Navigate to="/dashboard" replace />;
   }
 
 
