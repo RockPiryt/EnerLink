@@ -36,7 +36,7 @@ The goal of the CRM system is to improve sales, marketing, and customer service 
 
 ## Screenshots
 ###  Main application
-![Example screenshot](./documentation/images/enerlink_screenshots/admin_dashboard.png)
+![Example screenshot](documentation/enerlink_screenshots/admin_dashboard.png)
 
 ### Screenshots
 To see screensots from application, please visit: [Screenshots](./documentation/screenshots.md)
