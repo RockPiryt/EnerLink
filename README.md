@@ -29,7 +29,7 @@ The system supports multiple user roles — **administrators, managers, and sale
 ## Screenshots
 [Screenshots](./documentation/screenshots.md)
 
-## Functional Requierements
+## Functional Requirements
 Detailed functional requirements are described in the following document:  
 [View Functional Requirements](./documentation/functional_requirements.md)
 
