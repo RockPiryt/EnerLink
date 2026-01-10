@@ -59,17 +59,3 @@
 
 ### Tariffs
 ![Tariffs](images/enerlink_screenshots/tariffs.png)
-
-
-## Swagger documentation
-### Part1 
-![Part1](images/enerlink_screenshots/Swagger_docs1.png)
-
-### Part2 
-![Part2](images/enerlink_screenshots/Swagger_docs2.png)
-
-### Part3 
-![Part3](images/enerlink_screenshots/Swagger_docs3.png)
-
-### Part4 
-![Part4](images/enerlink_screenshots/Swagger_docs4.png)

@@ -139,15 +139,6 @@ Swagger / OpenAPI
 - JWT / Session-based authentication
 - Modular architecture (services, routes, components)
 
-## Features
-- Role-based user management (Admin / Manager / Sales Representative)
-- Customer and contract management
-- Energy provider and tariff database
-- Analytics dashboards and team performance ranking
-- Tag system for categorization
-- Secure authentication with hashed passwords and roles
-- Swagger-based REST API documentation
-
 
 ## API Documentation (Swagger)
 
@@ -161,7 +152,18 @@ Once the Flask server (flask run) is running, open:
  http://localhost:8080/apidocs/
 ```
 
-![Swagger](./documentation/images/swagger.png)
+### Part1 
+![Part1](./documentation/images/enerlink_screenshots/Swagger_docs1.png)
+
+### Part2 
+![Part2](./documentation/images/enerlink_screenshots/Swagger_docs2.png)
+
+### Part3 
+![Part3](./documentation/images/enerlink_screenshots/Swagger_docs3.png)
+
+### Part4 
+![Part4](./documentation/images/enerlink_screenshots/Swagger_docs4.png)
+
 
 More info abiut api: 
 [View Oneapi](./documentation/oneapi.md)
