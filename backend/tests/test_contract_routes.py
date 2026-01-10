@@ -1,5 +1,6 @@
 from datetime import date
 
+
 def _get_first_ids(app):
     from app.models.customer_model import Customer
     from app.models.tag_model import Tag
@@ -19,7 +20,8 @@ def _get_first_ids(app):
             "offer_id": offer.id if offer else None,
         }
 
-def _create_contract_via_api(client, app, contract_number="CNTR-TEST-0001"):
+
+def _create_contract_via_api(client, app, contract_number="CNTR-TEST-0001", status="NEW"):
     ids = _get_first_ids(app)
     assert ids["customer_id"] is not None, "Seed must create at least one Customer"
 
@@ -31,7 +33,7 @@ def _create_contract_via_api(client, app, contract_number="CNTR-TEST-0001"):
         "id_supplier_offer": ids["offer_id"],
         "signed_at": date.today().isoformat(),
         "contract_from": date.today().isoformat(),
-        "status": "NEW",
+        "status": status,
         "description": "Created by test",
     }
     resp = client.post("/api/contracts", json=payload)
@@ -54,20 +56,24 @@ def test_add_contract_missing_required_fields(client):
 
 def test_add_contract_invalid_date_format(client, app):
     ids = _get_first_ids(app)
+    assert ids["customer_id"] is not None
+
     payload = {
         "id_customer": ids["customer_id"],
         "contract_number": "CNTR-TEST-BADDATE",
-        "signed_at": "2025/01/01",  # zły format
+        "signed_at": "2025/01/01",  # invalid
     }
     resp = client.post("/api/contracts", json=payload)
     assert resp.status_code == 400
-    assert "Invalid date format" in resp.get_json()["error"]
+
+    err = resp.get_json()["error"]
+    assert "Invalid date format" in err
+    assert "signed_at" in err
 
 
-def test_add_contract_success_and_optional_timeline(client, app):
-    contract_id = _create_contract_via_api(client, app, contract_number="CNTR-TEST-0002")
+def test_add_contract_success_and_timeline_present(client, app):
+    contract_id = _create_contract_via_api(client, app, contract_number="CNTR-TEST-0002", status="NEW")
 
-    # pobierz szczegóły i sprawdź timelines
     resp = client.get(f"/api/contracts/{contract_id}")
     assert resp.status_code == 200
     data = resp.get_json()
@@ -75,8 +81,8 @@ def test_add_contract_success_and_optional_timeline(client, app):
     assert "timelines" in data
     assert isinstance(data["timelines"], list)
 
-    # ponieważ POST dawał status="NEW", powinna być co najmniej 1 pozycja timeline
-    assert any(t["status"] == "NEW" for t in data["timelines"])
+    # status should be present in timelines
+    assert any(t.get("status") == "NEW" for t in data["timelines"])
 
 
 def test_get_contract_not_found(client):
@@ -90,10 +96,11 @@ def test_update_contract_success(client, app):
 
     resp = client.put(f"/api/contracts/{contract_id}", json={
         "contract_number": "CNTR-TEST-0003-UPDATED",
-        "signed_at": None,  # wyczyść datę
+        "signed_at": None,  # clear date
     })
     assert resp.status_code == 200
     data = resp.get_json()
+
     assert data["message"] == "Contract updated"
     assert data["contract"]["contract_number"] == "CNTR-TEST-0003-UPDATED"
     assert data["contract"]["signed_at"] is None
@@ -103,10 +110,13 @@ def test_update_contract_invalid_date_format(client, app):
     contract_id = _create_contract_via_api(client, app, contract_number="CNTR-TEST-0004")
 
     resp = client.put(f"/api/contracts/{contract_id}", json={
-        "contract_from": "01-01-2025"  # zły format
+        "contract_from": "01-01-2025"  # invalid
     })
     assert resp.status_code == 400
-    assert "Invalid date format" in resp.get_json()["error"]
+
+    err = resp.get_json()["error"]
+    assert "Invalid date format" in err
+    assert "contract_from" in err
 
 
 def test_toggle_contract_deleted_requires_field(client, app):
@@ -120,17 +130,23 @@ def test_toggle_contract_deleted_requires_field(client, app):
 def test_toggle_contract_deleted_success(client, app):
     contract_id = _create_contract_via_api(client, app, contract_number="CNTR-TEST-0006")
 
+    # mark deleted
     resp = client.patch(f"/api/contracts/{contract_id}/deleted", json={"is_deleted": True})
     assert resp.status_code == 200
-    assert resp.get_json()["is_deleted"] is True
+    data = resp.get_json()
 
-    # domyślny GET /api/contracts powinien ukrywać usunięte
+    assert data["message"] == "Contract deleted flag updated"
+    assert data["is_deleted"] is True
+
+    # default GET should hide deleted
     resp2 = client.get("/api/contracts")
+    assert resp2.status_code == 200
     ids = [c["id"] for c in resp2.get_json()]
     assert contract_id not in ids
 
-    # a z include_deleted powinien pokazać
+    # include_deleted should show it
     resp3 = client.get("/api/contracts?include_deleted=true")
+    assert resp3.status_code == 200
     ids3 = [c["id"] for c in resp3.get_json()]
     assert contract_id in ids3
 
@@ -139,13 +155,15 @@ def test_filter_contracts_by_customer(client, app):
     ids = _get_first_ids(app)
     assert ids["customer_id"] is not None
 
-    # utwórz 2 kontrakty dla tego samego klienta
+    # create 2 contracts for same customer
     _create_contract_via_api(client, app, contract_number="CNTR-TEST-CUST-01")
     _create_contract_via_api(client, app, contract_number="CNTR-TEST-CUST-02")
 
     resp = client.get(f"/api/contracts?customer_id={ids['customer_id']}")
     assert resp.status_code == 200
     data = resp.get_json()
+
+    assert isinstance(data, list)
     assert all(c["id_customer"] == ids["customer_id"] for c in data)
 
 
@@ -166,11 +184,13 @@ def test_add_timeline_entry_success(client, app):
     })
     assert resp.status_code == 201
     data = resp.get_json()
+
     assert data["message"] == "Timeline entry added"
     assert data["timeline"]["status"] == "SIGNED"
 
-    # sprawdź, że wpis rzeczywiście jest w liście
+    # verify it appears in timeline list
     resp2 = client.get(f"/api/contracts/{contract_id}/timeline")
+    assert resp2.status_code == 200
     statuses = [t["status"] for t in resp2.get_json()]
     assert "SIGNED" in statuses
 
@@ -187,3 +207,16 @@ def test_add_timeline_entry_contract_not_found(client):
     resp = client.post("/api/contracts/999999/timeline", json={"status": "NEW"})
     assert resp.status_code == 404
     assert resp.get_json()["error"] == "Contract not found"
+
+
+def test_get_contract_history_returns_list(client, app):
+    contract_id = _create_contract_via_api(client, app, contract_number="CNTR-TEST-HIST-01")
+
+    resp = client.get(f"/api/contracts/{contract_id}/history")
+    assert resp.status_code == 200
+    assert isinstance(resp.get_json(), list)
+
+    # at least one entry from initial timeline
+    history = resp.get_json()
+    assert len(history) >= 1
+    assert all("new_value" in h for h in history)
