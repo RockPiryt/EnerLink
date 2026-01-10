@@ -1,33 +1,45 @@
 # EnerLink
 > Customer Relationship Management System for Energy Vendor (CRM)
 
-## Project description
-
-The goal of the CRM system is to improve sales, marketing, and customer service processes by collecting, analyzing, and using customer data. The system includes a database of customers, contracts, and energy sales representatives divided into teams managed by managers. It also enables monitoring of customer interactions and ongoing sales performance.
-
 ## Table of Contents
-* [General Info](#general-information)
+* [Project description](#project-descriptionn)
 * [Features](#features)
 * [Screenshots](#screenshots)
+* [Functional Requierements](#functional-requierements)
+* [Diagrams](#diagrams)
+* [Databases](#databases)
 * [Setup](#setup)
-* [Usage](#usage)
-* [Project Status](#project-status)
-* [Room for Improvement](#room-for-improvement)
-* [Acknowledgements](#acknowledgements)
+API Documentation (Swagger)
+* [API Documentation (Swagger)](#api-Documentation-swagger)
+* [Tests](#tests)
 * [Technologies Used](#technologies-used)
+* [Room for Improvement](#room-for-improvement)
+* [Project Status](#project-status)
 * [Contact](#contact)
 * [License](#license)
 
-## General Information
+## Project description
 EnerLink is a CRM platform for energy vendors, designed to streamline customer management, contract tracking, and sales analysis.  
 The system supports multiple user roles — **administrators, managers, and sales representatives** — providing tailored dashboards and access permissions.
 
-## Setup project
-[View Setup project](./documentation/setup_project.md)
+### Main goal
+The goal of the CRM system is to improve sales, marketing, and customer service processes by collecting, analyzing, and using customer data. The system includes a database of customers, contracts, and energy sales representatives divided into teams managed by managers. It also enables monitoring of customer interactions and ongoing sales performance.
 
+## Features
+- Role-based user management (Admin / Manager / Sales Representative)
+- Customer and contract management
+- Energy provider and tariff database
+- Analytics dashboards and team performance ranking
+- Tag system for categorization
+- Secure authentication with hashed passwords and roles
+- Swagger-based REST API documentation
 
 ## Screenshots
-[Screenshots](./documentation/screenshots.md)
+###  Main application
+![Example screenshot](./documentation/images/enerlink_screenshots/admin_dashboard.png)
+
+### Screenshots
+To see screensots from application, please visit: [Screenshots](./documentation/screenshots.md)
 
 ## Functional Requierements
 Detailed functional requirements are described in the following document:  
@@ -50,93 +62,82 @@ Sequence diagrams in the following document:
 Class diagram in the following document:
 [View Class diagram](./documentation/class_diagram_info.md)
 
-## Database
-Database is described in the following document:  
-[View Database description](./documentation/database_info.md)
+## Databases
+Databases are described in the following document:  
+[View Databases description](./documentation/database_info.md)
 
-- PostgreSQL - production
-- SQLite - dev, tests
-
-
+## Setup project
+[View Setup project](./documentation/setup_project.md)
 
 ## Technologies Used
 ### Frontend
-React ^19.2.0
-TypeScript ^4.9.5
-React Scripts (CRA) 5.0.1
-React Router DOM ^7.9.5
-Axios ^1.13.2
-Bootstrap ^5.3.8
-React Bootstrap ^2.10.10
-Web Vitals ^2.1.4
+- React ^19.2.0
+- TypeScript ^4.9.5
+- React Scripts (CRA) 5.0.1
+- React Router DOM ^7.9.5
+- Axios ^1.13.2
+- Bootstrap ^5.3.8
+- React Bootstrap ^2.10.10
+- Web Vitals ^2.1.4
 
 ### Testing (Frontend)
-Jest
+- Jest
 
-React Testing Library
-@testing-library/react ^16.3.0
-@testing-library/jest-dom ^6.9.1
-@testing-library/user-event ^13.5.0
+`React Testing Library`
+- @testing-library/react ^16.3.0
+- @testing-library/jest-dom ^6.9.1
+- @testing-library/user-event ^13.5.0
 
-Type definitions
-@types/react ^19.2.2
-@types/react-dom ^19.2.1
-@types/jest ^27.5.2
-@types/node ^16.18.126
+`Type definitions`
+- @types/react ^19.2.2
+- @types/react-dom ^19.2.1
+- @types/jest ^27.5.2
+- @types/node ^16.18.126
 
 ### Backend
+- Python >=3.11
+- Flask 3.1.2
+- Flask-SQLAlchemy 3.0.5
+- SQLAlchemy 2.0.44
+- Flask-Migrate 4.0.7
+- Flask-CORS 6.0.2
+- Flasgger (Swagger UI) 0.9.7.1
+- psycopg2-binary 2.9.9 (PostgreSQL driver)
+- python-dotenv 1.0.1
 
-Python >=3.11
-Flask 3.1.2
-Flask-SQLAlchemy 3.0.5
-SQLAlchemy 2.0.44
-Flask-Migrate 4.0.7
-Flask-CORS 6.0.2
-Flasgger (Swagger UI) 0.9.7.1
-psycopg2-binary 2.9.9 (PostgreSQL driver)
-python-dotenv 1.0.1
+`Backend Utilities`
+- Werkzeug 3.1.3
+- Jinja2 3.1.6
+- MarkupSafe 3.0.3
+- itsdangerous 2.2.0
+- greenlet 3.2.4
 
-Backend Utilities
-Werkzeug 3.1.3
-Jinja2 3.1.6
-MarkupSafe 3.0.3
-itsdangerous 2.2.0
-greenlet 3.2.4
-Testing (Backend)
-pytest 8.4.0
-attrs 25.4.0
-pluggy 1.6.0
-iniconfig 2.1.0
+`Testing (Backend)`
+- pytest 8.4.0
+- attrs 25.4.0
+- pluggy 1.6.0
+- iniconfig 2.1.0
 
 ### API & Documentation
 Swagger / OpenAPI
-Flasgger UI
-openapi.yaml
+- Flasgger UI
+- openapi.yaml
 
-JSON Schema
-jsonschema 4.25.1
-jsonschema-specifications 2025.9.1
+`JSON Schema`
+- jsonschema 4.25.1
+- jsonschema-specifications 2025.9.1
 
-### DevOps / Tooling
-Node.js >=20.0.0
-npm >=9.0.0
-Git
-dotenv (.env) configuration
-Mako 1.3.10 (migrations / templating)
-PyYAML 6.0.3
-Pygments 2.19.2 (syntax highlighting, docs)
-Mistune 3.1.4 (Markdown)
-
-### Database
-PostgreSQL (via psycopg2 + SQLAlchemy)
+### Databases
+- PostgreSQL (via psycopg2 + SQLAlchemy) - production
+- SQLite - dev, tests
 
 ### Architecture & Paradigms
-RESTful API
-MVC (Flask + SQLAlchemy)
-SPA (React)
-Role-Based Access Control (RBAC)
-JWT / Session-based authentication
-Modular architecture (services, routes, components)
+- RESTful API
+- MVC (Flask + SQLAlchemy)
+- SPA (React)
+- Role-Based Access Control (RBAC)
+- JWT / Session-based authentication
+- Modular architecture (services, routes, components)
 
 ## Features
 - Role-based user management (Admin / Manager / Sales Representative)
@@ -147,8 +148,6 @@ Modular architecture (services, routes, components)
 - Secure authentication with hashed passwords and roles
 - Swagger-based REST API documentation
 
-## Screenshots
-![Example screenshot](./img/screenshot.png)
 
 ## API Documentation (Swagger)
 
@@ -168,20 +167,62 @@ More info abiut api:
 [View Oneapi](./documentation/oneapi.md)
 [View Rest Api](./documentation/rest_api.md)
 
-## Test
-Pytest was used to test project.
-```bash
-pytest -q
-pytest -q tests/test_address_routes.py
-pytest -q tests/test_address_routes.py::test_get_countries_empty
+## Tests
 
--x do porażki
--vv verbose
---lf tylko nieudane
+### Testing Framework
+The project uses pytest as the primary testing framework for backend unit and integration tests.
+
+All tests are located in the tests/ directory and cover the main REST API endpoints (addresses, contracts, customers, providers, roles, users, etc.).
+
+### Running Tests
+
+To run the full test suite:
+```
+pytest -q
 ```
 
-## Project Status
-Project is: _in progress_ 
+To run a specific test file:
+```
+pytest -q tests/test_address_routes.py
+```
+
+To run a single test function:
+```
+pytest -q tests/test_address_routes.py::test_get_countries_empty
+```
+Useful pytest options
+Option	Description
+-q	Quiet output (minimal summary)
+-v or -vv	Verbose output (shows all test names and results)
+-x	Stop after the first failure
+--lf	Run only the tests that failed in the previous run
+
+Example:
+```
+pytest -vv -x
+```
+
+This command runs all tests in verbose mode and stops immediately on the first failure.
+
+Test Scope:
+- The test suite verifies:
+- Correct behavior of REST API endpoints.
+- Proper HTTP status codes and response structures.
+- Validation and error handling logic.
+- Role-based access control and authorization rules.
+- Database interactions and edge cases (e.g. empty datasets, missing resources).
+
+
+This structure keeps tests modular and aligned with the application’s route architecture.
+
+Configuration
+
+- pytest.ini contains pytest configuration.
+
+- conftest.py defines shared fixtures (e.g. test client, database setup, authentication helpers).
+
+The test environment uses a separate database configuration to avoid modifying production data.
+
 
 ## Room for Improvement
 - Add Docker configuration for easier deployment
@@ -189,6 +230,9 @@ Project is: _in progress_
 - Enhance UI with modern dashboard components (charts, analytics)
 - Introduce JWT authentication
 - Use services (not only routes) - analytics_service.py, contract_service.py, customer_service.py, user_service.py
+
+## Project Status
+Project is: _in progress_ 
 
 ## Contact
 Created by:
