@@ -1,8 +1,32 @@
+from app import db
+from app.models.supplier_model import EnergySupplier
+
+
+def seed_providers(names):
+    for name in names:
+        db.session.add(EnergySupplier(name=name))
+    db.session.commit()
+
+
 def test_get_providers_returns_list(client):
     resp = client.get("/api/providers")
     assert resp.status_code == 200
     assert resp.is_json
-    assert isinstance(resp.get_json(), list)
+    data = resp.get_json()
+    assert isinstance(data, list)
+
+
+def test_get_providers_returns_seeded_items(client, app):
+    with app.app_context():
+        seed_providers(["A Provider", "B Provider"])
+
+    resp = client.get("/api/providers")
+    assert resp.status_code == 200
+    data = resp.get_json()
+
+    assert isinstance(data, list)
+    assert len(data) == 2
+    assert {x["name"] for x in data} == {"A Provider", "B Provider"}
 
 
 def test_add_provider_missing_name(client):
@@ -14,10 +38,11 @@ def test_add_provider_missing_name(client):
 def test_add_provider_success(client):
     payload = {"name": "Test Provider Sp. z o.o."}
     resp = client.post("/api/providers", json=payload)
+
     assert resp.status_code == 201
     data = resp.get_json()
     assert data["message"] == "Provider added"
-    assert data["provider"]["name"] == "Test Provider Sp. z o.o."
+    assert data["provider"]["name"] == payload["name"]
     assert "id" in data["provider"]
 
 
@@ -30,3 +55,73 @@ def test_add_provider_duplicate_name_returns_409(client):
     r2 = client.post("/api/providers", json=payload)
     assert r2.status_code == 409
     assert r2.get_json()["error"] == "Provider already exists"
+
+
+def test_get_provider_not_found(client):
+    resp = client.get("/api/providers/999999")
+    assert resp.status_code == 404
+    assert resp.get_json()["error"] == "Provider not found"
+
+
+def test_get_provider_success(client):
+    r = client.post("/api/providers", json={"name": "Provider X"})
+    provider_id = r.get_json()["provider"]["id"]
+
+    resp = client.get(f"/api/providers/{provider_id}")
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert data["id"] == provider_id
+    assert data["name"] == "Provider X"
+
+
+def test_update_provider_not_found(client):
+    resp = client.put("/api/providers/999999", json={"name": "New Name"})
+    assert resp.status_code == 404
+    assert resp.get_json()["error"] == "Provider not found"
+
+
+def test_update_provider_success(client):
+    r = client.post("/api/providers", json={"name": "Old Name"})
+    provider_id = r.get_json()["provider"]["id"]
+
+    resp = client.put(f"/api/providers/{provider_id}", json={"name": "New Name"})
+    assert resp.status_code == 200
+
+    data = resp.get_json()
+    assert data["message"] == "Provider updated"
+    assert data["provider"]["id"] == provider_id
+    assert data["provider"]["name"] == "New Name"
+
+
+def test_update_provider_duplicate_name_returns_409(client):
+    # create two providers
+    r1 = client.post("/api/providers", json={"name": "Provider A"})
+    assert r1.status_code == 201
+    id_a = r1.get_json()["provider"]["id"]
+
+    r2 = client.post("/api/providers", json={"name": "Provider B"})
+    assert r2.status_code == 201
+
+    # try rename A -> B (duplicate)
+    resp = client.put(f"/api/providers/{id_a}", json={"name": "Provider B"})
+    assert resp.status_code == 409
+    assert resp.get_json()["error"] == "Provider name already exists"
+
+
+def test_delete_provider_not_found(client):
+    resp = client.delete("/api/providers/999999")
+    assert resp.status_code == 404
+    assert resp.get_json()["error"] == "Provider not found"
+
+
+def test_delete_provider_success(client):
+    r = client.post("/api/providers", json={"name": "To Delete"})
+    provider_id = r.get_json()["provider"]["id"]
+
+    resp = client.delete(f"/api/providers/{provider_id}")
+    assert resp.status_code == 200
+    assert resp.get_json()["message"] == "Provider deleted successfully"
+
+    # verify it's gone
+    resp2 = client.get(f"/api/providers/{provider_id}")
+    assert resp2.status_code == 404
