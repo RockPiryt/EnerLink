@@ -15,4 +15,4 @@ System settings
 ![System settings](/documentation/images/admin_panel_system_settings.png)
 
 Users managment
-![Users managements](/documentation/images/admin_panel_users.png)
+![Users management](/documentation/images/admin_panel_users.png)
