@@ -1,6 +1,8 @@
 
 
 # Raport obsługi klienta
+
+# All imports at the top
 from flask import Blueprint, jsonify, request
 from datetime import datetime
 from sqlalchemy import func, extract
@@ -9,7 +11,7 @@ from app.models.user_model import User
 from app.models.customer_model import Customer
 from app import db
 
-# Blueprint must be defined before any route decorators
+# Only one Blueprint definition, used for all routes below
 manager_bp = Blueprint("manager", __name__)
 
 @manager_bp.route("/manager/customer_service_report", methods=["GET"])
@@ -59,7 +61,7 @@ def customer_service_report():
         return jsonify({"error": str(e)}), 500
 from flask import Blueprint, jsonify
 
-manager_bp = Blueprint("manager_bp", __name__)
+
 
 
 from sqlalchemy import func, extract
