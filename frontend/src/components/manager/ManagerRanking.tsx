@@ -40,18 +40,15 @@ const ManagerRanking: React.FC = () => {
       <Row>
         <Col>
           <Card>
-            <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
-              <div className="d-flex align-items-center">
-                <Button
-                  variant="light"
-                  size="sm"
-                  onClick={() => navigate('/dashboard')}
-                  className="me-3"
-                >
-                  &larr; Back to Dashboard
-                </Button>
-                <h4 className="mb-0">Sales Ranking</h4>
-              </div>
+            <Card.Header className="bg-primary text-white d-flex align-items-center justify-content-between">
+              <h4 className="mb-0">Sales Ranking</h4>
+              <Button
+                variant="light"
+                size="sm"
+                onClick={() => navigate('/dashboard')}
+              >
+                &larr; Back to Dashboard
+              </Button>
             </Card.Header>
             <Card.Body>
               {loading ? (
