@@ -20,6 +20,12 @@ const Login: React.FC = () => {
   else if (user && user.role_name=='User'){
       return <Navigate to="/dashboard" replace />;
   }
+  else if (user && user.role_name=='Sales Representative'){
+    return <Navigate to="/dashboard" replace />;
+  }
+  else if (user && user.role_name=='Analyst'){
+    return <Navigate to="/dashboard" replace />;
+  }
 
 
   const handleSubmit = async (e: React.FormEvent) => {
