@@ -1,7 +1,14 @@
+import pytest
+from app.db import db
+from app.models.user_model import User
+
+# Uwaga: dane z seed_database():
+# david.wilson@enerlink.com  / analyst123  / active=True
+
 def test_login_success(client, seeded_app):
     resp = client.post("/api/login", json={
         "email": "david.wilson@enerlink.com",
-        "password": "demo123"
+        "password": "analyst123"
     })
     assert resp.status_code == 200
     data = resp.get_json()
@@ -19,7 +26,7 @@ def test_login_missing_fields(client):
 def test_login_invalid_email(client, seeded_app):
     resp = client.post("/api/login", json={
         "email": "wrong@enerlink.com",
-        "password": "demo123"
+        "password": "analyst123"
     })
     assert resp.status_code == 401
     assert resp.get_json()["error"] == "Invalid credentials"
@@ -34,24 +41,29 @@ def test_login_invalid_password(client, seeded_app):
     assert resp.get_json()["error"] == "Invalid credentials"
 
 
-def test_login_deactivated_user(client, app):
-    from app.db import db
-    from app.models.user_model import User
-
-    with app.app_context():
+def test_login_deactivated_user(client, seeded_app):
+    # Deaktywujemy usera w DB
+    with seeded_app.app_context():
         user = User.query.filter_by(email="david.wilson@enerlink.com").first()
+        assert user is not None
         user.active = False
         db.session.commit()
 
     resp = client.post("/api/login", json={
         "email": "david.wilson@enerlink.com",
-        "password": "demo123"
+        "password": "analyst123"
     })
     assert resp.status_code == 401
     assert resp.get_json()["error"] == "Account is deactivated"
 
+    # (opcjonalnie) przywróć aktywność, żeby inne testy nie cierpiały
+    with seeded_app.app_context():
+        user = User.query.filter_by(email="david.wilson@enerlink.com").first()
+        user.active = True
+        db.session.commit()
 
-def test_logout(client):
+
+def test_logout_success(client):
     resp = client.post("/api/logout")
     assert resp.status_code == 200
     assert resp.get_json()["message"] == "Logout successful"

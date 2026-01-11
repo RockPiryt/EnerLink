@@ -11,9 +11,14 @@ const Login: React.FC = () => {
   
   const { login, user } = useAuth();
 
-  // If user is logged in, redirect to dashboard
-  if (user) {
-    return <Navigate to="/dashboard" replace />;
+  if (user && user.role_name=='Administrator') {
+    return <Navigate to="/admin" replace />;
+  }
+  else if (user && user.role_name=='Manager') {
+      return <Navigate to="/manager" replace />;
+  }
+  else if (user && user.role_name=='User'){
+      return <Navigate to="/dashboard" replace />;
   }
 
 
@@ -87,18 +92,6 @@ const Login: React.FC = () => {
                   {isLoading ? 'Logging in...' : 'Login'}
                 </Button>
               </Form>
-              
-              <Card className="bg-light">
-                <Card.Body className="p-3">
-                  <h6 className="text-muted mb-2">Test Account:</h6>
-                  <div className="small">
-                    <p className="mb-1"><strong>Administrator (Debug):</strong></p>
-                    <p className="mb-1">Email: <code>debug_admin@enerlink.com</code></p>
-                    <p className="mb-2">Password: <code>test1234</code></p>
-                    <p className="mb-2 text-muted">If login fails, reset admin user via <code>/api/debug_reset_admin</code> endpoint.</p>
-                  </div>
-                </Card.Body>
-              </Card>
             </Card.Body>
           </Card>
         </Col>
