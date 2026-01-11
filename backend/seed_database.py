@@ -9,7 +9,7 @@ from sqlalchemy import or_
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from app import create_app  # zostaje, ale nie używamy w seedzie testowym
+from app import create_app
 from app.db import db
 
 from app.models.address_model import Country, City, District, Address
@@ -332,5 +332,4 @@ def seed_database(app=None):
 
 
 if __name__ == "__main__":
-    # uruchomienie ręczne (poza pytest) wciąż działa
     seed_database()
