@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Script for adding sample test data to the EnerLink database"""
-import sys
 import os
+import sys
 from datetime import date
 
 from werkzeug.security import generate_password_hash
@@ -9,7 +9,7 @@ from sqlalchemy import or_
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from app import create_app
+from app import create_app  # zostaje, ale nie używamy w seedzie testowym
 from app.db import db
 
 from app.models.address_model import Country, City, District, Address
@@ -27,18 +27,41 @@ from app.models.tag_model import Tag
 from app.models.user_model import User, Role, Password
 
 
-def seed_database():
-    app = create_app()
+def _get_or_create(model, defaults=None, **filters):
+    """
+    SQLAlchemy get-or-create:
+    - szuka po filters
+    - jeśli brak, tworzy obiekt z filters + defaults
+    """
+    instance = model.query.filter_by(**filters).first()
+    if instance:
+        return instance
+
+    params = dict(filters)
+    if defaults:
+        params.update(defaults)
+
+    instance = model(**params)
+    db.session.add(instance)
+    db.session.commit()
+    return instance
+
+
+def seed_database(app=None):
+    """
+    Seed database on provided Flask app.
+    - W testach pytest PRZEKAŻ app z fixture.
+    - Jeśli uruchamiasz ręcznie z CLI, app może być None => create_app().
+    """
+    if app is None:
+        app = create_app()
+
     with app.app_context():
         print("Starting database seeding...")
 
         # ---------- ROLES ----------
-        role_names = ["Administrator", "Manager", "Sales Representative", "Analyst"]
-        existing_roles = {r.role_name for r in Role.query.all()}
-        for name in role_names:
-            if name not in existing_roles:
-                db.session.add(Role(role_name=name, active=True))
-        db.session.commit()
+        for name in ["Administrator", "Manager", "Sales Representative", "Analyst"]:
+            _get_or_create(Role, role_name=name, defaults={"active": True})
 
         roles = {r.role_name: r for r in Role.query.all()}
 
@@ -95,7 +118,6 @@ def seed_database():
             exists = User.query.filter(
                 or_(User.email == u["email"], User.username == u["username"])
             ).first()
-
             if exists:
                 continue
 
@@ -121,256 +143,156 @@ def seed_database():
         print("Seeded users & roles")
 
         # ---------- ACTIONS ----------
-        if Action.query.count() == 0:
-            db.session.add_all([
-                Action(name="LOGIN"),
-                Action(name="LOGOUT"),
-                Action(name="ROLE_CHANGE"),
-                Action(name="USER_UPDATE"),
-                Action(name="CONTRACT_CREATE"),
-            ])
-            db.session.commit()
-            print("Added actions")
-        else:
-            print("Actions already exist - skipping")
+        for action_name in ["LOGIN", "LOGOUT", "ROLE_CHANGE", "USER_UPDATE", "CONTRACT_CREATE"]:
+            _get_or_create(Action, name=action_name)
 
         # ---------- PKWIU ----------
-        if Pkwiu.query.count() == 0:
-            db.session.add_all([
-                Pkwiu(pkwiu_nr="35.11.10.0", pkwiu_name="Electricity generation services"),
-                Pkwiu(pkwiu_nr="35.12.10.0", pkwiu_name="Electricity transmission services"),
-                Pkwiu(pkwiu_nr="35.13.10.0", pkwiu_name="Electricity distribution services"),
-            ])
-            db.session.commit()
-            print("Added pkwiu")
-        else:
-            print("Pkwiu already exist - skipping")
+        _get_or_create(Pkwiu, pkwiu_nr="35.11.10.0", defaults={"pkwiu_name": "Electricity generation services"})
+        _get_or_create(Pkwiu, pkwiu_nr="35.12.10.0", defaults={"pkwiu_name": "Electricity transmission services"})
+        _get_or_create(Pkwiu, pkwiu_nr="35.13.10.0", defaults={"pkwiu_name": "Electricity distribution services"})
 
         # ---------- COUNTRIES ----------
-        if Country.query.count() == 0:
-            db.session.add_all([
-                Country(name="Poland", shortcut="PL", is_active=True),
-                Country(name="Germany", shortcut="DE", is_active=True),
-            ])
-            db.session.commit()
+        pl = _get_or_create(Country, shortcut="PL", defaults={"name": "Poland", "is_active": True})
+        _get_or_create(Country, shortcut="DE", defaults={"name": "Germany", "is_active": True})
 
         # ---------- CITIES ----------
-        if City.query.count() == 0:
-            db.session.add_all([
-                City(name="Gdańsk", is_active=True),
-                City(name="Warsaw", is_active=True),
-            ])
-            db.session.commit()
+        gd = _get_or_create(City, name="Gdańsk", defaults={"is_active": True})
+        _get_or_create(City, name="Warsaw", defaults={"is_active": True})
 
         # ---------- DISTRICTS ----------
-        if District.query.count() == 0:
-            db.session.add_all([
-                District(name="Pomorskie", is_active=True),
-                District(name="Mazowieckie", is_active=True),
-            ])
-            db.session.commit()
-            print("Added districts")
-        else:
-            print("Districts already exist - skipping")
+        pom = _get_or_create(District, name="Pomorskie", defaults={"is_active": True})
+        _get_or_create(District, name="Mazowieckie", defaults={"is_active": True})
 
         # ---------- ADDRESSES ----------
-        if Address.query.count() == 0:
-            pl = Country.query.filter_by(shortcut="PL").first()
-            gd = City.query.filter_by(name="Gdańsk").first()
-            pom = District.query.filter_by(name="Pomorskie").first()
-
-            db.session.add_all([
-                Address(
-                    street_name="Długa",
-                    building_nr=1,
-                    apartment_nr=2,
-                    post_code="80-001",
-                    id_city=gd.id,
-                    id_district=pom.id,
-                    id_country=pl.id
-                ),
-                Address(
-                    street_name="Grunwaldzka",
-                    building_nr=100,
-                    apartment_nr=None,
-                    post_code="80-244",
-                    id_city=gd.id,
-                    id_district=pom.id,
-                    id_country=pl.id
-                ),
-            ])
-            db.session.commit()
-            print("Added addresses")
-        else:
-            print("Addresses already exist - skipping")
+        addr1 = _get_or_create(
+            Address,
+            street_name="Długa",
+            building_nr=1,
+            apartment_nr=2,
+            post_code="80-001",
+            id_city=gd.id,
+            id_district=pom.id,
+            id_country=pl.id,
+        )
+        addr2 = _get_or_create(
+            Address,
+            street_name="Grunwaldzka",
+            building_nr=100,
+            apartment_nr=None,
+            post_code="80-244",
+            id_city=gd.id,
+            id_district=pom.id,
+            id_country=pl.id,
+        )
 
         # ---------- TAGS ----------
-        if Tag.query.count() == 0:
-            db.session.add_all([
-                Tag(name="Nowy klient"),
-                Tag(name="Umowa kończy się za pół roku"),
-                Tag(name="Klient VIP"),
-                Tag(name="Możliwi klienci"),
-            ])
-            db.session.commit()
-            print("Added tags")
-        else:
-            print("Tags already exist - skipping")
+        for tag_name in ["Nowy klient", "Umowa kończy się za pół roku", "Klient VIP", "Możliwi klienci"]:
+            _get_or_create(Tag, name=tag_name)
 
         # ---------- CUSTOMERS ----------
-        if Customer.query.count() == 0:
-            sales1 = User.query.filter_by(email="michael.brown@enerlink.com").first()
-            tag_first = Tag.query.first()
+        sales1 = User.query.filter_by(email="michael.brown@enerlink.com").first()
+        tag_first = Tag.query.first()
 
-            db.session.add_all([
-                Customer(
-                    name="Demo",
-                    last_name="CustomerA",
-                    company="Demo Customer A Sp. z o.o.",
-                    email="demoA@enerlink.com",
-                    phone="+48 500 600 700",
-                    active=True,
-                    is_deleted=False,
-                    description="Seeded demo customer A",
-                    id_user=sales1.id if sales1 else None,
-                    id_tag=tag_first.id if tag_first else None,
-                ),
-                Customer(
-                    name="Demo",
-                    last_name="CustomerB",
-                    company="Demo Customer B S.A.",
-                    email="demoB@enerlink.com",
-                    phone="+48 111 222 333",
-                    active=True,
-                    is_deleted=False,
-                    description="Seeded demo customer B",
-                    id_user=sales1.id if sales1 else None,
-                    id_tag=tag_first.id if tag_first else None,
-                ),
-            ])
-            db.session.commit()
-            print("Added customers")
-        else:
-            print("Customers already exist - skipping")
+        cust_a = _get_or_create(
+            Customer,
+            email="demoA@enerlink.com",
+            defaults=dict(
+                name="Demo",
+                last_name="CustomerA",
+                company="Demo Customer A Sp. z o.o.",
+                phone="+48 500 600 700",
+                active=True,
+                is_deleted=False,
+                description="Seeded demo customer A",
+                id_user=sales1.id if sales1 else None,
+                id_tag=tag_first.id if tag_first else None,
+            ),
+        )
+
+        cust_b = _get_or_create(
+            Customer,
+            email="demoB@enerlink.com",
+            defaults=dict(
+                name="Demo",
+                last_name="CustomerB",
+                company="Demo Customer B S.A.",
+                phone="+48 111 222 333",
+                active=True,
+                is_deleted=False,
+                description="Seeded demo customer B",
+                id_user=sales1.id if sales1 else None,
+                id_tag=tag_first.id if tag_first else None,
+            ),
+        )
 
         # attach customer to address (relation table)
-        if CustomerAddress.query.count() == 0:
-            customer = Customer.query.first()
-            address = Address.query.first()
-            if customer and address:
-                db.session.add(CustomerAddress(id_customer=customer.id, id_address=address.id))
-                db.session.commit()
-                print("Added customer_address relation")
-        else:
-            print("CustomerAddress already exist - skipping")
-
-        # add energy suppliers
-        if EnergySupplier.query.count() == 0:
-            db.session.add_all([
-                EnergySupplier(name="EnerLink Demo Supplier"),
-                EnergySupplier(name="Green Energy S.A."),
-                EnergySupplier(name="PowerTrade Sp. z o.o."),
-            ])
+        if CustomerAddress.query.filter_by(id_customer=cust_a.id, id_address=addr1.id).first() is None:
+            db.session.add(CustomerAddress(id_customer=cust_a.id, id_address=addr1.id))
             db.session.commit()
-            print("Added suppliers")
-        else:
-            print("Suppliers already exist - skipping")
 
-        # attach supplier to address (relation table)
-        if SupplierAddress.query.count() == 0:
-            supplier = EnergySupplier.query.first()
-            address = Address.query.all()[-1] if Address.query.count() > 0 else None
-            if supplier and address:
-                db.session.add(SupplierAddress(id_supplier=supplier.id, id_address=address.id))
-                db.session.commit()
-                print("Added supplier_address relation")
-        else:
-            print("SupplierAddress already exist - skipping")
+        # ---------- SUPPLIERS ----------
+        supp1 = _get_or_create(EnergySupplier, name="EnerLink Demo Supplier")
+        _get_or_create(EnergySupplier, name="Green Energy S.A.")
+        _get_or_create(EnergySupplier, name="PowerTrade Sp. z o.o.")
 
-        # add tariffs
-        if EnergyTariff.query.count() == 0:
-            db.session.add_all([
-                EnergyTariff(name="G11", is_active=True),
-                EnergyTariff(name="G12", is_active=True),
-            ])
+        # attach supplier to address
+        if SupplierAddress.query.filter_by(id_supplier=supp1.id, id_address=addr2.id).first() is None:
+            db.session.add(SupplierAddress(id_supplier=supp1.id, id_address=addr2.id))
             db.session.commit()
-            print("Added tariffs")
-        else:
-            print("Tariffs already exist - skipping")
 
-        # add power units
-        if PowerUnit.query.count() == 0:
-            db.session.add_all([
-                PowerUnit(shortcut="kWh", name="Kilowatt-hour"),
-                PowerUnit(shortcut="MWh", name="Megawatt-hour"),
-            ])
+        # ---------- TARIFFS ----------
+        tariff_g11 = _get_or_create(EnergyTariff, name="G11", defaults={"is_active": True})
+        _get_or_create(EnergyTariff, name="G12", defaults={"is_active": True})
+
+        # ---------- UNITS ----------
+        pu = _get_or_create(PowerUnit, shortcut="kWh", defaults={"name": "Kilowatt-hour"})
+        _get_or_create(PowerUnit, shortcut="MWh", defaults={"name": "Megawatt-hour"})
+
+        cu = _get_or_create(CurrencyUnit, shortcut="PLN", defaults={"name": "Polish złoty"})
+        _get_or_create(CurrencyUnit, shortcut="EUR", defaults={"name": "Euro"})
+
+        # ---------- SUPPLIER OFFER ----------
+        offer = SupplierOffer.query.filter_by(
+            id_supplier=supp1.id,
+            id_tariff=tariff_g11.id,
+        ).first()
+
+        if offer is None:
+            offer = SupplierOffer(
+                id_supplier=supp1.id,
+                id_tariff=tariff_g11.id,
+                id_power_unit=pu.id,
+                id_currency_unit=cu.id,
+                price=0.85,
+                active=True,
+                start_date=date(2025, 1, 1),
+                end_date=None,
+            )
+            db.session.add(offer)
             db.session.commit()
-            print("Added power units")
-        else:
-            print("Power units already exist - skipping")
 
-        # add currency units
-        if CurrencyUnit.query.count() == 0:
-            db.session.add_all([
-                CurrencyUnit(shortcut="PLN", name="Polish złoty"),
-                CurrencyUnit(shortcut="EUR", name="Euro"),
-            ])
+        # ---------- PPE ----------
+        if PPE.query.filter_by(id_customer=cust_a.id, id_address=addr1.id).first() is None:
+            db.session.add(PPE(
+                id_customer=cust_a.id,
+                id_address=addr1.id,
+                start_date=date(2025, 1, 1),
+                end_date=None,
+                active=True
+            ))
             db.session.commit()
-            print("Added currency units")
-        else:
-            print("Currency units already exist - skipping")
 
-        # add supplier offers
-        if SupplierOffer.query.count() == 0:
-            supplier = EnergySupplier.query.first()
-            tariff = EnergyTariff.query.filter_by(name="G11").first() or EnergyTariff.query.first()
-            pu = PowerUnit.query.filter_by(shortcut="kWh").first() or PowerUnit.query.first()
-            cu = CurrencyUnit.query.filter_by(shortcut="PLN").first() or CurrencyUnit.query.first()
-            if supplier and tariff:
-                db.session.add(SupplierOffer(
-                    id_supplier=supplier.id,
-                    id_tariff=tariff.id,
-                    id_power_unit=pu.id if pu else None,
-                    id_currency_unit=cu.id if cu else None,
-                    price=0.85,
-                    active=True,
-                    start_date=date(2025, 1, 1),
-                    end_date=None
-                ))
-                db.session.commit()
-                print("Added supplier_offer")
-        else:
-            print("SupplierOffer already exist - skipping")
-
-        # add ppe
-        if PPE.query.count() == 0:
-            customer = Customer.query.first()
-            address = Address.query.first()
-            if customer and address:
-                db.session.add(PPE(
-                    id_customer=customer.id,
-                    id_address=address.id,
-                    start_date=date(2025, 1, 1),
-                    end_date=None,
-                    active=True
-                ))
-                db.session.commit()
-                print("Added PPE")
-        else:
-            print("PPE already exist - skipping")
-
-        # add contract + timeline
+        # ---------- CONTRACT + TIMELINE ----------
         user = User.query.filter_by(email="michael.brown@enerlink.com").first()
-        customer = Customer.query.first()
         tag = Tag.query.first()
-        offer = SupplierOffer.query.first()
 
-        if Contract.query.count() == 0 and customer:
+        contract = Contract.query.filter_by(contract_number="CNTR-0001").first()
+        if contract is None:
             contract = Contract(
                 id_user=user.id if user else None,
-                id_customer=customer.id,
+                id_customer=cust_a.id,
                 id_tag=tag.id if tag else None,
-                id_supplier_offer=offer.id if offer else None,
+                id_supplier_offer=offer.id,
                 contract_number="CNTR-0001",
                 signed_at=date.today(),
                 contract_from=date.today(),
@@ -380,41 +302,35 @@ def seed_database():
             db.session.add(contract)
             db.session.commit()
 
+        if ContractTimeline.query.filter_by(id_contract=contract.id, status="NEW").first() is None:
             db.session.add(ContractTimeline(
                 id_contract=contract.id,
                 status="NEW",
                 description="Seeded contract"
             ))
             db.session.commit()
-            print("Added contract and timeline")
-        else:
-            print("Contract already exist - skipping")
 
-        # add sample user log
-        if UserLogHistory.query.count() == 0:
-            login_action = Action.query.filter_by(name="LOGIN").first()
-            demo_user = User.query.filter_by(email="admin@enerlink.com").first()
-            if login_action and demo_user:
+        # ---------- USER LOG ----------
+        login_action = Action.query.filter_by(name="LOGIN").first()
+        demo_user = User.query.filter_by(email="admin@enerlink.com").first()
+        if login_action and demo_user:
+            if UserLogHistory.query.filter_by(id_user=demo_user.id, id_action=login_action.id).first() is None:
                 db.session.add(UserLogHistory(id_user=demo_user.id, id_action=login_action.id))
                 db.session.commit()
-                print("Added sample user_log_history")
 
-        # add assignments
-        if Assignment.query.count() == 0:
-            sales1 = User.query.filter_by(email="michael.brown@enerlink.com").first()
-            sales2 = User.query.filter_by(email="emily.davis@enerlink.com").first()
-            customers = Customer.query.all()
-
-            if sales1 and customers:
-                db.session.add(Assignment(customer_id=customers[0].id, sales_rep_id=sales1.id, active=True))
-            if sales2 and len(customers) > 1:
-                db.session.add(Assignment(customer_id=customers[1].id, sales_rep_id=sales2.id, active=True))
-
-            db.session.commit()
-            print("Added assignments")
+        # ---------- ASSIGNMENTS ----------
+        sales2 = User.query.filter_by(email="emily.davis@enerlink.com").first()
+        if sales1:
+            if Assignment.query.filter_by(customer_id=cust_a.id, sales_rep_id=sales1.id).first() is None:
+                db.session.add(Assignment(customer_id=cust_a.id, sales_rep_id=sales1.id, active=True))
+        if sales2:
+            if Assignment.query.filter_by(customer_id=cust_b.id, sales_rep_id=sales2.id).first() is None:
+                db.session.add(Assignment(customer_id=cust_b.id, sales_rep_id=sales2.id, active=True))
+        db.session.commit()
 
         print("Seeding completed successfully!")
 
 
 if __name__ == "__main__":
+    # uruchomienie ręczne (poza pytest) wciąż działa
     seed_database()

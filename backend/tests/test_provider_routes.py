@@ -1,5 +1,21 @@
-from app import db
+import pytest
+
+from app.db import db
 from app.models.supplier_model import EnergySupplier
+
+
+# ---------- helpers ----------
+
+def clear_providers():
+    """
+    Deterministyczne czyszczenie tabeli.
+    synchronize_session=False jest poprawne dla testów i eliminuje problemy z identity map.
+    """
+    db.session.query(EnergySupplier).delete(synchronize_session=False)
+    db.session.commit()
+
+    # Wyczyść cache obiektów w sesji (identity map), żeby nie było konfliktów ID po reinsertach.
+    db.session.expire_all()
 
 
 def seed_providers(names):
@@ -7,6 +23,11 @@ def seed_providers(names):
         db.session.add(EnergySupplier(name=name))
     db.session.commit()
 
+    # Ujednolicenie stanu sesji (przydatne, jeśli później znów robisz bulk operacje)
+    db.session.expire_all()
+
+
+# ---------- tests ----------
 
 def test_get_providers_returns_list(client):
     resp = client.get("/api/providers")
@@ -17,7 +38,9 @@ def test_get_providers_returns_list(client):
 
 
 def test_get_providers_returns_seeded_items(client, app):
+    # This test expects exactly 2 items, so we must hard-clear the table first.
     with app.app_context():
+        clear_providers()
         seed_providers(["A Provider", "B Provider"])
 
     resp = client.get("/api/providers")
@@ -35,7 +58,11 @@ def test_add_provider_missing_name(client):
     assert resp.get_json()["error"] == "Field 'name' is required"
 
 
-def test_add_provider_success(client):
+def test_add_provider_success(client, app):
+    # Prevent conflicts with seeded names or previous tests
+    with app.app_context():
+        clear_providers()
+
     payload = {"name": "Test Provider Sp. z o.o."}
     resp = client.post("/api/providers", json=payload)
 
@@ -46,7 +73,11 @@ def test_add_provider_success(client):
     assert "id" in data["provider"]
 
 
-def test_add_provider_duplicate_name_returns_409(client):
+def test_add_provider_duplicate_name_returns_409(client, app):
+    # Clear to ensure the duplicate check is deterministic
+    with app.app_context():
+        clear_providers()
+
     payload = {"name": "Duplicate Provider"}
 
     r1 = client.post("/api/providers", json=payload)
@@ -57,14 +88,21 @@ def test_add_provider_duplicate_name_returns_409(client):
     assert r2.get_json()["error"] == "Provider already exists"
 
 
-def test_get_provider_not_found(client):
+def test_get_provider_not_found(client, app):
+    with app.app_context():
+        clear_providers()
+
     resp = client.get("/api/providers/999999")
     assert resp.status_code == 404
     assert resp.get_json()["error"] == "Provider not found"
 
 
-def test_get_provider_success(client):
+def test_get_provider_success(client, app):
+    with app.app_context():
+        clear_providers()
+
     r = client.post("/api/providers", json={"name": "Provider X"})
+    assert r.status_code == 201
     provider_id = r.get_json()["provider"]["id"]
 
     resp = client.get(f"/api/providers/{provider_id}")
@@ -74,14 +112,21 @@ def test_get_provider_success(client):
     assert data["name"] == "Provider X"
 
 
-def test_update_provider_not_found(client):
+def test_update_provider_not_found(client, app):
+    with app.app_context():
+        clear_providers()
+
     resp = client.put("/api/providers/999999", json={"name": "New Name"})
     assert resp.status_code == 404
     assert resp.get_json()["error"] == "Provider not found"
 
 
-def test_update_provider_success(client):
+def test_update_provider_success(client, app):
+    with app.app_context():
+        clear_providers()
+
     r = client.post("/api/providers", json={"name": "Old Name"})
+    assert r.status_code == 201
     provider_id = r.get_json()["provider"]["id"]
 
     resp = client.put(f"/api/providers/{provider_id}", json={"name": "New Name"})
@@ -93,7 +138,10 @@ def test_update_provider_success(client):
     assert data["provider"]["name"] == "New Name"
 
 
-def test_update_provider_duplicate_name_returns_409(client):
+def test_update_provider_duplicate_name_returns_409(client, app):
+    with app.app_context():
+        clear_providers()
+
     # create two providers
     r1 = client.post("/api/providers", json={"name": "Provider A"})
     assert r1.status_code == 201
@@ -108,14 +156,21 @@ def test_update_provider_duplicate_name_returns_409(client):
     assert resp.get_json()["error"] == "Provider name already exists"
 
 
-def test_delete_provider_not_found(client):
+def test_delete_provider_not_found(client, app):
+    with app.app_context():
+        clear_providers()
+
     resp = client.delete("/api/providers/999999")
     assert resp.status_code == 404
     assert resp.get_json()["error"] == "Provider not found"
 
 
-def test_delete_provider_success(client):
+def test_delete_provider_success(client, app):
+    with app.app_context():
+        clear_providers()
+
     r = client.post("/api/providers", json={"name": "To Delete"})
+    assert r.status_code == 201
     provider_id = r.get_json()["provider"]["id"]
 
     resp = client.delete(f"/api/providers/{provider_id}")

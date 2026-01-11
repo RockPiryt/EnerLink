@@ -2,6 +2,13 @@ from app.db import db
 from app.models.supplier_model import EnergyTariff
 
 
+# ---------- helpers ----------
+
+def clear_tariffs():
+    db.session.query(EnergyTariff).delete()
+    db.session.commit()
+
+
 def seed_tariffs(items):
     """
     items: list of tuples (name, is_active)
@@ -11,7 +18,13 @@ def seed_tariffs(items):
     db.session.commit()
 
 
-def test_get_tariffs_empty(client):
+# ---------- tests ----------
+
+def test_get_tariffs_empty(client, app):
+    # This test expects an empty list, so we must clear seeded data first.
+    with app.app_context():
+        clear_tariffs()
+
     resp = client.get("/api/supplier/tariffs")
     assert resp.status_code == 200
 
@@ -23,13 +36,20 @@ def test_get_tariffs_empty(client):
     assert data["per_page"] == 20
 
 
-def test_add_tariff_validation(client):
+def test_add_tariff_validation(client, app):
+    # make deterministic
+    with app.app_context():
+        clear_tariffs()
+
     resp = client.post("/api/supplier/tariffs", json={})
     assert resp.status_code == 400
     assert resp.get_json()["error"] == "name is required"
 
 
-def test_add_tariff_success(client):
+def test_add_tariff_success(client, app):
+    with app.app_context():
+        clear_tariffs()
+
     resp = client.post("/api/supplier/tariffs", json={"name": "Tariff A"})
     assert resp.status_code == 201
 
@@ -38,16 +58,24 @@ def test_add_tariff_success(client):
     assert "tariff" in data
     assert data["tariff"]["name"] == "Tariff A"
     assert data["tariff"]["is_active"] is True
+    assert "id" in data["tariff"]
 
 
-def test_get_tariff_not_found(client):
+def test_get_tariff_not_found(client, app):
+    with app.app_context():
+        clear_tariffs()
+
     resp = client.get("/api/supplier/tariffs/999999")
     assert resp.status_code == 404
     assert resp.get_json()["error"] == "Tariff not found"
 
 
-def test_get_tariff_success(client):
+def test_get_tariff_success(client, app):
+    with app.app_context():
+        clear_tariffs()
+
     resp = client.post("/api/supplier/tariffs", json={"name": "Tariff X"})
+    assert resp.status_code == 201
     tariff_id = resp.get_json()["tariff"]["id"]
 
     resp2 = client.get(f"/api/supplier/tariffs/{tariff_id}")
@@ -58,14 +86,21 @@ def test_get_tariff_success(client):
     assert data["is_active"] is True
 
 
-def test_update_tariff_not_found(client):
+def test_update_tariff_not_found(client, app):
+    with app.app_context():
+        clear_tariffs()
+
     resp = client.put("/api/supplier/tariffs/123456", json={"name": "New"})
     assert resp.status_code == 404
     assert resp.get_json()["error"] == "Tariff not found"
 
 
-def test_update_tariff_success(client):
+def test_update_tariff_success(client, app):
+    with app.app_context():
+        clear_tariffs()
+
     resp = client.post("/api/supplier/tariffs", json={"name": "Tariff Old"})
+    assert resp.status_code == 201
     tariff_id = resp.get_json()["tariff"]["id"]
 
     resp2 = client.put(
@@ -80,14 +115,21 @@ def test_update_tariff_success(client):
     assert data["tariff"]["is_active"] is False
 
 
-def test_delete_tariff_not_found(client):
+def test_delete_tariff_not_found(client, app):
+    with app.app_context():
+        clear_tariffs()
+
     resp = client.delete("/api/supplier/tariffs/123456")
     assert resp.status_code == 404
     assert resp.get_json()["error"] == "Tariff not found"
 
 
-def test_delete_tariff_success(client):
+def test_delete_tariff_success(client, app):
+    with app.app_context():
+        clear_tariffs()
+
     resp = client.post("/api/supplier/tariffs", json={"name": "To Delete"})
+    assert resp.status_code == 201
     tariff_id = resp.get_json()["tariff"]["id"]
 
     resp2 = client.delete(f"/api/supplier/tariffs/{tariff_id}")
@@ -99,8 +141,10 @@ def test_delete_tariff_success(client):
 
 
 def test_get_tariffs_pagination(client, app):
+    # This test expects exactly 50 total items => clear first.
     with app.app_context():
-        seed_tariffs([(f"Tariff {i}", True) for i in range(1, 51)])  # 50 items
+        clear_tariffs()
+        seed_tariffs([(f"Tariff {i}", True) for i in range(1, 51)])  # 50
 
     resp = client.get("/api/supplier/tariffs?page=1&per_page=20")
     assert resp.status_code == 200
@@ -120,6 +164,7 @@ def test_get_tariffs_pagination(client, app):
 
 def test_get_tariffs_search(client, app):
     with app.app_context():
+        clear_tariffs()
         seed_tariffs([
             ("Standard Plan", True),
             ("Premium Plan", True),
@@ -135,6 +180,7 @@ def test_get_tariffs_search(client, app):
 
 def test_get_tariffs_filter_active_true(client, app):
     with app.app_context():
+        clear_tariffs()
         seed_tariffs([
             ("A", True),
             ("B", False),
@@ -149,7 +195,10 @@ def test_get_tariffs_filter_active_true(client, app):
 
 
 def test_get_tariffs_filter_active_false(client, app):
+    # The failure you had (UNIQUE constraint) was caused by collisions with seeded data.
+    # Clearing makes it deterministic.
     with app.app_context():
+        clear_tariffs()
         seed_tariffs([
             ("A", True),
             ("B", False),
@@ -163,26 +212,34 @@ def test_get_tariffs_filter_active_false(client, app):
     assert all(item["is_active"] is False for item in data["items"])
 
 
-def test_patch_tariff_status_not_found(client):
+def test_patch_tariff_status_not_found(client, app):
+    with app.app_context():
+        clear_tariffs()
+
     resp = client.patch("/api/supplier/tariffs/999999/status", json={"is_active": True})
     assert resp.status_code == 404
     assert resp.get_json()["error"] == "Tariff not found"
 
 
-def test_patch_tariff_status_validation(client):
-    # create one
+def test_patch_tariff_status_validation(client, app):
+    with app.app_context():
+        clear_tariffs()
+
     resp = client.post("/api/supplier/tariffs", json={"name": "Tariff S"})
+    assert resp.status_code == 201
     tariff_id = resp.get_json()["tariff"]["id"]
 
-    # missing is_active
     resp2 = client.patch(f"/api/supplier/tariffs/{tariff_id}/status", json={})
     assert resp2.status_code == 400
     assert resp2.get_json()["error"] == "'is_active' field is required"
 
 
-def test_patch_tariff_status_success(client):
-    # create one
+def test_patch_tariff_status_success(client, app):
+    with app.app_context():
+        clear_tariffs()
+
     resp = client.post("/api/supplier/tariffs", json={"name": "Tariff Status"})
+    assert resp.status_code == 201
     tariff_id = resp.get_json()["tariff"]["id"]
 
     # set inactive

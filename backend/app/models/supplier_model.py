@@ -1,16 +1,22 @@
 from app.db import db
 from datetime import datetime
 
+
 class EnergySupplier(db.Model):
     __tablename__ = "energy_supplier"
+    __table_args__ = {"sqlite_autoincrement": True}
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(150), nullable=False, unique=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
-    offers = db.relationship("SupplierOffer", back_populates="supplier", cascade="all, delete-orphan")
+    offers = db.relationship(
+        "SupplierOffer",
+        back_populates="supplier",
+        cascade="all, delete-orphan"
+    )
 
-    #1:1 address
+    # 1:1 address
     supplier_address = db.relationship(
         "SupplierAddress",
         back_populates="supplier",

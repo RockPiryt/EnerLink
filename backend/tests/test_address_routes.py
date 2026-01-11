@@ -4,6 +4,16 @@ from app.models.address_model import Country, City, District
 
 # ---------- helpers ----------
 
+def clear_tables(*models):
+    """
+    Hard-clear given tables to keep tests independent even when the DB is seeded
+    or previous tests inserted records.
+    """
+    for m in models:
+        db.session.query(m).delete()
+    db.session.commit()
+
+
 def seed_countries(items):
     # items: list of tuples (name, shortcut, is_active)
     for name, shortcut, is_active in items:
@@ -38,11 +48,14 @@ def test_get_countries_returns_list(client):
 
 def test_get_countries_structure_when_not_empty(client, app):
     with app.app_context():
+        clear_tables(Country)
         seed_countries([("Poland", "PL", True)])
 
     resp = client.get("/api/address/countries")
     assert resp.status_code == 200
     data = resp.get_json()
+
+    # Because we hard-cleared Country, we can safely assert exact length
     assert len(data) == 1
 
     first = data[0]
@@ -52,7 +65,10 @@ def test_get_countries_structure_when_not_empty(client, app):
     assert "is_active" in first
 
 
-def test_add_country_success(client):
+def test_add_country_success(client, app):
+    with app.app_context():
+        clear_tables(Country)
+
     payload = {"name": "Poland", "shortcut": "PL"}
     resp = client.post("/api/address/countries", json=payload)
     assert resp.status_code == 201
@@ -65,13 +81,19 @@ def test_add_country_success(client):
     assert "id" in data["country"]
 
 
-def test_add_country_missing_fields(client):
+def test_add_country_missing_fields(client, app):
+    with app.app_context():
+        clear_tables(Country)
+
     resp = client.post("/api/address/countries", json={"name": "Poland"})
     assert resp.status_code == 400
     assert resp.get_json()["error"] == "name and shortcut are required"
 
 
-def test_patch_country_status_success(client):
+def test_patch_country_status_success(client, app):
+    with app.app_context():
+        clear_tables(Country)
+
     resp_create = client.post("/api/address/countries", json={"name": "Germany", "shortcut": "DE"})
     assert resp_create.status_code == 201
     country_id = resp_create.get_json()["country"]["id"]
@@ -83,13 +105,19 @@ def test_patch_country_status_success(client):
     assert data["is_active"] is False
 
 
-def test_patch_country_status_not_found(client):
+def test_patch_country_status_not_found(client, app):
+    with app.app_context():
+        clear_tables(Country)
+
     resp = client.patch("/api/address/countries/999999/status", json={"is_active": False})
     assert resp.status_code == 404
     assert resp.get_json()["error"] == "Country not found"
 
 
-def test_patch_country_status_missing_field(client):
+def test_patch_country_status_missing_field(client, app):
+    with app.app_context():
+        clear_tables(Country)
+
     resp_create = client.post("/api/address/countries", json={"name": "France", "shortcut": "FR"})
     assert resp_create.status_code == 201
     country_id = resp_create.get_json()["country"]["id"]
@@ -101,7 +129,10 @@ def test_patch_country_status_missing_field(client):
 
 # ---------- CITIES ----------
 
-def test_get_cities_empty(client):
+def test_get_cities_empty(client, app):
+    with app.app_context():
+        clear_tables(City)
+
     resp = client.get("/api/address/cities")
     assert resp.status_code == 200
     data = resp.get_json()
@@ -109,13 +140,19 @@ def test_get_cities_empty(client):
     assert data["total"] == 0
 
 
-def test_add_city_validation(client):
+def test_add_city_validation(client, app):
+    with app.app_context():
+        clear_tables(City)
+
     resp = client.post("/api/address/cities", json={})
     assert resp.status_code == 400
     assert resp.get_json()["error"] == "name is required"
 
 
-def test_add_city_success(client):
+def test_add_city_success(client, app):
+    with app.app_context():
+        clear_tables(City)
+
     resp = client.post("/api/address/cities", json={"name": "Gdansk"})
     assert resp.status_code == 201
     data = resp.get_json()
@@ -125,13 +162,19 @@ def test_add_city_success(client):
     assert "id" in data["city"]
 
 
-def test_get_city_not_found(client):
+def test_get_city_not_found(client, app):
+    with app.app_context():
+        clear_tables(City)
+
     resp = client.get("/api/address/cities/999999")
     assert resp.status_code == 404
     assert resp.get_json()["error"] == "City not found"
 
 
-def test_get_city_success(client):
+def test_get_city_success(client, app):
+    with app.app_context():
+        clear_tables(City)
+
     r = client.post("/api/address/cities", json={"name": "Warsaw"})
     city_id = r.get_json()["city"]["id"]
 
@@ -142,13 +185,19 @@ def test_get_city_success(client):
     assert data["name"] == "Warsaw"
 
 
-def test_update_city_not_found(client):
+def test_update_city_not_found(client, app):
+    with app.app_context():
+        clear_tables(City)
+
     resp = client.put("/api/address/cities/999999", json={"name": "X"})
     assert resp.status_code == 404
     assert resp.get_json()["error"] == "City not found"
 
 
-def test_update_city_success(client):
+def test_update_city_success(client, app):
+    with app.app_context():
+        clear_tables(City)
+
     r = client.post("/api/address/cities", json={"name": "Old"})
     city_id = r.get_json()["city"]["id"]
 
@@ -160,13 +209,19 @@ def test_update_city_success(client):
     assert data["city"]["is_active"] is False
 
 
-def test_delete_city_not_found(client):
+def test_delete_city_not_found(client, app):
+    with app.app_context():
+        clear_tables(City)
+
     resp = client.delete("/api/address/cities/999999")
     assert resp.status_code == 404
     assert resp.get_json()["error"] == "City not found"
 
 
-def test_delete_city_success(client):
+def test_delete_city_success(client, app):
+    with app.app_context():
+        clear_tables(City)
+
     r = client.post("/api/address/cities", json={"name": "ToDelete"})
     city_id = r.get_json()["city"]["id"]
 
@@ -180,6 +235,7 @@ def test_delete_city_success(client):
 
 def test_get_cities_search_and_active_filter(client, app):
     with app.app_context():
+        clear_tables(City)
         seed_cities([
             ("Gdansk", True),
             ("Gdynia", True),
@@ -196,17 +252,20 @@ def test_get_cities_search_and_active_filter(client, app):
     resp2 = client.get("/api/address/cities?active=true")
     assert resp2.status_code == 200
     data2 = resp2.get_json()
+    assert data2["total"] == 2
     assert all(x["is_active"] is True for x in data2["items"])
 
     # active=false
     resp3 = client.get("/api/address/cities?active=false")
     assert resp3.status_code == 200
     data3 = resp3.get_json()
+    assert data3["total"] == 1
     assert all(x["is_active"] is False for x in data3["items"])
 
 
 def test_get_cities_pagination(client, app):
     with app.app_context():
+        clear_tables(City)
         seed_cities([(f"City {i}", True) for i in range(1, 51)])  # 50
 
     resp = client.get("/api/address/cities?page=1&per_page=20")
@@ -224,7 +283,10 @@ def test_get_cities_pagination(client, app):
 
 # ---------- DISTRICTS ----------
 
-def test_get_districts_empty(client):
+def test_get_districts_empty(client, app):
+    with app.app_context():
+        clear_tables(District)
+
     resp = client.get("/api/address/districts")
     assert resp.status_code == 200
     data = resp.get_json()
@@ -232,13 +294,19 @@ def test_get_districts_empty(client):
     assert data["total"] == 0
 
 
-def test_add_district_validation(client):
+def test_add_district_validation(client, app):
+    with app.app_context():
+        clear_tables(District)
+
     resp = client.post("/api/address/districts", json={})
     assert resp.status_code == 400
     assert resp.get_json()["error"] == "name is required"
 
 
-def test_add_district_success(client):
+def test_add_district_success(client, app):
+    with app.app_context():
+        clear_tables(District)
+
     resp = client.post("/api/address/districts", json={"name": "Pomorskie"})
     assert resp.status_code == 201
     data = resp.get_json()
@@ -247,13 +315,19 @@ def test_add_district_success(client):
     assert data["district"]["is_active"] is True
 
 
-def test_get_district_not_found(client):
+def test_get_district_not_found(client, app):
+    with app.app_context():
+        clear_tables(District)
+
     resp = client.get("/api/address/districts/999999")
     assert resp.status_code == 404
     assert resp.get_json()["error"] == "District not found"
 
 
-def test_get_district_success(client):
+def test_get_district_success(client, app):
+    with app.app_context():
+        clear_tables(District)
+
     r = client.post("/api/address/districts", json={"name": "Mazowieckie"})
     district_id = r.get_json()["district"]["id"]
 
@@ -264,13 +338,19 @@ def test_get_district_success(client):
     assert data["name"] == "Mazowieckie"
 
 
-def test_update_district_not_found(client):
+def test_update_district_not_found(client, app):
+    with app.app_context():
+        clear_tables(District)
+
     resp = client.put("/api/address/districts/999999", json={"name": "X"})
     assert resp.status_code == 404
     assert resp.get_json()["error"] == "District not found"
 
 
-def test_update_district_success(client):
+def test_update_district_success(client, app):
+    with app.app_context():
+        clear_tables(District)
+
     r = client.post("/api/address/districts", json={"name": "Old"})
     district_id = r.get_json()["district"]["id"]
 
@@ -282,13 +362,19 @@ def test_update_district_success(client):
     assert data["district"]["is_active"] is False
 
 
-def test_delete_district_not_found(client):
+def test_delete_district_not_found(client, app):
+    with app.app_context():
+        clear_tables(District)
+
     resp = client.delete("/api/address/districts/999999")
     assert resp.status_code == 404
     assert resp.get_json()["error"] == "District not found"
 
 
-def test_delete_district_success(client):
+def test_delete_district_success(client, app):
+    with app.app_context():
+        clear_tables(District)
+
     r = client.post("/api/address/districts", json={"name": "ToDelete"})
     district_id = r.get_json()["district"]["id"]
 
@@ -300,7 +386,10 @@ def test_delete_district_success(client):
     assert resp2.status_code == 404
 
 
-def test_patch_district_status_validation_and_success(client):
+def test_patch_district_status_validation_and_success(client, app):
+    with app.app_context():
+        clear_tables(District)
+
     r = client.post("/api/address/districts", json={"name": "StatusTest"})
     district_id = r.get_json()["district"]["id"]
 
