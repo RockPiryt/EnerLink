@@ -26,6 +26,7 @@ import './App.css';
 import ContractDetails from "./components/contract/ContractDetails";
 import ProviderForm from "./components/provider/ProviderForm";
 import DistrictList from "./components/dictionary/DistrictList";
+import AddressDictionaries from './components/dashboard/AddressDictionaries';
 
 function App() {
   return (
@@ -44,6 +45,8 @@ function App() {
             <Route path="/dictionary/districts" element={<DistrictList />} />
             <Route path="/dictionary/pkwiu" element={<PKWiUList />} />
             <Route path="/dictionary/tariffs" element={<TariffList />} />
+            {/* Address Dictionaries - unified subpage */}
+            <Route path="/address-dictionaries" element={<AddressDictionaries />} />
             {/* Customers */}
             <Route path="/customers" element={<CustomerList />} />
             <Route path="/customers/new" element={<CustomerForm />} />

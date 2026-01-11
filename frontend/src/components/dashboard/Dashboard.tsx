@@ -1,5 +1,6 @@
 import React from 'react';
 import { Container, Row, Col, Card, Button, Badge } from 'react-bootstrap';
+import AddressDictionaries from './AddressDictionaries';
 import { useAuth } from '../../contexts/AuthContext';
 import { Navigate, useNavigate } from 'react-router-dom';
 
@@ -107,11 +108,7 @@ const Dashboard: React.FC = () => {
                 <Button variant="outline-primary" size="lg" onClick={() => navigate('/tags')}>Tags</Button>
                 <Button variant="outline-secondary" size="lg" onClick={() => navigate('/analytics')}>Analytics</Button>
                 <Button variant="outline-success" size="lg" onClick={() => navigate('/manager')}>Manager Panel</Button>
-                <Button variant="outline-info" size="lg" onClick={() => navigate('/dictionary/countries')}>Country Dictionary</Button>
-                <Button variant="outline-info" size="lg" onClick={() => navigate('/dictionary/cities')}>City Dictionary</Button>
-                <Button variant="outline-info" size="lg" onClick={() => navigate('/dictionary/districts')}>District Dictionary</Button>
-                <Button variant="outline-info" size="lg" onClick={() => navigate('/dictionary/pkwiu')}>PKWiU Dictionary</Button>
-                <Button variant="outline-info" size="lg" onClick={() => navigate('/dictionary/tariffs')}>Tariff Dictionary</Button>
+                <Button variant="outline-info" size="lg" onClick={() => navigate('/address-dictionaries')}>Address Dictionaries</Button>
               </div>
             </Card.Body>
           </Card>

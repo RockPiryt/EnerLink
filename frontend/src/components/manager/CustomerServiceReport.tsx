@@ -46,7 +46,7 @@ const CustomerServiceReport: React.FC = () => {
 
   return (
     <Card className="mb-4">
-      <Card.Header className="bg-info text-white d-flex align-items-center justify-content-between">
+      <Card.Header className="bg-primary text-white d-flex align-items-center justify-content-between">
         <span>Customer Service Report</span>
         <div className="d-flex align-items-center gap-2">
           <label className="me-2 mb-0">Month:</label>
