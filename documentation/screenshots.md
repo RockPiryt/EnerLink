@@ -1,5 +1,8 @@
 # Screenshots
 
+## Login page
+![Login page](images/enerlink_screenshots/login_page.png)
+
 ## Main Dashboard
 ![Main dashboard](images/enerlink_screenshots/admin_dashboard.png)
 
@@ -45,17 +48,8 @@
 ### Manager Panel
 ![Manager Panel](images/enerlink_screenshots/manager_dashboard.png)
 
-### Countries
-![Countries](images/enerlink_screenshots/countries.png)
-
-### Cities
-![Cities](images/enerlink_screenshots/cities.png)
-
-### Districts
-![Districts](images/enerlink_screenshots/districts.png)
-
-### PKWIU List
-![PKWIU](images/enerlink_screenshots/pkwiu_list.png)
+### Address Dict
+![Address Dict](images/enerlink_screenshots/address_dict.png)
 
 ### Tariffs
 ![Tariffs](images/enerlink_screenshots/tariffs.png)

@@ -176,6 +176,9 @@ The project uses pytest as the primary testing framework for backend unit and in
 
 All tests are located in the tests/ directory and cover the main REST API endpoints (addresses, contracts, customers, providers, roles, users, etc.).
 
+`Tests Results`
+![Tests Results](documentation/images/enerlink_screenshots/tests_result.png)
+
 ### Running Tests
 
 To run the full test suite:
