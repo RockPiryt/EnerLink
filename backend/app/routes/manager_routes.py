@@ -1,3 +1,62 @@
+
+
+# Raport obsługi klienta
+from flask import Blueprint, jsonify, request
+from datetime import datetime
+from sqlalchemy import func, extract
+from app.models.contract_model import Contract, ContractTimeline
+from app.models.user_model import User
+from app.models.customer_model import Customer
+from app import db
+
+# Blueprint must be defined before any route decorators
+manager_bp = Blueprint("manager", __name__)
+
+@manager_bp.route("/manager/customer_service_report", methods=["GET"])
+def customer_service_report():
+    try:
+        month = request.args.get("month", type=int)
+        year = request.args.get("year", type=int)
+
+        q = Contract.query
+        if year:
+            q = q.filter(extract("year", Contract.created_at) == year)
+        if month:
+            q = q.filter(extract("month", Contract.created_at) == month)
+
+        contracts = q.all()
+        # Liczba obsłużonych klientów (unikalnych)
+        customer_ids = set(c.id_customer for c in contracts if c.id_customer)
+        num_customers = len(customer_ids)
+
+        # Średni czas realizacji (od utworzenia do podpisania)
+        times = []
+        for c in contracts:
+            if c.signed_at and c.created_at:
+                try:
+                    delta = (c.signed_at - c.created_at.date()).days
+                    if delta >= 0:
+                        times.append(delta)
+                except Exception as e:
+                    print(f"Error calculating delta for contract {c.id}: {e}")
+        avg_realization_days = round(sum(times) / len(times), 2) if times else None
+
+        # Liczba podpisanych, anulowanych, nowych kontraktów
+        signed = sum(1 for c in contracts if c.signed_at)
+        cancelled = sum(1 for c in contracts if hasattr(c, 'timelines') and c.timelines and any(t.status == "CANCELLED" for t in c.timelines))
+        new = sum(1 for c in contracts if not c.signed_at and (not hasattr(c, 'timelines') or not c.timelines or all(t.status != "CANCELLED" for t in c.timelines)))
+
+        return jsonify({
+            "num_customers": num_customers,
+            "avg_realization_days": avg_realization_days,
+            "signed_contracts": signed,
+            "cancelled_contracts": cancelled,
+            "new_contracts": new
+        }), 200
+    except Exception as e:
+        import traceback
+        print("Error in customer_service_report:", traceback.format_exc())
+        return jsonify({"error": str(e)}), 500
 from flask import Blueprint, jsonify
 
 manager_bp = Blueprint("manager_bp", __name__)
@@ -7,12 +66,49 @@ from sqlalchemy import func, extract
 from app.models.contract_model import Contract
 from app.models.user_model import User
 
-# Existing ranking endpoint
+
+# Rozszerzony endpoint rankingowy z obsługą miesiąca i roku
+from flask import request
+
 @manager_bp.route("/manager/ranking", methods=["GET"])
 def get_ranking():
+    month = request.args.get("month", type=int)
+    year = request.args.get("year", type=int)
+
+    q = Contract.query
+    if year:
+        q = q.filter(extract("year", Contract.created_at) == year)
+    if month:
+        q = q.filter(extract("month", Contract.created_at) == month)
+
+    # Grupowanie po handlowcu i zliczanie kontraktów
+    rows = (
+        q.with_entities(
+            Contract.id_user,
+            func.count(Contract.id).label("count")
+        )
+        .group_by(Contract.id_user)
+        .order_by(func.count(Contract.id).desc())
+        .all()
+    )
+
+    # Pobierz dane użytkowników
+    user_ids = [r[0] for r in rows if r[0] is not None]
+    users = {u.id: f"{u.first_name} {u.last_name}" for u in User.query.filter(User.id.in_(user_ids)).all()}
+
+    ranking = [
+        {
+            "id": id_user,
+            "name": users.get(id_user, id_user),
+            "value": count
+        }
+        for id_user, count in rows if id_user is not None
+    ]
+
+    from datetime import datetime
     ranking_data = {
-        "ranking": [],
-        "generated_at": None
+        "ranking": ranking,
+        "generated_at": datetime.utcnow().isoformat()
     }
     return jsonify(ranking_data), 200
 
