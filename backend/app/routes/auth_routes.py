@@ -5,7 +5,6 @@ from app.models.user_model import User, Role, Password
 
 auth_bp = Blueprint("auth_bp", __name__)
 
-# Endpoint to delete all users and create only a debug admin user
 @auth_bp.route("/debug_reset_admin", methods=["POST"])
 def debug_reset_admin():
     from app.db import db
@@ -14,7 +13,6 @@ def debug_reset_admin():
     Password.query.delete()
     db.session.commit()
 
-    # Ensure Administrator role exists
     role = Role.query.filter_by(role_name="Administrator").first()
     if not role:
         role = Role(role_name="Administrator", active=True)
@@ -44,7 +42,6 @@ def debug_reset_admin():
     db.session.commit()
     return {"email": email, "password": password}, 201
 
-# Temporary endpoint to show all users with their password hashes for debugging
 @auth_bp.route("/debug_users_passwords", methods=["GET"])
 def debug_users_passwords():
     users = User.query.all()

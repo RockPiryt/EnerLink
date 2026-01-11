@@ -8,10 +8,7 @@ from app.models.user_model import User, Role, Password
 
 user_bp = Blueprint("user_bp", __name__)
 
-
-# -----------------------
 # Helpers
-# -----------------------
 def _pick_default_role_id(role_name: str | None) -> int:
     if role_name:
         role = Role.query.filter_by(role_name=role_name).first()
@@ -59,13 +56,12 @@ def _set_new_password_for_user(user: User, password_plain: str):
     pw_hash = generate_password_hash(str(password_plain))
     pw = Password(pass_hash=pw_hash)
     db.session.add(pw)
-    db.session.flush()  # ensure pw.id
+    db.session.flush()
     user.id_pass = pw.id
 
 
-# -----------------------
+
 # READ: list
-# -----------------------
 @user_bp.route("/users", methods=["GET"])
 @swag_from({
     "tags": ["Users"],
@@ -112,9 +108,8 @@ def get_users():
     }), 200
 
 
-# -----------------------
+
 # READ: single
-# -----------------------
 @user_bp.route("/users/<string:user_id>", methods=["GET"])
 @swag_from({
     "tags": ["Users"],
@@ -129,9 +124,8 @@ def get_user(user_id: str):
     return jsonify(user.to_dict()), 200
 
 
-# -----------------------
+
 # CREATE
-# -----------------------
 @user_bp.route("/users", methods=["POST"])
 @swag_from({
     "tags": ["Users"],
@@ -202,9 +196,8 @@ def create_user():
         return jsonify({"error": str(e)}), 500
 
 
-# -----------------------
+
 # UPDATE (partial) - PATCH
-# -----------------------
 @user_bp.route("/users/<string:user_id>", methods=["PATCH"])
 @swag_from({
     "tags": ["Users"],
@@ -252,12 +245,10 @@ def update_user(user_id: str):
     password_plain = data.get("password") if "password" in data else None
     active = data.get("active") if "active" in data else None
 
-    # Basic validation: if field provided, it cannot be empty after stripping
     for field_name, value in [("username", username), ("email", email), ("first_name", first_name), ("last_name", last_name)]:
         if value is not None and value == "":
             return jsonify({"error": f"{field_name} cannot be empty"}), 400
 
-    # Conflict check for username/email if provided
     if (username is not None or email is not None) and _conflict_check(username=username, email=email, exclude_user_id=user.id):
         return jsonify({"error": "User with this username or email already exists"}), 409
 
@@ -275,7 +266,7 @@ def update_user(user_id: str):
 
         if role_name is not None:
             role_id_or_resp = _get_role_id_or_400(role_name)
-            if isinstance(role_id_or_resp, tuple):  # (json, code)
+            if isinstance(role_id_or_resp, tuple):
                 return role_id_or_resp
             user.id_role = role_id_or_resp
 
@@ -292,9 +283,8 @@ def update_user(user_id: str):
         return jsonify({"error": str(e)}), 500
 
 
-# -----------------------
-# UPDATE (full) - PUT (optional but included for "full CRUD")
-# -----------------------
+
+# UPDATE (full) - PUT
 @user_bp.route("/users/<string:user_id>", methods=["PUT"])
 @swag_from({
     "tags": ["Users"],
@@ -372,9 +362,8 @@ def replace_user(user_id: str):
         return jsonify({"error": str(e)}), 500
 
 
-# -----------------------
-# DELETE - soft delete by default (active=False)
-# -----------------------
+
+# DELETE 
 @user_bp.route("/users/<string:user_id>", methods=["DELETE"])
 @swag_from({
     "tags": ["Users"],
@@ -394,7 +383,6 @@ def delete_user(user_id: str):
         return jsonify({"error": "User not found"}), 404
 
     try:
-        # Soft delete (recommended for users with relations/logs/contracts)
         user.active = False
         db.session.commit()
         return ("", 204)

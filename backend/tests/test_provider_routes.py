@@ -5,16 +5,9 @@ from app.models.supplier_model import EnergySupplier
 
 
 # ---------- helpers ----------
-
 def clear_providers():
-    """
-    Deterministyczne czyszczenie tabeli.
-    synchronize_session=False jest poprawne dla testów i eliminuje problemy z identity map.
-    """
     db.session.query(EnergySupplier).delete(synchronize_session=False)
     db.session.commit()
-
-    # Wyczyść cache obiektów w sesji (identity map), żeby nie było konfliktów ID po reinsertach.
     db.session.expire_all()
 
 
@@ -22,13 +15,10 @@ def seed_providers(names):
     for name in names:
         db.session.add(EnergySupplier(name=name))
     db.session.commit()
-
-    # Ujednolicenie stanu sesji (przydatne, jeśli później znów robisz bulk operacje)
     db.session.expire_all()
 
 
 # ---------- tests ----------
-
 def test_get_providers_returns_list(client):
     resp = client.get("/api/providers")
     assert resp.status_code == 200
@@ -38,7 +28,6 @@ def test_get_providers_returns_list(client):
 
 
 def test_get_providers_returns_seeded_items(client, app):
-    # This test expects exactly 2 items, so we must hard-clear the table first.
     with app.app_context():
         clear_providers()
         seed_providers(["A Provider", "B Provider"])
@@ -59,7 +48,6 @@ def test_add_provider_missing_name(client):
 
 
 def test_add_provider_success(client, app):
-    # Prevent conflicts with seeded names or previous tests
     with app.app_context():
         clear_providers()
 
@@ -74,7 +62,6 @@ def test_add_provider_success(client, app):
 
 
 def test_add_provider_duplicate_name_returns_409(client, app):
-    # Clear to ensure the duplicate check is deterministic
     with app.app_context():
         clear_providers()
 

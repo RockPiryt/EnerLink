@@ -3,12 +3,7 @@ from app.models.pkwiu_model import Pkwiu
 
 
 def seed_pkwiu(items):
-    """
-    Helper to seed PKWiU records quickly.
-    items: list of tuples (pkwiu_nr, pkwiu_name)
-    NOTE: In this project the DB is seeded once per test session (seeded_app),
-    so avoid hard assertions like total==X after seeding here.
-    """
+    """Helper to seed PKWiU records quickly. """
     for nr, name in items:
         db.session.add(Pkwiu(pkwiu_nr=nr, pkwiu_name=name))
     db.session.commit()
@@ -128,7 +123,6 @@ def test_delete_pkwiu_success(client):
 
 
 def test_get_pkwiu_pagination_basic(client):
-    # Do not assert exact totals because DB is session-seeded and tests add rows.
     resp = client.get("/api/pkwiu?page=1&per_page=20")
     assert resp.status_code == 200
     data = resp.get_json()
@@ -141,7 +135,6 @@ def test_get_pkwiu_pagination_basic(client):
 
 
 def test_get_pkwiu_search_by_nr_matches_seeded_data(client):
-    # seed_database() adds: 35.11.10.0 etc.
     resp = client.get("/api/pkwiu?q=35.11")
     assert resp.status_code == 200
     data = resp.get_json()
@@ -151,7 +144,6 @@ def test_get_pkwiu_search_by_nr_matches_seeded_data(client):
 
 
 def test_get_pkwiu_search_by_name_with_local_seed(client, seeded_app):
-    # Here we seed unique records, then verify they can be found.
     with seeded_app.app_context():
         seed_pkwiu([
             ("99.01", "UniqueNameAlpha"),

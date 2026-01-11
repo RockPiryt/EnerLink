@@ -16,7 +16,6 @@ class EnergySupplier(db.Model):
         cascade="all, delete-orphan"
     )
 
-    # 1:1 address
     supplier_address = db.relationship(
         "SupplierAddress",
         back_populates="supplier",

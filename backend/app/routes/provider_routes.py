@@ -26,7 +26,6 @@ def add_provider():
     db.session.add(new_provider)
 
     try:
-        # Flush nadaje ID w ramach transakcji; pomaga też w stabilnym to_dict()
         db.session.flush()
         db.session.commit()
     except IntegrityError:

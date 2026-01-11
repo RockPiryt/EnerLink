@@ -195,8 +195,6 @@ def test_get_tariffs_filter_active_true(client, app):
 
 
 def test_get_tariffs_filter_active_false(client, app):
-    # The failure you had (UNIQUE constraint) was caused by collisions with seeded data.
-    # Clearing makes it deterministic.
     with app.app_context():
         clear_tariffs()
         seed_tariffs([

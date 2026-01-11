@@ -13,25 +13,20 @@ def get_contract_history(id: int):
     if not contract:
         return jsonify({"error": "Contract not found"}), 404
 
-    # Join ContractTimeline with User (if possible)
     history = []
     for t in contract.timelines:
-        # Try to get user who changed status (if such info is available)
-        # For now, fallback to None or 'System'
         changed_by = "System"
-        # If you store user_id in timeline, you can fetch user here
-        # Example: changed_by = User.query.get(t.id_user).username if t.id_user else "System"
         history.append({
             "id": t.id,
             "contract_id": t.id_contract,
             "changed_at": t.created_at.isoformat() if t.created_at else None,
             "changed_by": changed_by,
             "field": "status",
-            "old_value": None,  # Not tracked in current model
+            "old_value": None,
             "new_value": t.status,
             "description": t.description,
         })
-    # Sort by date ascending
+
     history.sort(key=lambda x: x["changed_at"])
     return jsonify(history), 200
 
@@ -108,7 +103,7 @@ def add_contract():
         db.session.commit()
 
 
-        status = data.get("status") or "Signed"  # Default to 'Signed' if not provided
+        status = data.get("status") or "Signed"
         description = data.get("description")
         tl = ContractTimeline(
             id_contract=contract.id,
@@ -117,8 +112,7 @@ def add_contract():
         )
         db.session.add(tl)
         db.session.commit()
-        db.session.refresh(contract)  # Ensure timelines are up to date
-        # Re-query contract to ensure timelines are loaded
+        db.session.refresh(contract)
         contract = Contract.query.get(contract.id)
         return jsonify({"message": "Contract created", "contract": contract.to_dict()}), 201
     except Exception as e:

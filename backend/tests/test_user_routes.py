@@ -80,8 +80,6 @@ def test_update_user_conflict(client):
     _create_user(client, "user1", "u1@example.com")
     r2 = _create_user(client, "user2", "u2@example.com")
     uid2 = r2.get_json()["id"]
-
-    # try to change user2 email to user1 email
     resp = client.patch(f"{BASE}/{uid2}", json={"email": "u1@example.com"})
     assert resp.status_code == 409
 

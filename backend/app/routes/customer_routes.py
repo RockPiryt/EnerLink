@@ -104,7 +104,6 @@ def update_customer(id: int):
 
     addr_data = data.get("address")
     if addr_data is not None:
-        # If customer already has link, update its address. Otherwise create new address + link.
         if customer.customer_address and customer.customer_address.address:
             address = customer.customer_address.address
             address.street_name = addr_data.get("street_name", address.street_name)

@@ -6,7 +6,7 @@ class Contract(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
-    # opiekun klienta
+    # owner
     id_user = db.Column(db.String(12), db.ForeignKey("user.id"), nullable=True)
     id_customer = db.Column(db.Integer, db.ForeignKey("customer.id"), nullable=False)
     id_tag = db.Column(db.Integer, db.ForeignKey("tag.id"), nullable=True)
@@ -16,7 +16,7 @@ class Contract(db.Model):
     contract_from = db.Column(db.Date, nullable=True)
     contract_to = db.Column(db.Date, nullable=True)
 
-    # oferta dostawcy
+    # offerings
     id_supplier_offer = db.Column(db.Integer, db.ForeignKey("supplier_offer.id"), nullable=True)
 
     is_deleted = db.Column(db.Boolean, default=False, nullable=False)

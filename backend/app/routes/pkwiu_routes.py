@@ -13,7 +13,6 @@ def get_pkwiu():
 
     query = Pkwiu.query
 
-    # Search filter
     if search:
         query = query.filter(
             db.or_(
@@ -22,7 +21,6 @@ def get_pkwiu():
             )
         )
 
-    # Pagination
     pkwiu_items = query.paginate(
         page=page,
         per_page=per_page,

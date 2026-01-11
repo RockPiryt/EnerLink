@@ -7,10 +7,10 @@ class Customer(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
-    # owner / opiekun klienta (zgodnie z Twoim User.id = String(12))
+    # owner / opiekun klienta
     id_user = db.Column(db.String(12), db.ForeignKey("user.id"), nullable=True)
 
-    # tag (opcjonalnie)
+    # tag
     id_tag = db.Column(db.Integer, db.ForeignKey("tag.id"), nullable=True)
 
     # Basic identity / contact
@@ -31,15 +31,12 @@ class Customer(db.Model):
     representative = db.Column(db.String(100))
     private_or_company = db.Column(db.Integer)  # 0 = private, 1 = company
 
-    # description + soft delete
     description = db.Column(db.String(500), nullable=True)
     is_deleted = db.Column(db.Boolean, default=False, nullable=False)
 
-    # Status / timestamps
     active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
-    # updated_at
     updated_at = db.Column(
         db.DateTime,
         default=datetime.utcnow,
@@ -47,14 +44,11 @@ class Customer(db.Model):
         nullable=False
     )
 
-    # Relations
     pkwiu = db.relationship("Pkwiu", backref="customers")
 
-    # relation to user + tag
     user = db.relationship("User", foreign_keys=[id_user])
     tag = db.relationship("Tag", foreign_keys=[id_tag])
 
-    # 1:1 link to CustomerAddress
     customer_address = db.relationship(
         "CustomerAddress",
         back_populates="customer",

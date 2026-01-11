@@ -20,7 +20,6 @@ def add_tag():
     if not name:
         return jsonify({"error": "Tag name is required"}), 400
 
-    # optional: prevent duplicates
     if Tag.query.filter_by(name=name).first():
         return jsonify({"error": "Tag already exists"}), 409
 

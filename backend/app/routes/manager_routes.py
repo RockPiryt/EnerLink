@@ -1,8 +1,5 @@
 
 
-# Raport obsługi klienta
-
-# All imports at the top
 from flask import Blueprint, jsonify, request
 from datetime import datetime
 from sqlalchemy import func, extract
@@ -11,7 +8,6 @@ from app.models.user_model import User
 from app.models.customer_model import Customer
 from app import db
 
-# Only one Blueprint definition, used for all routes below
 manager_bp = Blueprint("manager", __name__)
 
 @manager_bp.route("/manager/customer_service_report", methods=["GET"])
@@ -27,11 +23,9 @@ def customer_service_report():
             q = q.filter(extract("month", Contract.created_at) == month)
 
         contracts = q.all()
-        # Liczba obsłużonych klientów (unikalnych)
         customer_ids = set(c.id_customer for c in contracts if c.id_customer)
         num_customers = len(customer_ids)
 
-        # Średni czas realizacji (od utworzenia do podpisania)
         times = []
         for c in contracts:
             if c.signed_at and c.created_at:
@@ -43,7 +37,6 @@ def customer_service_report():
                     print(f"Error calculating delta for contract {c.id}: {e}")
         avg_realization_days = round(sum(times) / len(times), 2) if times else None
 
-        # Liczba podpisanych, anulowanych, nowych kontraktów
         signed = sum(1 for c in contracts if c.signed_at)
         cancelled = sum(1 for c in contracts if hasattr(c, 'timelines') and c.timelines and any(t.status == "CANCELLED" for t in c.timelines))
         new = sum(1 for c in contracts if not c.signed_at and (not hasattr(c, 'timelines') or not c.timelines or all(t.status != "CANCELLED" for t in c.timelines)))
@@ -67,9 +60,6 @@ from flask import Blueprint, jsonify
 from sqlalchemy import func, extract
 from app.models.contract_model import Contract
 from app.models.user_model import User
-
-
-# Rozszerzony endpoint rankingowy z obsługą miesiąca i roku
 from flask import request
 
 @manager_bp.route("/manager/ranking", methods=["GET"])
@@ -83,7 +73,6 @@ def get_ranking():
     if month:
         q = q.filter(extract("month", Contract.created_at) == month)
 
-    # Grupowanie po handlowcu i zliczanie kontraktów
     rows = (
         q.with_entities(
             Contract.id_user,
@@ -93,8 +82,6 @@ def get_ranking():
         .order_by(func.count(Contract.id).desc())
         .all()
     )
-
-    # Pobierz dane użytkowników
     user_ids = [r[0] for r in rows if r[0] is not None]
     users = {u.id: f"{u.first_name} {u.last_name}" for u in User.query.filter(User.id.in_(user_ids)).all()}
 
@@ -114,7 +101,6 @@ def get_ranking():
     }
     return jsonify(ranking_data), 200
 
-# New: Salesperson efficiency per month (contracts per salesperson per month)
 @manager_bp.route("/manager/efficiency", methods=["GET"])
 def get_salesperson_efficiency():
     year = None
@@ -128,7 +114,6 @@ def get_salesperson_efficiency():
     if year:
         q = q.filter(extract("year", Contract.created_at) == year)
 
-    # Group by user (salesperson) and month
     rows = (
         q.with_entities(
             Contract.id_user,
@@ -140,11 +125,9 @@ def get_salesperson_efficiency():
         .all()
     )
 
-    # Get user names for id_user
     user_ids = list({r[0] for r in rows if r[0] is not None})
     users = {u.id: f"{u.first_name} {u.last_name}" for u in User.query.filter(User.id.in_(user_ids)).all()}
 
-    # Build response: {salesperson: {month: count}}
     result = {}
     for id_user, month, count in rows:
         if id_user is None:
@@ -154,7 +137,6 @@ def get_salesperson_efficiency():
             result[name] = {}
         result[name][int(month)] = int(count)
 
-    # Format for frontend: list of {salesperson, monthly: [{month, count}]}
     formatted = [
         {
             "salesperson": name,

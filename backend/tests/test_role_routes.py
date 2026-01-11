@@ -70,6 +70,5 @@ def test_delete_role_success(client):
     assert resp.status_code == 200
     assert resp.get_json()["message"] == "Role deleted"
 
-    # confirm it's gone
     resp2 = client.get(f"/api/roles/{role_id}")
     assert resp2.status_code == 404
