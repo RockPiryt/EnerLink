@@ -1,3 +1,14 @@
+# Eksport rankingów i raportów do XLSX
+
+W panelu menadżera dostępna jest funkcja eksportu rankingów i raportów do plików XLSX. Do działania tej funkcji wymagane jest zainstalowanie biblioteki `xlsx`:
+
+```
+npm install xlsx
+```
+
+Po instalacji, w panelu menadżera pojawi się przycisk umożliwiający pobranie danych w formacie Excel.
+
+Jeśli dodajesz nowe funkcje eksportu, korzystaj z biblioteki `xlsx` zgodnie z dokumentacją: https://github.com/SheetJS/sheetjs
 # Setup
 ## Clone the repository
 ```bash

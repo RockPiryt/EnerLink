@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import * as XLSX from 'xlsx';
 import { Container, Row, Col, Card, Table, Button, Alert, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 
@@ -35,6 +36,18 @@ const ManagerRanking: React.FC = () => {
       });
   }, []);
 
+  const handleExportXLSX = () => {
+    if (!data || !data.ranking) return;
+    const ws = XLSX.utils.json_to_sheet(data.ranking.map(item => ({
+      ID: item.id,
+      Name: item.name,
+      Score: item.value
+    })));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Ranking');
+    XLSX.writeFile(wb, 'sales_ranking.xlsx');
+  };
+
   return (
     <Container fluid className="py-4">
       <Row>
@@ -42,13 +55,24 @@ const ManagerRanking: React.FC = () => {
           <Card>
             <Card.Header className="bg-primary text-white d-flex align-items-center justify-content-between">
               <h4 className="mb-0">Sales Ranking</h4>
-              <Button
-                variant="light"
-                size="sm"
-                onClick={() => navigate('/dashboard')}
-              >
-                &larr; Back to Dashboard
-              </Button>
+              <div>
+                <Button
+                  variant="success"
+                  size="sm"
+                  className="me-2"
+                  onClick={handleExportXLSX}
+                  disabled={loading || !data || !data.ranking?.length}
+                >
+                  Export to XLSX
+                </Button>
+                <Button
+                  variant="light"
+                  size="sm"
+                  onClick={() => navigate('/dashboard')}
+                >
+                  &larr; Back to Dashboard
+                </Button>
+              </div>
             </Card.Header>
             <Card.Body>
               {loading ? (
