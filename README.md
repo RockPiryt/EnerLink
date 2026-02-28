@@ -230,9 +230,13 @@ The test environment uses a separate database configuration to avoid modifying p
 
 
 ## Room for Improvement
-- Add Docker configuration for easier deployment
-- Implement integration tests
-- Enhance UI with modern dashboard components (charts, analytics)
+
+- Improve UI design and overall UX
+- Refine and expand dashboards (metrics, trends, summaries)
+- Add email notifications (reminders, alerts, summaries)
+- Integrate with external APIs
+- Deploy the application
+- Implement integration tests (end-to-end and service-level)
 - Introduce JWT authentication
 - Use services (not only routes) - analytics_service.py, contract_service.py, customer_service.py, user_service.py
 
