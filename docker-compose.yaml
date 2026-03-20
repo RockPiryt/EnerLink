@@ -1,0 +1,67 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: enerlink-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: enerlink
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - enerlink-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U enerlink_user -d enerlink"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: enerlink-backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      FLASK_APP: wsgi.py
+      FLASK_ENV: production
+      DATABASE_URL: postgresql://enerlink_user:enerlink_password@db:5432/enerlink
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: enerlink
+      DB_USER: enerlink_user
+      DB_PASSWORD: enerlink_password
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    networks:
+      - enerlink-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: enerlink-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+    networks:
+      - enerlink-network
+
+volumes:
+  postgres_data:
+
+networks:
+  enerlink-network:
+    driver: bridge
