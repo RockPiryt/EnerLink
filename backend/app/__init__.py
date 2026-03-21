@@ -2,12 +2,14 @@ from flask import Flask
 from flask_migrate import Migrate
 from flask_cors import CORS
 from flasgger import Swagger
+from flask_jwt_extended import JWTManager
 from .config import Config
 from .db import db
 from . import models
 from .routes import register_routes
 
 migrate = Migrate()
+jwt = JWTManager()
 
 def create_app():
     """Factory function to create a Flask app instance."""
@@ -20,6 +22,9 @@ def create_app():
     # Initialize database and migrations
     db.init_app(app)
     migrate.init_app(app, db)
+
+    # Initialize JWT
+    jwt.init_app(app)
 
     # Initialize Swagger
     swagger = Swagger(app, template_file="../openapi.yaml")

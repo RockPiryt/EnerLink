@@ -3,12 +3,13 @@ from app.db import db
 from app.models.customer_model import Customer
 from app.models.address_model import Address
 from app.models.address_relation_model import CustomerAddress
-
+from flask_jwt_extended import jwt_required
 customer_bp = Blueprint("customer_bp", __name__)
 
 
 # GET /api/customers – list of customers
 @customer_bp.route("/customers", methods=["GET"])
+@jwt_required()
 def get_customers():
     include_deleted = (request.args.get("include_deleted", "false").lower() == "true")
 
@@ -22,6 +23,7 @@ def get_customers():
 
 # POST /api/customers – create new customer
 @customer_bp.route("/customers", methods=["POST"])
+@jwt_required()
 def add_customer():
     data = request.get_json(silent=True) or {}
 
@@ -71,6 +73,7 @@ def add_customer():
 
 # GET /api/customers/<id> – customer details
 @customer_bp.route("/customers/<int:id>", methods=["GET"])
+@jwt_required()
 def get_customer(id: int):
     customer = Customer.query.get(id)
     if not customer:
@@ -81,6 +84,7 @@ def get_customer(id: int):
 
 # PUT /api/customers/<id> – update customer
 @customer_bp.route("/customers/<int:id>", methods=["PUT"])
+@jwt_required()
 def update_customer(id: int):
     customer = Customer.query.get(id)
     if not customer:
@@ -135,6 +139,7 @@ def update_customer(id: int):
 
 # PATCH /api/customers/<id> – activate/deactivate
 @customer_bp.route("/customers/<int:id>", methods=["PATCH"])
+@jwt_required()
 def toggle_customer_status(id: int):
     customer = Customer.query.get(id)
     if not customer:

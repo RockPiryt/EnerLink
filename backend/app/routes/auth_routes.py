@@ -1,8 +1,7 @@
-
 from flask import Blueprint, request, jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
 from app.models.user_model import User, Role, Password
-
+from flask_jwt_extended import create_access_token
 auth_bp = Blueprint("auth_bp", __name__)
 
 @auth_bp.route("/debug_reset_admin", methods=["POST"])
@@ -84,9 +83,10 @@ def login():
         return jsonify({"error": "Account is deactivated"}), 401
     stored_hash = user.password.pass_hash if user.password else None
     if stored_hash and _password_matches(stored_hash, str(password)):
+        access_token = create_access_token(identity=str(user.id))
         return jsonify({
             "message": "Login successful",
-            "token": "fake-jwt",
+            "token": access_token,
             "user": user.to_dict()
         }), 200
     return jsonify({"error": "Invalid credentials"}), 401
