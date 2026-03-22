@@ -24,8 +24,6 @@ services:
     container_name: enerlink-backend
     restart: unless-stopped
     environment:
-      FLASK_APP: wsgi.py
-      FLASK_ENV: production
       DATABASE_URL: postgresql://enerlink_user:enerlink_password@db:5432/enerlink
       DB_HOST: db
       DB_PORT: 5432
