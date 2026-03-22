@@ -5,7 +5,14 @@ services:
 
   backend:
     environment:
+      FLASK_APP: wsgi:app
       FLASK_ENV: development
+      DATABASE_URL: postgresql://enerlink_user:enerlink_password@db:5432/enerlink
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: enerlink
+      DB_USER: enerlink_user
+      DB_PASSWORD: enerlink_password
     ports:
       - "8080:8080"
     volumes:
@@ -13,6 +20,9 @@ services:
     command: flask run --host=0.0.0.0 --port=8080
 
   frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
     ports:
       - "3000:3000"
     volumes:
