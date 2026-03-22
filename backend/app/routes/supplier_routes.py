@@ -1,11 +1,12 @@
 from flask import Blueprint, request, jsonify
 from app.models.supplier_model import EnergyTariff
 from app.db import db
-
+from flask_jwt_extended import jwt_required
 supplier_bp = Blueprint("supplier_bp", __name__)
 
 # GET /api/supplier/tariffs
 @supplier_bp.route("/supplier/tariffs", methods=["GET"])
+@jwt_required()
 def get_tariffs():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 20, type=int)
@@ -37,6 +38,7 @@ def get_tariffs():
 
 # POST /api/supplier/tariffs
 @supplier_bp.route("/supplier/tariffs", methods=["POST"])
+@jwt_required()
 def add_tariff():
     data = request.get_json(silent=True) or {}
 
@@ -57,6 +59,7 @@ def add_tariff():
 
 # GET /api/supplier/tariffs/<id>
 @supplier_bp.route("/supplier/tariffs/<int:id>", methods=["GET"])
+@jwt_required()
 def get_tariff(id):
     tariff = EnergyTariff.query.get(id)
     if not tariff:
@@ -66,6 +69,7 @@ def get_tariff(id):
 
 # PUT /api/supplier/tariffs/<id>
 @supplier_bp.route("/supplier/tariffs/<int:id>", methods=["PUT"])
+@jwt_required()
 def update_tariff(id):
     tariff = EnergyTariff.query.get(id)
     if not tariff:
@@ -85,6 +89,7 @@ def update_tariff(id):
 
 # DELETE /api/supplier/tariffs/<id>
 @supplier_bp.route("/supplier/tariffs/<int:id>", methods=["DELETE"])
+@jwt_required()
 def delete_tariff(id):
     tariff = EnergyTariff.query.get(id)
     if not tariff:
@@ -97,6 +102,7 @@ def delete_tariff(id):
 
 # PATCH /api/supplier/tariffs/<id>/status
 @supplier_bp.route("/supplier/tariffs/<int:id>/status", methods=["PATCH"])
+@jwt_required()
 def update_tariff_status(id):
     tariff = EnergyTariff.query.get(id)
     if not tariff:

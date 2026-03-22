@@ -2,12 +2,13 @@ from flask import Blueprint, request, jsonify
 from sqlalchemy.exc import IntegrityError
 from app.models.supplier_model import EnergySupplier
 from app import db
-
+from flask_jwt_extended import jwt_required
 provider_bp = Blueprint("provider_bp", __name__)
 
 
 # GET /providers – list of energy providers
 @provider_bp.route("/providers", methods=["GET"])
+@jwt_required()
 def get_providers():
     providers = EnergySupplier.query.all()
     return jsonify([p.to_dict() for p in providers]), 200
@@ -15,6 +16,7 @@ def get_providers():
 
 # POST /providers – add new provider
 @provider_bp.route("/providers", methods=["POST"])
+@jwt_required()
 def add_provider():
     data = request.get_json(silent=True) or {}
     name = data.get("name")
@@ -40,6 +42,7 @@ def add_provider():
 
 # GET /providers/<id> – get single provider
 @provider_bp.route("/providers/<int:id>", methods=["GET"])
+@jwt_required()
 def get_provider(id: int):
     provider = db.session.get(EnergySupplier, id)
     if not provider:
@@ -50,6 +53,7 @@ def get_provider(id: int):
 
 # PUT /providers/<id> – update provider
 @provider_bp.route("/providers/<int:id>", methods=["PUT"])
+@jwt_required()
 def update_provider(id: int):
     provider = db.session.get(EnergySupplier, id)
     if not provider:
@@ -71,6 +75,7 @@ def update_provider(id: int):
 
 # DELETE /providers/<id> – delete provider
 @provider_bp.route("/providers/<int:id>", methods=["DELETE"])
+@jwt_required()
 def delete_provider(id: int):
     provider = db.session.get(EnergySupplier, id)
     if not provider:

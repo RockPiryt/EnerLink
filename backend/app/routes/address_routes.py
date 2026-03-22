@@ -1,17 +1,20 @@
 from flask import Blueprint, request, jsonify
 from app.models.address_model import Country, City, District
 from app.db import db
+from flask_jwt_extended import jwt_required
 
 address_bp = Blueprint("address_bp", __name__)
 
 # GET /api/address/countries
 @address_bp.route("/address/countries", methods=["GET"])
+@jwt_required()
 def get_countries():
     countries = Country.query.all()
     return jsonify([c.to_dict() for c in countries]), 200
 
 # POST /api/address/countries
 @address_bp.route("/address/countries", methods=["POST"])
+@jwt_required()
 def add_country():
     data = request.get_json(silent=True) or {}
 
@@ -34,6 +37,7 @@ def add_country():
 
 # PATCH /api/address/countries/<id>/status
 @address_bp.route("/address/countries/<int:id>/status", methods=["PATCH"])
+@jwt_required()
 def update_country_status(id):
     country = Country.query.get(id)
     if not country:
@@ -50,6 +54,7 @@ def update_country_status(id):
 
 # GET /api/address/cities
 @address_bp.route("/address/cities", methods=["GET"])
+@jwt_required()
 def get_cities():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 20, type=int)
@@ -84,6 +89,7 @@ def get_cities():
 
 # POST /api/address/cities
 @address_bp.route("/address/cities", methods=["POST"])
+@jwt_required()
 def add_city():
     data = request.get_json(silent=True) or {}
 
@@ -104,6 +110,7 @@ def add_city():
 
 # GET /api/address/cities/<id>
 @address_bp.route("/address/cities/<int:id>", methods=["GET"])
+@jwt_required()
 def get_city(id):
     city = City.query.get(id)
     if not city:
@@ -132,6 +139,7 @@ def update_city(id):
 
 # DELETE /api/address/cities/<id>
 @address_bp.route("/address/cities/<int:id>", methods=["DELETE"])
+@jwt_required()
 def delete_city(id):
     city = City.query.get(id)
     if not city:
@@ -144,6 +152,7 @@ def delete_city(id):
 
 # GET /api/address/districts
 @address_bp.route("/address/districts", methods=["GET"])
+@jwt_required()
 def get_districts():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 20, type=int)
@@ -175,6 +184,7 @@ def get_districts():
 
 # POST /api/address/districts
 @address_bp.route("/address/districts", methods=["POST"])
+@jwt_required()
 def add_district():
     data = request.get_json(silent=True) or {}
 
@@ -195,6 +205,7 @@ def add_district():
 
 # GET /api/address/districts/<id>
 @address_bp.route("/address/districts/<int:id>", methods=["GET"])
+@jwt_required()
 def get_district(id):
     district = District.query.get(id)
     if not district:
@@ -204,6 +215,7 @@ def get_district(id):
 
 # PUT /api/address/districts/<id>
 @address_bp.route("/address/districts/<int:id>", methods=["PUT"])
+@jwt_required()
 def update_district(id):
     district = District.query.get(id)
     if not district:
@@ -223,6 +235,7 @@ def update_district(id):
 
 # DELETE /api/address/districts/<id>
 @address_bp.route("/address/districts/<int:id>", methods=["DELETE"])
+@jwt_required()
 def delete_district(id):
     district = District.query.get(id)
     if not district:
@@ -235,6 +248,7 @@ def delete_district(id):
 
 # PATCH /api/address/districts/<id>/status
 @address_bp.route("/address/districts/<int:id>/status", methods=["PATCH"])
+@jwt_required()
 def update_district_status(id):
     district = District.query.get(id)
     if not district:

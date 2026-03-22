@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from sqlalchemy import func, extract
 from app.db import db
-
+from flask_jwt_extended import jwt_required
 from app.models.customer_model import Customer
 from app.models.contract_model import Contract
 from app.models.assignment_model import Assignment
@@ -10,6 +10,7 @@ sale_bp = Blueprint("sale_bp", __name__)
 
 # GET /api/sales/customers?rep_id=SAL001
 @sale_bp.route("/sales/customers", methods=["GET"])
+@jwt_required()
 def list_sales_customers():
     rep_id = request.args.get("rep_id", type=str)
     if not rep_id:
@@ -33,6 +34,7 @@ def list_sales_customers():
 
 # POST /api/sales/customers  { "customer_id": 1, "sales_rep_id": "SAL001" }
 @sale_bp.route("/sales/customers", methods=["POST"])
+@jwt_required()
 def assign_customer_to_sales_rep():
     data = request.get_json(silent=True) or {}
 
@@ -72,6 +74,7 @@ def assign_customer_to_sales_rep():
 
 # GET /api/sales/analytics/contracts?year=2025
 @sale_bp.route("/sales/analytics/contracts", methods=["GET"])
+@jwt_required()
 def contract_analytics():
     year = request.args.get("year", type=int)
 

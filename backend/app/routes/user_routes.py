@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from flasgger import swag_from
 from sqlalchemy import or_
 from werkzeug.security import generate_password_hash
-
+from flask_jwt_extended import jwt_required
 from app.db import db
 from app.models.user_model import User, Role, Password
 
@@ -63,6 +63,7 @@ def _set_new_password_for_user(user: User, password_plain: str):
 
 # READ: list
 @user_bp.route("/users", methods=["GET"])
+@jwt_required()
 @swag_from({
     "tags": ["Users"],
     "summary": "List users",
@@ -111,6 +112,7 @@ def get_users():
 
 # READ: single
 @user_bp.route("/users/<string:user_id>", methods=["GET"])
+@jwt_required()
 @swag_from({
     "tags": ["Users"],
     "summary": "Get user by id",
@@ -127,6 +129,7 @@ def get_user(user_id: str):
 
 # CREATE
 @user_bp.route("/users", methods=["POST"])
+@jwt_required()
 @swag_from({
     "tags": ["Users"],
     "summary": "Create new user",
@@ -199,6 +202,7 @@ def create_user():
 
 # UPDATE (partial) - PATCH
 @user_bp.route("/users/<string:user_id>", methods=["PATCH"])
+@jwt_required()
 @swag_from({
     "tags": ["Users"],
     "summary": "Update user (partial)",
@@ -286,6 +290,7 @@ def update_user(user_id: str):
 
 # UPDATE (full) - PUT
 @user_bp.route("/users/<string:user_id>", methods=["PUT"])
+@jwt_required()
 @swag_from({
     "tags": ["Users"],
     "summary": "Replace user (full update)",
@@ -365,6 +370,7 @@ def replace_user(user_id: str):
 
 # DELETE 
 @user_bp.route("/users/<string:user_id>", methods=["DELETE"])
+@jwt_required()
 @swag_from({
     "tags": ["Users"],
     "summary": "Delete user (soft delete: sets active=false)",
@@ -393,6 +399,7 @@ def delete_user(user_id: str):
 
 
 @user_bp.route("/users/<string:user_id>/reset-password", methods=["POST"])
+@jwt_required()
 @swag_from({
     "tags": ["Users"],
     "summary": "Reset user password (creates new Password and re-links user)",
@@ -440,6 +447,7 @@ def reset_password(user_id: str):
 
 
 @user_bp.route("/users/<string:user_id>/activate", methods=["PATCH"])
+@jwt_required()
 @swag_from({
     "tags": ["Users"],
     "summary": "Activate user (sets active=true)",

@@ -7,10 +7,11 @@ from app.models.contract_model import Contract, ContractTimeline
 from app.models.user_model import User
 from app.models.customer_model import Customer
 from app import db
-
+from flask_jwt_extended import jwt_required
 manager_bp = Blueprint("manager", __name__)
 
 @manager_bp.route("/manager/customer_service_report", methods=["GET"])
+@jwt_required()
 def customer_service_report():
     try:
         month = request.args.get("month", type=int)
@@ -63,6 +64,7 @@ from app.models.user_model import User
 from flask import request
 
 @manager_bp.route("/manager/ranking", methods=["GET"])
+@jwt_required()
 def get_ranking():
     month = request.args.get("month", type=int)
     year = request.args.get("year", type=int)
@@ -102,6 +104,7 @@ def get_ranking():
     return jsonify(ranking_data), 200
 
 @manager_bp.route("/manager/efficiency", methods=["GET"])
+@jwt_required()
 def get_salesperson_efficiency():
     year = None
     try:

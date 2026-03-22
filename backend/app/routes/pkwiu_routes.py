@@ -1,11 +1,12 @@
 from flask import Blueprint, request, jsonify
 from app.models.pkwiu_model import Pkwiu
 from app.db import db
-
+from flask_jwt_extended import jwt_required
 pkwiu_bp = Blueprint("pkwiu_bp", __name__)
 
 # GET /api/pkwiu
 @pkwiu_bp.route("/pkwiu", methods=["GET"])
+@jwt_required()
 def get_pkwiu():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 20, type=int)
@@ -37,6 +38,7 @@ def get_pkwiu():
 
 # POST /api/pkwiu
 @pkwiu_bp.route("/pkwiu", methods=["POST"])
+@jwt_required()
 def add_pkwiu():
     data = request.get_json(silent=True) or {}
 
@@ -58,6 +60,7 @@ def add_pkwiu():
 
 # GET /api/pkwiu/<id>
 @pkwiu_bp.route("/pkwiu/<int:id>", methods=["GET"])
+@jwt_required()
 def get_pkwiu_item(id):
     pkwiu = Pkwiu.query.get(id)
     if not pkwiu:
@@ -67,6 +70,7 @@ def get_pkwiu_item(id):
 
 # PUT /api/pkwiu/<id>
 @pkwiu_bp.route("/pkwiu/<int:id>", methods=["PUT"])
+@jwt_required()
 def update_pkwiu(id):
     pkwiu = Pkwiu.query.get(id)
     if not pkwiu:
@@ -86,6 +90,7 @@ def update_pkwiu(id):
 
 # DELETE /api/pkwiu/<id>
 @pkwiu_bp.route("/pkwiu/<int:id>", methods=["DELETE"])
+@jwt_required()
 def delete_pkwiu(id):
     pkwiu = Pkwiu.query.get(id)
     if not pkwiu:

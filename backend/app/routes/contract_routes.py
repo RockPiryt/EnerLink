@@ -3,11 +3,13 @@ from flask import Blueprint, request, jsonify
 from app.db import db
 from app.models.contract_model import Contract, ContractTimeline
 from app.models.user_model import User
+from flask_jwt_extended import jwt_required
 
 contract_bp = Blueprint("contract_bp", __name__)
 
 # GET /api/contracts/<id>/history – contract change history
 @contract_bp.route("/contracts/<int:id>/history", methods=["GET"])
+@jwt_required()
 def get_contract_history(id: int):
     contract = Contract.query.get(id)
     if not contract:
@@ -33,6 +35,7 @@ def get_contract_history(id: int):
 
 # GET /api/contracts – list contracts
 @contract_bp.route("/contracts", methods=["GET"])
+@jwt_required()
 def get_contracts():
     customer_id = request.args.get("customer_id", type=int)
     user_id = request.args.get("user_id", type=str)
@@ -60,6 +63,7 @@ def get_contracts():
 
 # POST /api/contracts – create contract
 @contract_bp.route("/contracts", methods=["POST"])
+@jwt_required()
 def add_contract():
     data = request.get_json(silent=True) or {}
 
@@ -126,6 +130,7 @@ def add_contract():
 
 # GET /api/contracts/<id> – contract details + timelines
 @contract_bp.route("/contracts/<int:id>", methods=["GET"])
+@jwt_required()
 def get_contract(id: int):
     contract = Contract.query.get(id)
     if not contract:
@@ -139,6 +144,7 @@ def get_contract(id: int):
 
 # PUT /api/contracts/<id> – update contract
 @contract_bp.route("/contracts/<int:id>", methods=["PUT"])
+@jwt_required()
 def update_contract(id: int):
     contract = Contract.query.get(id)
     if not contract:
@@ -192,6 +198,7 @@ def update_contract(id: int):
 
 # PATCH /api/contracts/<id>/deleted – soft delete / restore
 @contract_bp.route("/contracts/<int:id>/deleted", methods=["PATCH"])
+@jwt_required()
 def toggle_contract_deleted(id: int):
     contract = Contract.query.get(id)
     if not contract:
@@ -208,6 +215,7 @@ def toggle_contract_deleted(id: int):
 
 # GET /api/contracts/<id>/timeline – list timeline
 @contract_bp.route("/contracts/<int:id>/timeline", methods=["GET"])
+@jwt_required()
 def get_contract_timeline(id: int):
     contract = Contract.query.get(id)
     if not contract:
@@ -218,6 +226,7 @@ def get_contract_timeline(id: int):
 
 # POST /api/contracts/<id>/timeline – add timeline entry
 @contract_bp.route("/contracts/<int:id>/timeline", methods=["POST"])
+@jwt_required()
 def add_contract_timeline(id: int):
     contract = Contract.query.get(id)
     if not contract:

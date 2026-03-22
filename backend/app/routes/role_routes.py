@@ -1,17 +1,19 @@
 from flask import Blueprint, request, jsonify
 from app.models.user_model import Role
 from app import db
-
+from flask_jwt_extended import jwt_required
 role_bp = Blueprint("role_bp", __name__)
 
 # GET /roles – list all roles
 @role_bp.route("/roles", methods=["GET"])
+@jwt_required()
 def get_roles():
     roles = Role.query.all()
     return jsonify([r.to_dict() for r in roles]), 200
 
 # POST /roles – create a new role
 @role_bp.route("/roles", methods=["POST"])
+@jwt_required()
 def add_role():
     data = request.get_json(silent=True) or {}
     role_name = data.get("role_name")
@@ -27,6 +29,7 @@ def add_role():
 
 # GET /roles/<id> – get role details
 @role_bp.route("/roles/<int:id>", methods=["GET"])
+@jwt_required()
 def get_role(id):
     role = Role.query.get(id)
     if not role:
@@ -35,6 +38,7 @@ def get_role(id):
 
 # PUT /roles/<id> – update role
 @role_bp.route("/roles/<int:id>", methods=["PUT"])
+@jwt_required()
 def update_role(id):
     role = Role.query.get(id)
     if not role:
@@ -48,6 +52,7 @@ def update_role(id):
     return jsonify({"message": "Role updated", "role": role.to_dict()}), 200
 # DELETE /roles/<id> – delete role
 @role_bp.route("/roles/<int:id>", methods=["DELETE"])
+@jwt_required()
 def delete_role(id):
     role = Role.query.get(id)
     if not role:
