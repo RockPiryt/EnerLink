@@ -16,8 +16,16 @@
 
 ## Szybki start
 
+### Development
 ```bash
-docker compose up --build -d
+docker compose -f docker-compose.yaml -f docker-compose.dev.yaml up --build
+docker compose exec backend flask db upgrade
+docker compose exec backend python seed_database.py
+```
+
+### Production
+```bash
+docker compose -f docker-compose.yaml up --build -d
 docker compose exec backend flask db upgrade
 docker compose exec backend python seed_database.py
 ```
