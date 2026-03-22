@@ -7,12 +7,10 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_DB: enerlink
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin123
+      POSTGRES_USER: enerlink_user
+      POSTGRES_PASSWORD: enerlink_password
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
     networks:
       - enerlink-network
     healthcheck:
@@ -41,8 +39,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    ports:
-      - "8080:8080"
+    expose:
+      - "8080"
     networks:
       - enerlink-network
 
@@ -55,7 +53,7 @@ services:
     depends_on:
       - backend
     ports:
-      - "3000:3000"
+      - "80:80"
     networks:
       - enerlink-network
 
