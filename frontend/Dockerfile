@@ -24,6 +24,6 @@ COPY --from=builder /app/build /usr/share/nginx/html
 # (opcjonalnie) custom config nginx dla SPA
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-EXPOSE 3000
+EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]
