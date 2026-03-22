@@ -102,26 +102,6 @@ Frontend dostępny pod:
 ```
 http://localhost:3000
 ```
----
-
-## Docker Compose
-
-Uruchamiaj z głównego folderu projektu:
-
-### Start
-
-```bash
-docker compose up --build
-```
-
-W tle:
-
-```bash
-docker compose up --build -d
-```
-
----
-
 
 ---
 
