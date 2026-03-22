@@ -19,17 +19,15 @@
 ### Development
 ```bash
 docker compose -f docker-compose.yaml -f docker-compose.dev.yaml up --build
-docker compose exec backend flask db upgrade
+docker compose -f docker-compose.yaml -f docker-compose.dev.yaml exec backend flask db upgrade
 docker compose exec backend python seed_database.py
 ```
-
 ### Production
 ```bash
 docker compose -f docker-compose.yaml up --build -d
-docker compose exec backend flask db upgrade
+docker compose -f docker-compose.yaml exec backend flask db upgrade
 docker compose exec backend python seed_database.py
 ```
-
 
 ## Zatrzymanie
 
@@ -37,7 +35,7 @@ docker compose exec backend python seed_database.py
 docker compose down
 ```
 
-Z usunięciem danych bazy:
+Z usunięciem volumes:
 
 ```bash
 docker compose down -v
@@ -58,6 +56,7 @@ Uwaga: `-v` usuwa wszystkie dane Postgresa.
 - Backend (gunicorn): `8080`
 - PostgreSQL: `5432`
 ```
+---
 
 ## Backend Container
 
@@ -78,14 +77,6 @@ Backend dostępny pod:
 
 ```
 http://localhost:8080
-```
-
-### Seed bazy danych
-
-Jeśli kontener działa:
-
-```bash
-docker exec -it enerlink-backend python seed_database.py
 ```
 
 ---
@@ -113,16 +104,26 @@ http://localhost:3000
 
 ---
 
-## Migracje bazy danych
+## Baza danych
 
+
+### Inicjalizacja migracji bazy danych
+Ten krok wykonujesz tylko pierwszy raz, jeśli folder backend/migrations/ jeszcze nie istnieje:
 ```bash
-docker compose exec backend flask db upgrade
+docker compose -f docker-compose.yaml -f docker-compose.dev.yaml exec backend flask db init
 ```
 
----
+### Utworzenie migracji
+```bash
+docker compose -f docker-compose.yaml -f docker-compose.dev.yaml exec backend flask db migrate -m "initial migration"
+```
 
-## Seed bazy danych
+### Wykonanie migracji
+```bash
+docker compose -f docker-compose.yaml -f docker-compose.dev.yaml exec backend flask db upgrade
+```
 
+### Seed bazy danych
 ```bash
 docker compose exec backend python seed_database.py
 ```
