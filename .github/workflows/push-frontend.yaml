@@ -1,4 +1,4 @@
-name: Push images to DockerHub and AWS ECR
+name: Push frontend image to DockerHub and AWS ECR
 
 on:
   # push:
