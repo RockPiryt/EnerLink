@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_DB: enerlink
       POSTGRES_USER: enerlink_user
-      POSTGRES_PASSWORD: enerlink_password
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -20,16 +20,12 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
     container_name: enerlink-backend
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql://enerlink_user:enerlink_password@db:5432/enerlink
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_NAME: enerlink
-      DB_USER: enerlink_user
-      DB_PASSWORD: enerlink_password
+      FLASK_ENV: production
+      DATABASE_URL: postgresql://enerlink_user:${POSTGRES_PASSWORD}@db:5432/enerlink
     depends_on:
       db:
         condition: service_healthy
@@ -41,7 +37,7 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
     container_name: enerlink-frontend
     restart: unless-stopped
     depends_on:

@@ -1,18 +1,14 @@
 services:
-  db:
-    ports:
-      - "5432:5432"
-
   backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: enerlink-backend-dev
+    restart: unless-stopped
     environment:
       FLASK_APP: wsgi:app
       FLASK_ENV: development
-      DATABASE_URL: postgresql://enerlink_user:enerlink_password@db:5432/enerlink
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_NAME: enerlink
-      DB_USER: enerlink_user
-      DB_PASSWORD: enerlink_password
+      DATABASE_URL: sqlite:////app/enerlink.db
     ports:
       - "8080:8080"
     volumes:
@@ -23,6 +19,10 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
+    container_name: enerlink-frontend-dev
+    restart: unless-stopped
+    depends_on:
+      - backend
     ports:
       - "3000:3000"
     volumes:
