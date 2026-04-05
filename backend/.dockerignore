@@ -1,12 +1,48 @@
+# Python cache
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-.pytest_cache/
-.venv/
+*.py[cod]
+*$py.class
+
+# Virtual environments
 venv/
+.env/
+.venv/
+
+# Environment / secrets
 .env
-.git
+*.env
+
+# Database (jeśli używasz SQLite lokalnie)
+*.db
+
+# Logs
+*.log
+
+# Testy i cache
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+
+# Git
+.git/
 .gitignore
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+
+# Build / dist
+dist/
+build/
+
+# Other
 tests/
 migrations/__pycache__/
