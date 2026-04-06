@@ -10,7 +10,7 @@ import {User} from "../../models/user";
 import RoleList from '../role/RoleList';
 
 const AdminPanel: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user, isLoading, logout } = useAuth();
   const navigate = useNavigate();
   // State for Add User modal
   const [showUserModal, setShowUserModal] = useState(false);
@@ -45,6 +45,8 @@ const AdminPanel: React.FC = () => {
     useEffect(() => {
         fetchUsers();
     }, []);
+
+  if (isLoading) return null;
 
   // If user is not logged in or not admin, redirect
   if (!user) {
