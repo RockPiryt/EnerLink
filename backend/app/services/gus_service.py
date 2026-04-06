@@ -9,7 +9,7 @@ load_dotenv()
 
 GUS_API_KEY = os.getenv("GUS_API_KEY")
 
-GUS_WSDL     = "https://wyszukiwarkaregon.stat.gov.pl/wsBIR/UslugaBIRzewnPubl.svcwsdl"
+GUS_WSDL     = "https://wyszukiwarkaregon.stat.gov.pl/wsBIR/wsdl/UslugaBIRzewnPubl-ver11-prod.wsdl"
 GUS_ENDPOINT = "https://wyszukiwarkaregon.stat.gov.pl/wsBIR/UslugaBIRzewnPubl.svc"
 
 
