@@ -1,4 +1,5 @@
 import requests
+import re
 
 def mf_lookup(nip):
     from datetime import date
@@ -17,4 +18,31 @@ def mf_lookup(nip):
         "nip": data.get("nip"),
         "regon": data.get("regon"),
         "address": data.get("workingAddress")
+    }
+
+def parse_address(address):
+    pattern = (
+        r'(?P<street>.+?)\s+'
+        r'(?P<number>\d+[A-Za-z]?'
+        r'(?:[\/]\d+[A-Za-z]?)?)'
+        r'\,?\s*'
+        r'(?P<postcode>\d{2}-\d{3})\s+'
+        r'(?P<city>.+)'
+    )
+    match = re.search(pattern, address)
+    if not match:
+        return None
+    
+    number = match.group("number")
+    if "/" in number:
+        building, local = number.split("/", 1)
+    else:
+        building, local = number, None
+
+    return {
+        "street": match.group("street"),
+        "building": building,
+        "local": local,
+        "postcode": match.group("postcode"),
+        "city": match.group("city")
     }
