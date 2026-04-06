@@ -1,10 +1,14 @@
 import requests
 
 def mf_lookup(nip):
+    from datetime import date
     url = f"https://wl-api.mf.gov.pl/api/search/nip/{nip}"
-    r = requests.get(url)
+    params = {"date": date.today().isoformat()}
+    r = requests.get(url, params=params)
     if r.status_code != 200:
+        print(f"Error: {r.status_code} - {r.text}")
         return None
+    print(r.json())
     data = r.json().get("result", {}).get("subject")
     if not data:
         return None
