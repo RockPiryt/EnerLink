@@ -1,20 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Card, Table, Button, Form, InputGroup, Alert, Spinner, Badge, Modal } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-
-interface Contract {
-    id: number;
-    contract_number: string;
-    signed_at?: string;
-    contract_from?: string;
-    contract_to?: string;
-    status?: string;
-    customer?: {
-        company?: string;
-        name?: string;
-    };
-    created_at?: string;
-}
+import { Contract, getContracts, deleteContract } from '../../services/contractService';
 
 const ContractList: React.FC = () => {
     const [contracts, setContracts] = useState<Contract[]>([]);
@@ -37,33 +24,16 @@ const ContractList: React.FC = () => {
         setError(null);
 
         try {
-            const params = new URLSearchParams();
-            params.append('page', page.toString());
-            params.append('per_page', '20');
+            const data = await getContracts({
+                page,
+                per_page: 20,
+                q: search.trim() || undefined,
+                status: status && status !== 'all' ? status : undefined,
+            });
 
-            if (search.trim()) {
-                params.append('q', search.trim());
-            }
-            if (status && status !== 'all') {
-                params.append('status', status);
-            }
-
-            const response = await fetch(`http://localhost:8080/api/contracts?${params}`);
-            if (!response.ok) throw new Error('Failed to fetch contracts');
-
-            const data = await response.json();
-
-            // Assuming the API returns paginated data similar to users
-            if (data.items) {
-                setContracts(data.items);
-                setTotalPages(data.pages || 1);
-                setTotalContracts(data.total || data.items.length);
-            } else {
-                // Fallback for non-paginated response
-                setContracts(data);
-                setTotalContracts(data.length);
-                setTotalPages(1);
-            }
+            setContracts(data.items);
+            setTotalPages(data.pages || 1);
+            setTotalContracts(data.total || data.items.length);
             setCurrentPage(page);
         } catch (err: any) {
             setError(err.message);
@@ -111,13 +81,7 @@ const ContractList: React.FC = () => {
         if (!contractToDelete) return;
         setDeleteLoading(true);
         try {
-            const response = await fetch(`http://localhost:8080/api/contracts/${contractToDelete.id}`, {
-                method: 'DELETE',
-            });
-
-            if (!response.ok) throw new Error('Failed to delete contract');
-
-            // Reload contracts after deletion
+            await deleteContract(contractToDelete.id);
             loadContracts(currentPage, searchQuery, statusFilter);
         } catch (err: any) {
             setError(err.message);
