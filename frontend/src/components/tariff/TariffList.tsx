@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import DeleteTariffModal from "../../dialogs/DeleteTariffModal";
 import AddTariffModal from "../../dialogs/AddTariffModal";
 import EditTariffModal from "../../dialogs/EditTariffModal";
+import {TariffService} from "../../services/tariff/tariffService";
 
 interface Tariff {
     id: number;
@@ -31,6 +32,8 @@ const TariffList: React.FC = () => {
 
     const navigate = useNavigate();
 
+    const tariffService = new TariffService();
+
     const loadTariffs = async (page: number = 1, search: string = '', active?: boolean) => {
         setLoading(true);
         setError('');
@@ -48,7 +51,7 @@ const TariffList: React.FC = () => {
                 params.append('active', active.toString());
             }
 
-            const response = await fetch(`http://localhost:8080/api/supplier/tariffs?${params}`);
+            const response = await tariffService.getTariffs(params);
             if (!response.ok) throw new Error('Failed to fetch tariffs');
 
             const data = await response.json();

@@ -5,8 +5,10 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Navigate, useNavigate } from 'react-router-dom';
 
 const Dashboard: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user, isLoading, logout } = useAuth();
   const navigate = useNavigate();
+
+  if (isLoading) return null;
 
   // If user is not logged in, redirect to login
   if (!user) {

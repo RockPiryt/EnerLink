@@ -24,7 +24,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const savedToken = localStorage.getItem("token");
+    const savedUser = localStorage.getItem("user");
+    if (savedToken && savedUser) {
+      try {
+        setToken(savedToken);
+        setUser(JSON.parse(savedUser));
+      } catch {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+      }
+    }
+    setIsLoading(false);
+  }, []);
 
   const authService = new AuthService();
   const login = async (email: string, password: string): Promise<boolean> => {
@@ -32,6 +47,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const result = await authService.login(email, password);
       if (result.token && result.user) {
+        localStorage.setItem("token", result.token);
+        localStorage.setItem("user", JSON.stringify(result.user));
         setToken(result.token);
         setUser(result.user);
         setIsLoading(false);
@@ -47,6 +64,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setToken(null);
     setUser(null);
   };

@@ -1,17 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Container, Row, Col, Card, Table, Spinner, Alert, Button, Form, InputGroup, Badge } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-
-interface Customer {
-    id: number;
-    company?: string;
-    name?: string;
-    last_name?: string;
-    email: string;
-    phone?: string;
-    active?: boolean;
-    created_at?: string;
-}
+import { Customer, getCustomers, deleteCustomer } from '../../services/customer/customerService';
 
 const CustomerList: React.FC = () => {
     const [customers, setCustomers] = useState<Customer[]>([]);
@@ -32,33 +22,16 @@ const CustomerList: React.FC = () => {
         setError(null);
 
         try {
-            const params = new URLSearchParams();
-            params.append('page', page.toString());
-            params.append('per_page', '20');
+            const response = await getCustomers({
+                page,
+                per_page: 20,
+                q: search.trim() || undefined,
+                active,
+            });
 
-            if (search.trim()) {
-                params.append('q', search.trim());
-            }
-            if (active !== undefined) {
-                params.append('active', active.toString());
-            }
-
-            const response = await fetch(`http://localhost:8080/api/customers?${params}`);
-            if (!response.ok) throw new Error('Failed to fetch customers');
-
-            const data = await response.json();
-
-            // Assuming the API returns paginated data similar to users
-            if (data.items) {
-                setCustomers(data.items);
-                setTotalPages(data.pages || 1);
-                setTotalCustomers(data.total || data.items.length);
-            } else {
-                // Fallback for non-paginated response
-                setCustomers(data);
-                setTotalCustomers(data.length);
-                setTotalPages(1);
-            }
+            setCustomers(response.data);
+            setTotalPages(response.data.pages || 1);
+            setTotalCustomers(response.data.length);
             setCurrentPage(page);
         } catch (err: any) {
             setError(err.message);
@@ -95,13 +68,7 @@ const CustomerList: React.FC = () => {
     const handleDeleteCustomer = async () => {
         if (customerToDelete) {
             try {
-                const response = await fetch(`http://localhost:8080/api/customers/${customerToDelete.id}`, {
-                    method: 'DELETE',
-                });
-
-                if (!response.ok) throw new Error('Failed to delete customer');
-
-                // Reload customers after deletion
+                await deleteCustomer(customerToDelete.id);
                 loadCustomers(currentPage, searchQuery, activeFilter);
             } catch (err: any) {
                 setError(err.message);
@@ -199,7 +166,7 @@ const CustomerList: React.FC = () => {
                                 <>
                                     {/* Results Summary */}
                                     <div className="mb-3 text-muted">
-                                        Showing {customers.length} of {totalCustomers} customers
+                                        Showing {customers?.length} of {totalCustomers} customers
                                     </div>
 
                                     {/* Customers Table */}
@@ -218,14 +185,14 @@ const CustomerList: React.FC = () => {
                                             </tr>
                                             </thead>
                                             <tbody>
-                                            {customers.length === 0 ? (
+                                            {customers?.length === 0 ? (
                                                 <tr>
                                                     <td colSpan={8} className="text-center py-4">
                                                         No customers found
                                                     </td>
                                                 </tr>
                                             ) : (
-                                                customers.map((customer) => (
+                                                customers?.map((customer) => (
                                                     <tr key={customer.id}>
                                                         <td>
                                                             <code>{customer.id}</code>
