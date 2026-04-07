@@ -1,6 +1,6 @@
 import os
 import xml.etree.ElementTree as ET
-
+import requests
 import zeep
 from zeep.transports import Transport
 from dotenv import load_dotenv
@@ -13,24 +13,27 @@ GUS_WSDL     = "https://wyszukiwarkaregon.stat.gov.pl/wsBIR/wsdl/UslugaBIRzewnPu
 GUS_ENDPOINT = "https://wyszukiwarkaregon.stat.gov.pl/wsBIR/UslugaBIRzewnPubl.svc"
 
 
-def _gus_get_session():
-    transport = Transport()
-    client = zeep.Client(wsdl=GUS_WSDL, transport=transport)
+def _make_client(sid=None):
+    """Tworzy klienta zeep, opcjonalnie z SID w nagłówku HTTP."""
+    session = requests.Session()
+    if sid:
+        session.headers.update({"sid": sid})
+    transport = Transport(session=session)
+    return zeep.Client(wsdl=GUS_WSDL, transport=transport)
+ 
+ 
+def _gus_login():
+    """Loguje się do GUS BIR, zwraca (client, session_id)."""
+    client = _make_client()
     session_id = client.service.Zaloguj(pKluczUzytkownika=GUS_API_KEY)
-    return client, session_id
-
-
-def _build_soap_header(session_id):
-    header = zeep.xsd.Element(
-        "{http://CIS/BIR/PUBL/2014/07}ZgloszenieCertyfikatRejestracja",
-        zeep.xsd.ComplexType([
-            zeep.xsd.Element(
-                "{http://CIS/BIR/PUBL/2014/07}sid",
-                zeep.xsd.String()
-            )
-        ])
-    )
-    return header(sid=session_id)
+    return session_id
+ 
+ 
+def _gus_logout(session_id):
+    try:
+        _make_client(sid=session_id).service.Wyloguj(pIdentyfikatorSesji=session_id)
+    except Exception as e:
+        print(f"GUS wylogowanie error: {e}")
 
 
 def gus_lookup(nip):
