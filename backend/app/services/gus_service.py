@@ -37,54 +37,58 @@ def _gus_logout(session_id):
 
 
 def import_pkd_catalog(db_session):
-    
+
     from app.models import Pkwiu
- 
+
     if not GUS_API_KEY:
         print("Brak GUS_API_KEY w zmiennych środowiskowych")
-        return 0
- 
+        return {"added": 0, "updated": 0}
+
     session_id = None
     try:
         session_id = _gus_login()
         if not session_id:
             print("GUS: nie udało się zalogować")
-            return 0
- 
+            return {"added": 0, "updated": 0}
+
         client = _make_client(sid=session_id)
         result = client.service.DanePobierzSlownik(pNazwaSlownika="pkd")
- 
+
         if not result:
             print("GUS: pusty słownik PKD")
-            return 0
- 
+            return {"added": 0, "updated": 0}
+
         root = ET.fromstring(result)
         added = 0
- 
+        updated = 0
+
         for pozycja in root.findall(".//pozycja"):
             def get(tag):
                 el = pozycja.find(tag)
                 return el.text.strip() if el is not None and el.text else None
- 
+
             code = get("kod")
             name = get("nazwa")
             if not code or not name:
                 continue
- 
-            exists = db_session.query(Pkwiu).filter_by(pkwiu_nr=code).first()
-            if not exists:
+
+            existing = db_session.query(Pkwiu).filter_by(pkwiu_nr=code).first()
+            if not existing:
                 db_session.add(Pkwiu(pkwiu_nr=code, pkwiu_name=name))
                 added += 1
- 
+            elif existing.pkwiu_name != name:
+                existing.pkwiu_name = name
+                updated += 1
+
         db_session.commit()
-        print(f"PKD import zakończony — dodano {added} kodów.")
-        return added
- 
+        print(f"PKD import zakończony — dodano: {added}, zaktualizowano: {updated} kodów.")
+        return {"added": added, "updated": updated}
+
     except Exception as e:
         print(f"GUS PKD import error: {e}")
         db_session.rollback()
-        return 0
- 
+        return {"added": 0, "updated": 0}
+
     finally:
         if session_id:
             _gus_logout(session_id)
