@@ -1,53 +1,33 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Card, Form, Button, Alert, Spinner } from 'react-bootstrap';
-
-interface AddressData {
-    street_name?: string;
-    building_nr?: string;
-    apartment_nr?: string;
-    post_code?: string;
-    city?: string;
-    province?: string;
-    country?: string;
-}
-
-interface CustomerData {
-    id: number;
-    company: string;
-    email: string;
-    nip?: string;
-    phone?: string;
-    description?: string;
-    address?: AddressData;
-}
+import { getCustomerById, updateCustomer } from '../../services/customer/customerService';
 
 const CustomerDetails: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const [customer, setCustomer] = useState<CustomerData | null>(null);
-    const [form, setForm] = useState<CustomerData | null>(null);
+    const [customer, setCustomer] = useState<any | null>(null);
+    const [form, setForm] = useState<any | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
 
     useEffect(() => {
-        setLoading(true);
-        fetch(`http://localhost:8080/api/customers/${id}`)
-            .then((res) => {
-                if (!res.ok) throw new Error('Failed to fetch customer');
-                return res.json();
-            })
-            .then((data) => {
+        const fetchCustomer = async () => {
+            setLoading(true);
+            try {
+                const data = await getCustomerById(id!);
                 setCustomer(data);
                 setForm(data);
-                setLoading(false);
-            })
-            .catch((err) => {
+            } catch (err: any) {
                 setError(err.message);
+            } finally {
                 setLoading(false);
-            });
+            }
+        };
+
+        fetchCustomer();
     }, [id]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -73,15 +53,7 @@ const CustomerDetails: React.FC = () => {
         setSuccess(null);
         setSaving(true);
         try {
-            const res = await fetch(`http://localhost:8080/api/customers/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(form),
-            });
-            if (!res.ok) {
-                const data = await res.json();
-                throw new Error(data.error || 'Failed to update customer');
-            }
+            await updateCustomer(id!, form);
             setSuccess('Customer updated successfully!');
         } catch (err: any) {
             setError(err.message);

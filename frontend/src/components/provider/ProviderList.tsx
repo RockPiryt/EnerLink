@@ -180,7 +180,6 @@ const ProviderList: React.FC = () => {
                                                         </td>
                                                         <td>{formatDate(provider.created_at)}</td>
                                                         <td>
-                                                            {/*TODO: Add delete and edit provider functionality*/}
                                                             <div className="d-flex gap-1">
                                                                 <Button
                                                                     variant="outline-primary"

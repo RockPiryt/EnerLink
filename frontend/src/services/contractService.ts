@@ -27,8 +27,18 @@ export const getContracts = async (params?: {
     status?: string;
     page?: number;
     per_page?: number;
-}): Promise<ContractsResponse> => {
+}): Promise<any> => {
     const response = await axiosInstance.get("/api/contracts", { params });
+    return response.data;
+};
+
+export const getContractById = async (contractId: number | string): Promise<Contract> => {
+    const response = await axiosInstance.get(`/api/contracts/${contractId}`);
+    return response.data;
+};
+
+export const updateContract = async (contractId: number | string, data: Partial<Contract>): Promise<Contract> => {
+    const response = await axiosInstance.put(`/api/contracts/${contractId}`, data);
     return response.data;
 };
 

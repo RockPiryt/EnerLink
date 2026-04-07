@@ -28,6 +28,16 @@ export const getCustomers = async (params?: {
     return await axiosInstance.get("/api/customers", { params });
 };
 
+export const getCustomerById = async (customerId: number | string): Promise<Customer> => {
+    const response = await axiosInstance.get(`/api/customers/${customerId}`);
+    return response.data;
+};
+
+export const updateCustomer = async (customerId: number | string, data: Partial<Customer>): Promise<Customer> => {
+    const response = await axiosInstance.put(`/api/customers/${customerId}`, data);
+    return response.data;
+};
+
 export const deleteCustomer = async (customerId: number): Promise<void> => {
     await axiosInstance.delete(`/api/customers/${customerId}`);
 };

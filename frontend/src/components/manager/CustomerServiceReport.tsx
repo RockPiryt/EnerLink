@@ -1,42 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Spinner, Alert, Row, Col, Button } from 'react-bootstrap';
-
-interface CustomerServiceReport {
-  num_customers: number;
-  avg_realization_days: number | null;
-  signed_contracts: number;
-  cancelled_contracts: number;
-  new_contracts: number;
-}
+import { getCustomerServiceReport, CustomerServiceReport as CustomerServiceReportData } from '../../services/managerService';
 
 const CustomerServiceReport: React.FC = () => {
-  const [data, setData] = useState<CustomerServiceReport | null>(null);
+  const [data, setData] = useState<CustomerServiceReportData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [month, setMonth] = useState<number | ''>('');
   const [year, setYear] = useState<number | ''>('');
 
-  const fetchReport = () => {
+  const fetchReport = async () => {
     setLoading(true);
     setError(null);
-    let url = '/api/manager/customer_service_report';
-    const params = [];
-    if (month) params.push(`month=${month}`);
-    if (year) params.push(`year=${year}`);
-    if (params.length) url += '?' + params.join('&');
-    fetch(url)
-      .then(res => {
-        if (!res.ok) throw new Error('Error fetching report');
-        return res.json();
-      })
-      .then(json => {
-        setData(json);
-        setLoading(false);
-      })
-      .catch(err => {
-        setError(err.message);
-        setLoading(false);
-      });
+    try {
+      const json = await getCustomerServiceReport({ month, year });
+      setData(json);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {

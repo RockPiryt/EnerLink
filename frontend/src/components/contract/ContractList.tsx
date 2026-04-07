@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Contract, getContracts, deleteContract } from '../../services/contractService';
 
 const ContractList: React.FC = () => {
-    const [contracts, setContracts] = useState<Contract[]>([]);
+    const [contracts, setContracts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
@@ -31,9 +31,11 @@ const ContractList: React.FC = () => {
                 status: status && status !== 'all' ? status : undefined,
             });
 
-            setContracts(data.items);
-            setTotalPages(data.pages || 1);
-            setTotalContracts(data.total || data.items.length);
+            console.log('API response:', data);
+            const items = Array.isArray(data) ? data : (data.items ?? []);
+            setContracts(items);
+            setTotalPages(data.pages ?? 1);
+            setTotalContracts(data.total ?? items.length);
             setCurrentPage(page);
         } catch (err: any) {
             setError(err.message);
