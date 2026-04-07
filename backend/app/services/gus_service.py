@@ -90,6 +90,45 @@ def import_pkd_catalog(db_session):
             _gus_logout(session_id)
 
 
+def _fetch_primary_pkd_from_gus(nip):
+    # Pobiera główny kod PKD podmiotu z GUS BIR po NIP.
+
+    session_id = None
+    try:
+        session_id = _gus_login()
+        if not session_id:
+            return None
+ 
+        client = _make_client(sid=session_id)
+        result = client.service.DaneSzukajPodmioty(
+            pParametryWyszukiwania={"Nip": nip}
+        )
+ 
+        if not result:
+            return None
+ 
+        root = ET.fromstring(result)
+        dane = root.find(".//dane")
+        if dane is None:
+            return None
+ 
+        def get(tag):
+            el = dane.find(tag)
+            return el.text.strip() if el is not None and el.text else None
+ 
+        code = get("PkdKod")
+        name = get("PkdNazwa")
+        return {"code": code, "name": name} if code else None
+ 
+    except Exception as e:
+        print(f"GUS PKD lookup error: {e}")
+        return None
+ 
+    finally:
+        if session_id:
+            _gus_logout(session_id)
+
+
 def gus_lookup(nip):
     """
     Pobiera dane podmiotu z GUS BIR po NIP.
