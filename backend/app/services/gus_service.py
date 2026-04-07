@@ -167,36 +167,37 @@ def get_pkd_for_nip(nip, db_session):
 def gus_lookup(nip):
     """
     Pobiera dane podmiotu z GUS BIR po NIP.
-    Zwraca słownik z rozbitymi polami adresowymi lub None.
     """
     if not GUS_API_KEY:
         print("Brak GUS_API_KEY w zmiennych środowiskowych")
         return None
-
-    client, session_id = None, None
+ 
+    session_id = None
     try:
-        client, session_id = _gus_get_session()
-
+        session_id = _gus_login()
+        if not session_id:
+            print("GUS: nie udało się zalogować")
+            return None
+ 
+        client = _make_client(sid=session_id)
         result = client.service.DaneSzukajPodmioty(
-            pParametryWyszukiwania={"Nip": nip},
-            _soapheaders=[_build_soap_header(session_id)]
+            pParametryWyszukiwania={"Nip": nip}
         )
-
+ 
         if not result:
             print(f"GUS: brak danych dla NIP {nip}")
             return None
-
+ 
         root = ET.fromstring(result)
         dane = root.find(".//dane")
-
         if dane is None:
             print(f"GUS: pusta odpowiedź dla NIP {nip}")
             return None
-
+ 
         def get(tag):
             el = dane.find(tag)
             return el.text.strip() if el is not None and el.text else None
-
+ 
         return {
             "name":     get("Nazwa"),
             "nip":      get("Nip"),
@@ -207,14 +208,11 @@ def gus_lookup(nip):
             "postcode": get("KodPocztowy"),
             "city":     get("Miejscowosc"),
         }
-
+ 
     except Exception as e:
         print(f"GUS lookup error: {e}")
         return None
-
+ 
     finally:
-        if client and session_id:
-            try:
-                client.service.Wyloguj(pIdentyfikatorSesji=session_id)
-            except Exception as e:
-                print(f"GUS wylogowanie error: {e}")
+        if session_id:
+            _gus_logout(session_id)
