@@ -129,6 +129,41 @@ def _fetch_primary_pkd_from_gus(nip):
             _gus_logout(session_id)
 
 
+def get_pkd_for_nip(nip, db_session):
+    """
+    Zwraca obiekt Pkwiu dla podanego NIP.
+ 
+    Kolejność:
+      1. Pobierz kod PKD z GUS (z podstawowego zapytania po NIP)
+      2. Sprawdź czy kod jest już w bazie → jeśli tak, zwróć go
+      3. Jeśli nie ma → zapisz do bazy i zwróć
+ 
+    Zwraca obiekt Pkwiu lub None.
+    """
+    from app.models import Pkwiu
+ 
+    pkd_data = _fetch_primary_pkd_from_gus(nip)
+    if not pkd_data:
+        print(f"Brak PKD z GUS dla NIP {nip}")
+        return None
+ 
+    code = pkd_data["code"]
+    name = pkd_data["name"]
+ 
+    # sprawdź w bazie
+    pkd = db_session.query(Pkwiu).filter_by(pkwiu_nr=code).first()
+    if pkd:
+        print(f"PKD {code} – z bazy")
+        return pkd
+ 
+    # nie ma w bazie — dodaj
+    pkd = Pkwiu(pkwiu_nr=code, pkwiu_name=name)
+    db_session.add(pkd)
+    db_session.commit()
+    print(f"PKD {code} – dodano do bazy: {name}")
+    return pkd
+
+
 def gus_lookup(nip):
     """
     Pobiera dane podmiotu z GUS BIR po NIP.
