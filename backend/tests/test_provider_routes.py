@@ -3,7 +3,6 @@ import pytest
 from app.db import db
 from app.models.supplier_model import EnergySupplier
 
-# --- JWT helpers (analogicznie do sales routes) ---
 def get_token(client):
     resp = client.post("/api/login", json={
         "email": "david.wilson@enerlink.com",
