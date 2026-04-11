@@ -40,3 +40,21 @@ def get_voivodeships():
             })
 
     return result
+
+
+def get_localities():
+    client = _get_client()
+    response = client.service.PobierzKatalogSIMC(TERYT_DATE)
+    zip_bytes = base64.b64decode(response.plik_zawartosc)
+    with zipfile.ZipFile(io.BytesIO(zip_bytes)) as zf:
+        xml_filename = next(f for f in zf.namelist() if f.endswith(".xml"))
+        xml_content = zf.read(xml_filename)
+    root = ET.fromstring(xml_content)
+    seen = set()
+    result = []
+    for row in root.find("catalog"):
+        name = row.findtext("NAZWA")
+        if name not in seen:
+            seen.add(name)
+            result.append({"name": name})
+    return result
