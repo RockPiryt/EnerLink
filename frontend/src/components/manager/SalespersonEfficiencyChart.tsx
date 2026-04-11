@@ -1,12 +1,10 @@
 
 import React, { useEffect, useState } from 'react';
 import { Card, Spinner, Alert, Form, Row, Col, Button } from 'react-bootstrap';
+import { getContractAnalytics } from '../../services/analyticsService';
+import { getEfficiency, SalespersonEfficiency } from '../../services/managerService';
 
 interface MonthlyData { month: number; count: number; }
-interface SalespersonEfficiency {
-  salesperson: string;
-  monthly: MonthlyData[];
-}
 
 const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -20,36 +18,29 @@ const SalespersonEfficiencyChart: React.FC = () => {
 
   // Fetch available years for filtering (from backend contracts analytics)
   useEffect(() => {
-    fetch('/api/sales/analytics/contracts')
-      .then(res => res.json())
-      .then(json => {
-        if (json.yearly) {
-          setAllYears(json.yearly.map((y: { year: number }) => y.year));
-        }
-      });
+    getContractAnalytics().then(json => {
+      if (json.yearly) {
+        setAllYears(json.yearly.map(y => y.year));
+      }
+    });
   }, []);
 
   // Fetch efficiency data for selected year
   useEffect(() => {
     setLoading(true);
     setError(null);
-    fetch(`/api/manager/efficiency?year=${year}`)
-      .then((res) => {
-        if (!res.ok) throw new Error('Error fetching efficiency data');
-        return res.json();
-      })
-      .then((json) => {
+    getEfficiency(year)
+      .then(json => {
         setData(json.efficiency || []);
-        setLoading(false);
         // Set default selection to all salespeople if none selected
         if (selectedSalespeople.length === 0 && json.efficiency) {
-          setSelectedSalespeople(json.efficiency.map((e: SalespersonEfficiency) => e.salesperson));
+          setSelectedSalespeople(json.efficiency.map(e => e.salesperson));
         }
       })
-      .catch((err) => {
+      .catch((err: any) => {
         setError(err.message);
-        setLoading(false);
-      });
+      })
+      .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [year]);
 

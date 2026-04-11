@@ -1,6 +1,4 @@
 import React from 'react';
-
-
 import CustomerServiceReport from './CustomerServiceReport';
 import ManagerRanking from './ManagerRanking';
 import ContractsSVGChart from './ContractsSVGChart';

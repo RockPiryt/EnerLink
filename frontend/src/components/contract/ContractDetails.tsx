@@ -2,34 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Card, Form, Button, Alert, Spinner } from 'react-bootstrap';
 import ContractHistoryModal from './ContractHistoryModal';
-
-interface ContractData {
-    id: number;
-    id_customer: number;
-    contract_number: string;
-    signed_at?: string;
-    contract_from?: string;
-    contract_to?: string;
-    status?: string;
-    customer?: {
-        id: number;
-        company?: string;
-        name?: string;
-    };
-}
-
-interface CustomerOption {
-    id: number;
-    company?: string;
-    name?: string;
-}
+import { getContractById, updateContract } from '../../services/contractService';
+import { getCustomers, Customer } from '../../services/customer/customerService';
 
 const ContractDetails: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const [contract, setContract] = useState<ContractData | null>(null);
-    const [form, setForm] = useState<ContractData | null>(null);
-    const [customers, setCustomers] = useState<CustomerOption[]>([]);
+    const [contract, setContract] = useState<any | null>(null);
+    const [form, setForm] = useState<any | null>(null);
+    const [customers, setCustomers] = useState<Customer[]>([]);
     const [loading, setLoading] = useState(true);
     const [customersLoading, setCustomersLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -40,30 +21,35 @@ const ContractDetails: React.FC = () => {
     const [showHistory, setShowHistory] = useState(false);
 
     useEffect(() => {
-        // Fetch contract details
-        setLoading(true);
-        fetch(`http://localhost:8080/api/contracts/${id}`)
-            .then((res) => {
-                if (!res.ok) throw new Error('Failed to fetch contract');
-                return res.json();
-            })
-            .then((data) => {
+        const fetchData = async () => {
+            // Fetch contract details
+            setLoading(true);
+            try {
+                const data = await getContractById(id!);
                 setContract(data);
                 setForm(data);
-                setLoading(false);
-            })
-            .catch((err) => {
+            } catch (err: any) {
                 setError(err.message);
+            } finally {
                 setLoading(false);
-            });
+            }
 
-        // Fetch customers for select
-        setCustomersLoading(true);
-        fetch('http://localhost:8080/api/customers')
-            .then(res => res.json())
-            .then(data => setCustomers(data))
-            .catch(() => setCustomers([]))
-            .finally(() => setCustomersLoading(false));
+            // Fetch customers for select
+            setCustomersLoading(true);
+            try {
+                const response = await getCustomers();
+                const items = Array.isArray(response.data)
+                    ? response.data
+                    : (response.data?.items ?? []);
+                setCustomers(items);
+            } catch {
+                setCustomers([]);
+            } finally {
+                setCustomersLoading(false);
+            }
+        };
+
+        fetchData();
     }, [id]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -83,23 +69,7 @@ const ContractDetails: React.FC = () => {
         setSuccess(null);
         setSaving(true);
         try {
-            const res = await fetch(`http://localhost:8080/api/contracts/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(form),
-            });
-
-            let data;
-            const contentType = res.headers.get('content-type');
-            if (contentType && contentType.includes('application/json')) {
-                data = await res.json();
-            } else {
-                data = { error: await res.text() };
-            }
-
-            if (!res.ok) {
-                throw new Error(data.error || 'Failed to update contract');
-            }
+            await updateContract(id!, form);
             setSuccess('Contract updated successfully!');
         } catch (err: any) {
             setError(err.message);

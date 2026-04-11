@@ -2,17 +2,7 @@ import React, { useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import { Container, Row, Col, Card, Table, Button, Alert, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-
-interface RankingItem {
-  id: string;
-  name: string;
-  value: number;
-}
-
-interface RankingResponse {
-  ranking: RankingItem[];
-  generated_at: string | null;
-}
+import { getRanking, RankingResponse } from '../../services/managerService';
 
 
 const ManagerRanking: React.FC = () => {
@@ -23,27 +13,17 @@ const ManagerRanking: React.FC = () => {
   const [year, setYear] = useState<number | ''>('');
   const navigate = useNavigate();
 
-  const fetchRanking = (monthParam?: number | '', yearParam?: number | '') => {
+  const fetchRanking = async (monthParam?: number | '', yearParam?: number | '') => {
     setLoading(true);
     setError(null);
-    let url = '/api/manager/ranking';
-    const params = [];
-    if (monthParam) params.push(`month=${monthParam}`);
-    if (yearParam) params.push(`year=${yearParam}`);
-    if (params.length) url += '?' + params.join('&');
-    fetch(url)
-      .then((res) => {
-        if (!res.ok) throw new Error('Error fetching ranking');
-        return res.json();
-      })
-      .then((json) => {
-        setData(json);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setLoading(false);
-      });
+    try {
+      const json = await getRanking({ month: monthParam, year: yearParam });
+      setData(json);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {

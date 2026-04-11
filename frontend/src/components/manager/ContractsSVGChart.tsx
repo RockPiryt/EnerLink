@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Spinner, Alert, Form, Row, Col } from 'react-bootstrap';
+import { getContractAnalytics } from '../../services/analyticsService';
 
 interface MonthlyData {
   month: number;
@@ -17,32 +18,25 @@ const ContractsSVGChart: React.FC = () => {
 
   // Fetch available years for filtering
   useEffect(() => {
-    fetch('/api/sales/analytics/contracts')
-      .then(res => res.json())
-      .then(json => {
-        if (json.yearly) {
-          setAllYears(json.yearly.map((y: { year: number }) => y.year));
-        }
-      });
+    getContractAnalytics().then(json => {
+      if (json.yearly) {
+        setAllYears(json.yearly.map(y => y.year));
+      }
+    });
   }, []);
 
   // Fetch monthly data for selected year
   useEffect(() => {
     setLoading(true);
     setError(null);
-    fetch(`/api/sales/analytics/contracts?year=${year}`)
-      .then((res) => {
-        if (!res.ok) throw new Error('Error fetching contracts analytics');
-        return res.json();
-      })
-      .then((json) => {
+    getContractAnalytics(year)
+      .then(json => {
         setData(json.monthly || []);
-        setLoading(false);
       })
-      .catch((err) => {
+      .catch((err: any) => {
         setError(err.message);
-        setLoading(false);
-      });
+      })
+      .finally(() => setLoading(false));
   }, [year]);
 
   // SVG chart dimensions

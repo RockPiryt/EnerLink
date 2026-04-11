@@ -13,6 +13,7 @@ import {
     Legend,
 } from 'chart.js';
 import { Line, Bar } from 'react-chartjs-2';
+import { getContractAnalytics, AnalyticsData } from '../../services/analyticsService';
 
 ChartJS.register(
     CategoryScale,
@@ -24,22 +25,6 @@ ChartJS.register(
     Tooltip,
     Legend
 );
-
-interface MonthlyData {
-    month: number;
-    count: number;
-    monthName?: string;
-}
-
-interface YearlyData {
-    year: number;
-    count: number;
-}
-
-interface AnalyticsData {
-    monthly: MonthlyData[];
-    yearly: YearlyData[];
-}
 
 const AnalyticsDashboard: React.FC = () => {
     const [data, setData] = useState<AnalyticsData | null>(null);
@@ -60,15 +45,7 @@ const AnalyticsDashboard: React.FC = () => {
         setError('');
 
         try {
-            const params = new URLSearchParams();
-            if (year) {
-                params.append('year', year.toString());
-            }
-
-            const response = await fetch(`http://localhost:8080/api/sales/analytics/contracts?${params}`);
-            if (!response.ok) throw new Error('Failed to fetch analytics data');
-
-            const analyticsData: AnalyticsData = await response.json();
+            const analyticsData = await getContractAnalytics(year);
 
             // Add month names to monthly data and ensure all 12 months are present
             const monthlyMap = new Map(analyticsData.monthly.map(item => [item.month, item.count]));

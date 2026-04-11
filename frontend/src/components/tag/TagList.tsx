@@ -1,12 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Card, Table, Button, Form, InputGroup, Alert, Spinner, Badge } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-
-interface Tag {
-    id: number;
-    name: string;
-    created_at?: string;
-}
+import { getTags, deleteTag, Tag } from '../../services/tagService';
 
 const TagList: React.FC = () => {
     const [tags, setTags] = useState<Tag[]>([]);
@@ -29,10 +24,7 @@ const TagList: React.FC = () => {
         setSuccess('');
 
         try {
-            const response = await fetch(`http://localhost:8080/api/tags`);
-            if (!response.ok) throw new Error('Failed to fetch tags');
-
-            const data = await response.json();
+            const data = await getTags();
 
             // Client-side search filtering
             let filteredTags = data;
@@ -72,11 +64,7 @@ const TagList: React.FC = () => {
         setDeleteLoading(true);
         setError('');
         try {
-            const response = await fetch(`http://localhost:8080/api/tags/${tagToDelete.id}`, {
-                method: 'DELETE',
-            });
-
-            if (!response.ok) throw new Error('Failed to delete tag');
+            await deleteTag(tagToDelete.id);
 
             setSuccess('Tag deleted successfully!');
             setShowDeleteModal(false);

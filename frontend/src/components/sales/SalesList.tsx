@@ -1,20 +1,12 @@
 
 import React, { useEffect, useState } from 'react';
 import { Table, Spinner, Alert, Container, Row, Col, Form, InputGroup, Button } from 'react-bootstrap';
+import { UserService, User } from '../../services/userService';
 
-interface SalesRep {
-  id: string;
-  username: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  role_name: string;
-  active: boolean;
-  created_at: string;
-}
+const userService = new UserService();
 
 const SalesList: React.FC = () => {
-  const [salesReps, setSalesReps] = useState<SalesRep[]>([]);
+  const [salesReps, setSalesReps] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -23,15 +15,12 @@ const SalesList: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams();
-      params.append('per_page', '50');
-      if (searchQuery.trim()) params.append('q', searchQuery.trim());
-      // Filter by role_name if backend supports it, otherwise filter in frontend
-      const response = await fetch(`http://localhost:8080/api/users?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch sales representatives');
-      const data = await response.json();
+      const data = await userService.getUsers({
+        per_page: 50,
+        q: searchQuery.trim() || undefined,
+      });
       // Filter only sales representatives (role_name === 'Sales Representative')
-      const reps = (data.items || []).filter((u: SalesRep) => u.role_name?.toLowerCase().includes('sales'));
+      const reps = (data.items || []).filter((u: User) => u.role_name?.toLowerCase().includes('sales'));
       setSalesReps(reps);
     } catch (err: any) {
       setError(err.message);

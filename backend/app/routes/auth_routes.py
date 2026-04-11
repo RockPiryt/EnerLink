@@ -78,9 +78,9 @@ def login():
         return jsonify({"error": "Email and password are required"}), 400
     user = User.query.filter_by(email=email).first()
     if not user:
-        return jsonify({"error": "Invalid credentials"}), 401
+        return jsonify({"error": "Invalid credentials"}), 403
     if not user.active:
-        return jsonify({"error": "Account is deactivated"}), 401
+        return jsonify({"error": "Account is deactivated"}), 403
     stored_hash = user.password.pass_hash if user.password else None
     if stored_hash and _password_matches(stored_hash, str(password)):
         access_token = create_access_token(identity=str(user.id))
@@ -89,7 +89,7 @@ def login():
             "token": access_token,
             "user": user.to_dict()
         }), 200
-    return jsonify({"error": "Invalid credentials"}), 401
+    return jsonify({"error": "Invalid credentials"}), 403
 
 @auth_bp.route("/logout", methods=["POST"])
 def logout():

@@ -11,23 +11,6 @@ const Login: React.FC = () => {
   
   const { login, user } = useAuth();
 
-  if (user && user.role_name=='Administrator') {
-    return <Navigate to="/admin" replace />;
-  }
-  else if (user && user.role_name=='Manager') {
-      return <Navigate to="/manager" replace />;
-  }
-  else if (user && user.role_name=='User'){
-      return <Navigate to="/dashboard" replace />;
-  }
-  else if (user && user.role_name=='Sales Representative'){
-    return <Navigate to="/dashboard" replace />;
-  }
-  else if (user && user.role_name=='Analyst'){
-    return <Navigate to="/dashboard" replace />;
-  }
-
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -45,6 +28,10 @@ const Login: React.FC = () => {
     }
     setIsLoading(false);
   };
+
+  if (user && user.role_name === 'Administrator') return <Navigate to="/admin" replace />;
+  if (user && user.role_name === 'Manager') return <Navigate to="/manager" replace />;
+  if (user) return <Navigate to="/dashboard" replace />;
 
   return (
     <Container fluid className="min-vh-100 d-flex align-items-center justify-content-center bg-light">
