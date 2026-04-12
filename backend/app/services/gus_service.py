@@ -2,221 +2,169 @@ import os
 import xml.etree.ElementTree as ET
 import requests
 import zeep
+from contextlib import contextmanager
 from zeep.transports import Transport
 from dotenv import load_dotenv
+from app.models import Pkwiu
+from app.db import db
 
 load_dotenv()
 
-GUS_API_KEY = os.getenv("GUS_API_KEY")
-
+GUS_API_KEY  = os.getenv("GUS_API_KEY")
 GUS_WSDL     = "https://wyszukiwarkaregon.stat.gov.pl/wsBIR/wsdl/UslugaBIRzewnPubl-ver11-prod.wsdl"
 GUS_ENDPOINT = "https://wyszukiwarkaregon.stat.gov.pl/wsBIR/UslugaBIRzewnPubl.svc"
 
 
 def _make_client(sid=None):
-    """Creates a zeep client, optionally with SID in the HTTP header."""
     session = requests.Session()
     if sid:
         session.headers.update({"sid": sid})
     transport = Transport(session=session)
     return zeep.Client(wsdl=GUS_WSDL, transport=transport)
- 
- 
-def _gus_login():
-    """Login to GUS BIR (client, session_id)."""
-    client = _make_client()
-    session_id = client.service.Zaloguj(pKluczUzytkownika=GUS_API_KEY)
-    return session_id
- 
- 
-def _gus_logout(session_id):
-    try:
-        _make_client(sid=session_id).service.Wyloguj(pIdentyfikatorSesji=session_id)
-    except Exception as e:
-        print(f"GUS logout error: {e}")
 
 
-def import_pkd_catalog(db_session):
-
-    from app.models import Pkwiu
-
+@contextmanager
+def _gus_session():
     if not GUS_API_KEY:
-        print("Missing GUS_API_KEY in environment variables")
-        return {"added": 0, "updated": 0}
+        raise RuntimeError("GUS_API_KEY missing in environment variables.")
 
-    session_id = None
+    client_anon = _make_client()
+    session_id = client_anon.service.Zaloguj(pKluczUzytkownika=GUS_API_KEY)
+
+    if not session_id:
+        raise RuntimeError("GUS: login failed — empty session ID returned.")
+
+    client = _make_client(sid=session_id)
     try:
-        session_id = _gus_login()
-        if not session_id:
-            print("GUS: login failed")
-            return {"added": 0, "updated": 0}
+        yield client
+    finally:
+        try:
+            client.service.Wyloguj(pIdentyfikatorSesji=session_id)
+        except Exception as e:
+            print(f"GUS logout error: {e}")
 
-        client = _make_client(sid=session_id)
+
+def _get_text(element, tag):
+    el = element.find(tag)
+    return el.text.strip() if el is not None and el.text else None
+
+
+def fetch_pkd_catalog_from_gus():
+ 
+    with _gus_session() as client:
         result = client.service.DanePobierzSlownik(pNazwaSlownika="pkd")
 
-        if not result:
-            print("GUS: empty PKD dictionary")
+    if not result:
+        return []
+
+    root = ET.fromstring(result)
+    items = []
+    for pozycja in root.findall(".//pozycja"):
+        code = _get_text(pozycja, "kod")
+        name = _get_text(pozycja, "nazwa")
+        if code and name:
+            items.append({"code": code, "name": name})
+
+    return items
+
+
+def fetch_pkd_by_nip_from_gus(nip):
+  
+    with _gus_session() as client:
+        result = client.service.DaneSzukajPodmioty(
+            pParametryWyszukiwania={"Nip": nip}
+        )
+
+    if not result:
+        return None
+
+    root = ET.fromstring(result)
+    dane = root.find(".//dane")
+    if dane is None:
+        return None
+
+    code = _get_text(dane, "PkdKod")
+    name = _get_text(dane, "PkdNazwa")
+    return {"code": code, "name": name} if code else None
+
+
+def gus_lookup(nip):
+ 
+    with _gus_session() as client:
+        result = client.service.DaneSzukajPodmioty(
+            pParametryWyszukiwania={"Nip": nip}
+        )
+
+    if not result:
+        return None
+
+    root = ET.fromstring(result)
+    dane = root.find(".//dane")
+    if dane is None:
+        return None
+
+    return {
+        "name":     _get_text(dane, "Nazwa"),
+        "nip":      _get_text(dane, "Nip"),
+        "regon":    _get_text(dane, "Regon"),
+        "street":   _get_text(dane, "Ulica") or _get_text(dane, "MiejscowoscPoczty"),
+        "building": _get_text(dane, "NrNieruchomosci"),
+        "local":    _get_text(dane, "NrLokalu"),
+        "postcode": _get_text(dane, "KodPocztowy"),
+        "city":     _get_text(dane, "Miejscowosc"),
+    }
+
+
+def import_pkd_catalog():
+  
+    try:
+        items = fetch_pkd_catalog_from_gus()
+
+        if not items:
+            print("GUS: empty PKD catalog")
             return {"added": 0, "updated": 0}
 
-        root = ET.fromstring(result)
         added = 0
         updated = 0
 
-        for pozycja in root.findall(".//pozycja"):
-            def get(tag):
-                el = pozycja.find(tag)
-                return el.text.strip() if el is not None and el.text else None
-
-            code = get("kod")
-            name = get("nazwa")
-            if not code or not name:
-                continue
-
-            existing = db_session.query(Pkwiu).filter_by(pkwiu_nr=code).first()
+        for item in items:
+            existing = Pkwiu.query.filter_by(pkwiu_nr=item["code"]).first()
             if not existing:
-                db_session.add(Pkwiu(pkwiu_nr=code, pkwiu_name=name))
+                db.session.add(Pkwiu(pkwiu_nr=item["code"], pkwiu_name=item["name"]))
                 added += 1
-            elif existing.pkwiu_name != name:
-                existing.pkwiu_name = name
+            elif existing.pkwiu_name != item["name"]:
+                existing.pkwiu_name = item["name"]
                 updated += 1
 
-        db_session.commit()
+        db.session.commit()
         print(f"PKD import completed — added: {added}, updated: {updated} records.")
         return {"added": added, "updated": updated}
 
     except Exception as e:
+        db.session.rollback()
         print(f"GUS PKD import error: {e}")
-        db_session.rollback()
         return {"added": 0, "updated": 0}
 
-    finally:
-        if session_id:
-            _gus_logout(session_id)
 
-
-
-def _fetch_primary_pkd_from_gus(nip):
-    # Take the first PKD from the list (if available) as the primary one.
-    session_id = None
+def get_pkd_for_nip(nip):
+   
     try:
-        session_id = _gus_login()
-        if not session_id:
+        pkd_data = fetch_pkd_by_nip_from_gus(nip)
+
+        if not pkd_data:
+            print(f"No PKD found in GUS for NIP {nip}")
             return None
- 
-        client = _make_client(sid=session_id)
-        result = client.service.DaneSzukajPodmioty(
-            pParametryWyszukiwania={"Nip": nip}
-        )
- 
-        if not result:
-            return None
- 
-        root = ET.fromstring(result)
-        dane = root.find(".//dane")
-        if dane is None:
-            return None
- 
-        def get(tag):
-            el = dane.find(tag)
-            return el.text.strip() if el is not None and el.text else None
- 
-        code = get("PkdKod")
-        name = get("PkdNazwa")
-        return {"code": code, "name": name} if code else None
- 
+
+        existing = Pkwiu.query.filter_by(pkwiu_nr=pkd_data["code"]).first()
+        if existing:
+            return existing
+
+        new_pkd = Pkwiu(pkwiu_nr=pkd_data["code"], pkwiu_name=pkd_data["name"])
+        db.session.add(new_pkd)
+        db.session.commit()
+        return new_pkd
+
     except Exception as e:
+        db.session.rollback()
         print(f"GUS PKD lookup error: {e}")
         return None
- 
-    finally:
-        if session_id:
-            _gus_logout(session_id)
-
-
-def get_pkd_for_nip(nip, db_session):
-    """
-    Returns a Pkd object for the given NIP.
-
-    Order of operations:
-    1. Retrieve the PKD code from GUS (from the basic query by NIP)
-    2. Check if the code already exists in the database → if yes, return it
-    3. If not → save it to the database and return it
-
-    Returns a Pkd object or None.
-    """
-    from app.models import Pkwiu
- 
-    pkd_data = _fetch_primary_pkd_from_gus(nip)
-    if not pkd_data:
-        print(f"No PKD found in GUS for the given NIP {nip}")
-        return None
- 
-    code = pkd_data["code"]
-    name = pkd_data["name"]
- 
-    # sprawdź w bazie
-    pkd = db_session.query(Pkwiu).filter_by(pkwiu_nr=code).first()
-    if pkd:
-        print(f"PKD {code} – z bazy")
-        return pkd
- 
-    # nie ma w bazie — dodaj
-    pkd = Pkwiu(pkwiu_nr=code, pkwiu_name=name)
-    db_session.add(pkd)
-    db_session.commit()
-    print(f"PKD {code} – dodano do bazy: {name}")
-    return pkd
-
-
-def gus_lookup(nip):
-    """
-    Pobiera dane podmiotu z GUS BIR po NIP.
-    """
-    if not GUS_API_KEY:
-        print("Brak GUS_API_KEY w zmiennych środowiskowych")
-        return None
- 
-    session_id = None
-    try:
-        session_id = _gus_login()
-        if not session_id:
-            print("GUS: nie udało się zalogować")
-            return None
- 
-        client = _make_client(sid=session_id)
-        result = client.service.DaneSzukajPodmioty(
-            pParametryWyszukiwania={"Nip": nip}
-        )
- 
-        if not result:
-            print(f"GUS: brak danych dla NIP {nip}")
-            return None
- 
-        root = ET.fromstring(result)
-        dane = root.find(".//dane")
-        if dane is None:
-            print(f"GUS: pusta odpowiedź dla NIP {nip}")
-            return None
- 
-        def get(tag):
-            el = dane.find(tag)
-            return el.text.strip() if el is not None and el.text else None
- 
-        return {
-            "name":     get("Nazwa"),
-            "nip":      get("Nip"),
-            "regon":    get("Regon"),
-            "street":   get("Ulica") or get("MiejscowoscPoczty"),
-            "building": get("NrNieruchomosci"),
-            "local":    get("NrLokalu"),
-            "postcode": get("KodPocztowy"),
-            "city":     get("Miejscowosc"),
-        }
- 
-    except Exception as e:
-        print(f"GUS lookup error: {e}")
-        return None
- 
-    finally:
-        if session_id:
-            _gus_logout(session_id)
