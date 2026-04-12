@@ -19,7 +19,7 @@ def _get_client():
     token = UsernameToken(username=TERYT_LOGIN, password=TERYT_PASSWORD)
     return Client(wsdl=WSDL, wsse=token, transport=Transport(timeout=30))
 
-def get_voivodeships():
+def get_districts():
     client = _get_client()
     response = client.service.PobierzKatalogTERC(TERYT_DATE)
 
