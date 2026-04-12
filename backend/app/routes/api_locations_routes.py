@@ -26,7 +26,7 @@ def sync_districts():
             db.session.commit()
 
         return jsonify({
-            "message": "Synchronizacja zakończona.",
+            "message": "Synchronization completed.",
             "added": len(new_districts),
             "total": District.query.count()
         }), 200
@@ -55,7 +55,7 @@ def sync_localities():
             db.session.commit()
 
         return jsonify({
-            "message": "Synchronizacja zakończona.",
+            "message": "Synchronization completed.",
             "added": len(new_cities),
             "total": City.query.count()
         }), 200
