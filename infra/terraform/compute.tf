@@ -29,7 +29,7 @@ resource "aws_instance" "enerlink_ec2" {
   ami                         = data.aws_ami.ubuntu.id
   instance_type               = "t3a.medium"
   associate_public_ip_address = false
-  subnet_id                   = aws_subnet.preg-public-subnet-a.id
+  subnet_id                   = aws_subnet.enerlink-public-subnet.id
 
   vpc_security_group_ids = [aws_security_group.k3s_nodes_sg.id]
   iam_instance_profile = aws_iam_instance_profile.ec2_node_profile.name
@@ -43,38 +43,9 @@ resource "aws_instance" "enerlink_ec2" {
     APP_ENV      = local.app_env
     DATABASE_URL = local.database_url
     SECRET_KEY   = var.secret_key
-
-    RDS_ENDPOINT = aws_db_instance.preg_postgres.address
-    DB_PORT      = 5432
   })
 
   tags = { Name = "enerlink-compute" }
-}
-
-# RDS PostgreSQL
-resource "aws_db_instance" "preg_postgres" {
-  identifier        = "preg-postgres"
-  engine            = "postgres"
-  engine_version    = "15"
-  instance_class    = "db.t3.micro"
-  allocated_storage = 20
-  storage_type      = "gp2"
-
-  db_name  = var.db_name
-  username = var.db_user
-  password = var.db_password
-
-  publicly_accessible = false
-  skip_final_snapshot = true
-
-  vpc_security_group_ids = [aws_security_group.preg_rds_sg.id]
-  db_subnet_group_name   = aws_db_subnet_group.preg_db_subnet_group.name
-
-  backup_retention_period = 0 # dev only
-
-  tags = {
-    Name = "preg-postgres"
-  }
 }
 
 resource "aws_eip" "enerlink_ec2_eip" {

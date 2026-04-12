@@ -1,22 +1,4 @@
 services:
-  db:
-    image: postgres:16-alpine
-    container_name: enerlink-db
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: enerlink
-      POSTGRES_USER: enerlink_user
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - enerlink-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U enerlink_user -d enerlink"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   backend:
     build:
       context: ./backend
@@ -25,14 +7,12 @@ services:
     restart: unless-stopped
     environment:
       FLASK_ENV: production
-      DATABASE_URL: postgresql://enerlink_user:${POSTGRES_PASSWORD}@db:5432/enerlink
-    depends_on:
-      db:
-        condition: service_healthy
+      DATABASE_URL: sqlite:////data/enerlink.db
+      SECRET_KEY: ${SECRET_KEY}
+    volumes:
+      - /opt/enerlink/data:/data
     expose:
       - "8080"
-    networks:
-      - enerlink-network
 
   frontend:
     build:
@@ -44,12 +24,3 @@ services:
       - backend
     ports:
       - "80:80"
-    networks:
-      - enerlink-network
-
-volumes:
-  postgres_data:
-
-networks:
-  enerlink-network:
-    driver: bridge
