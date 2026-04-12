@@ -14,7 +14,7 @@ GUS_ENDPOINT = "https://wyszukiwarkaregon.stat.gov.pl/wsBIR/UslugaBIRzewnPubl.sv
 
 
 def _make_client(sid=None):
-    """Tworzy klienta zeep, opcjonalnie z SID w nagłówku HTTP."""
+    """Creates a zeep client, optionally with SID in the HTTP header."""
     session = requests.Session()
     if sid:
         session.headers.update({"sid": sid})
@@ -23,7 +23,7 @@ def _make_client(sid=None):
  
  
 def _gus_login():
-    """Loguje się do GUS BIR, zwraca (client, session_id)."""
+    """Login to GUS BIR (client, session_id)."""
     client = _make_client()
     session_id = client.service.Zaloguj(pKluczUzytkownika=GUS_API_KEY)
     return session_id
@@ -33,7 +33,7 @@ def _gus_logout(session_id):
     try:
         _make_client(sid=session_id).service.Wyloguj(pIdentyfikatorSesji=session_id)
     except Exception as e:
-        print(f"GUS wylogowanie error: {e}")
+        print(f"GUS logout error: {e}")
 
 
 def import_pkd_catalog(db_session):
@@ -41,21 +41,21 @@ def import_pkd_catalog(db_session):
     from app.models import Pkwiu
 
     if not GUS_API_KEY:
-        print("Brak GUS_API_KEY w zmiennych środowiskowych")
+        print("Missing GUS_API_KEY in environment variables")
         return {"added": 0, "updated": 0}
 
     session_id = None
     try:
         session_id = _gus_login()
         if not session_id:
-            print("GUS: nie udało się zalogować")
+            print("GUS: login failed")
             return {"added": 0, "updated": 0}
 
         client = _make_client(sid=session_id)
         result = client.service.DanePobierzSlownik(pNazwaSlownika="pkd")
 
         if not result:
-            print("GUS: pusty słownik PKD")
+            print("GUS: empty PKD dictionary")
             return {"added": 0, "updated": 0}
 
         root = ET.fromstring(result)
@@ -81,7 +81,7 @@ def import_pkd_catalog(db_session):
                 updated += 1
 
         db_session.commit()
-        print(f"PKD import zakończony — dodano: {added}, zaktualizowano: {updated} kodów.")
+        print(f"PKD import completed — added: {added}, updated: {updated} records.")
         return {"added": added, "updated": updated}
 
     except Exception as e:
@@ -94,9 +94,9 @@ def import_pkd_catalog(db_session):
             _gus_logout(session_id)
 
 
-def _fetch_primary_pkd_from_gus(nip):
-    # Pobiera główny kod PKD podmiotu z GUS BIR po NIP.
 
+def _fetch_primary_pkd_from_gus(nip):
+    # Take the first PKD from the list (if available) as the primary one.
     session_id = None
     try:
         session_id = _gus_login()
@@ -135,20 +135,20 @@ def _fetch_primary_pkd_from_gus(nip):
 
 def get_pkd_for_nip(nip, db_session):
     """
-    Zwraca obiekt Pkwiu dla podanego NIP.
- 
-    Kolejność:
-      1. Pobierz kod PKD z GUS (z podstawowego zapytania po NIP)
-      2. Sprawdź czy kod jest już w bazie → jeśli tak, zwróć go
-      3. Jeśli nie ma → zapisz do bazy i zwróć
- 
-    Zwraca obiekt Pkwiu lub None.
+    Returns a Pkd object for the given NIP.
+
+    Order of operations:
+    1. Retrieve the PKD code from GUS (from the basic query by NIP)
+    2. Check if the code already exists in the database → if yes, return it
+    3. If not → save it to the database and return it
+
+    Returns a Pkd object or None.
     """
     from app.models import Pkwiu
  
     pkd_data = _fetch_primary_pkd_from_gus(nip)
     if not pkd_data:
-        print(f"Brak PKD z GUS dla NIP {nip}")
+        print(f"No PKD found in GUS for the given NIP {nip}")
         return None
  
     code = pkd_data["code"]
