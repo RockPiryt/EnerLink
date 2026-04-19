@@ -4,15 +4,6 @@ resource "aws_security_group" "enerlink_ec2_sg" {
   description = "Security group for enerlink instance"
   vpc_id      = aws_vpc.enerlink-vpc.id
 
-  # Allow full traffic between nodes inside the same SG
-  ingress {
-    description = "Node-to-node communication within K3s cluster"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    self        = true
-  }
-
   ingress {
     description = "HTTP"
     from_port   = 80
