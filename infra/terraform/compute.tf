@@ -36,12 +36,9 @@ resource "aws_instance" "enerlink_ec2" {
   user_data_replace_on_change = true
 
   user_data = templatefile("${path.module}/scripts/run_app.sh", {
-    MASTER_TLS_SAN                = "127.0.0.1"
-    AWS_REGION                    = var.region
-    
-    APP_ENV      = local.app_env
-    DATABASE_URL = local.database_url
-    SECRET_KEY   = var.secret_key
+    AWS_REGION = var.region
+    APP_ENV    = var.environment
+    SECRET_KEY = var.secret_key
   })
 
   tags = { Name = "enerlink-compute" }
