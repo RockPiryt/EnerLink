@@ -242,3 +242,25 @@ def _parse_format_9(a):
         local=l
     )
 
+
+def _parse_format_10(a):
+    postcode = None
+    city = None
+
+    m = re.search(POSTCODE_RE, a)
+    if m:
+        postcode = m.group(0)
+        a = a.replace(postcode, "")
+
+    parts = a.split()
+    if len(parts) >= 2:
+        city = parts[-1]
+        street = " ".join(parts[:-1])
+    else:
+        street = a
+
+    return _base_result(
+        street=street.strip(),
+        postcode=postcode,
+        city=city
+    )
