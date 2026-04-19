@@ -25,3 +25,19 @@ def get_postcode(city, street="", number=""):
     except Exception as e:
         print("Error Nominatim:", e)
     return None
+
+
+def get_postcodes_for_city(city):
+
+    try:
+        city_enc = quote(city)
+        url = f"https://kodpocztowy.intami.pl/city/{city_enc}"
+        r = requests.get(url, headers={"Accept": "application/json"}, timeout=5)
+        data = r.json()
+        if data:
+            return sorted(set(data))
+        else:
+            return []
+    except Exception as e:
+        print("Error INTAMI:", e)
+        return []
