@@ -1,50 +1,64 @@
-import requests
 import re
+import requests
+from datetime import date
+
+POSTCODE_RE = r"\d{2}-\d{3}"
+NUMBER_RE   = r"\d+[A-Za-z]?(?:/\d+[A-Za-z]?)?"
+
 
 def mf_lookup(nip):
-    from datetime import date
+   
     url = f"https://wl-api.mf.gov.pl/api/search/nip/{nip}"
     params = {"date": date.today().isoformat()}
+ 
     r = requests.get(url, params=params)
     if r.status_code != 200:
-        print(f"Error: {r.status_code} - {r.text}")
+        print(f"MF API error: {r.status_code} - {r.text}")
         return None
-    print(r.json())
+ 
     data = r.json().get("result", {}).get("subject")
     if not data:
         return None
-    
-    parsed = parse_mf_address(data.get("workingAddress"))
-
+ 
+    raw_address = data.get("workingAddress") or data.get("residenceAddress")
+    parsed = parse_mf_address(raw_address)
+ 
     return {
-        "name":     data.get("name"),
-        "nip":      data.get("nip"),
-        "regon":    data.get("regon"),
-        "street":   parsed.get("street")   if parsed else None,
-        "building": parsed.get("building") if parsed else None,
-        "local":    parsed.get("local")    if parsed else None,
-        "postcode": parsed.get("postcode") if parsed else None,
-        "city":     parsed.get("city")     if parsed else None,
+        "name":        data.get("name"),
+        "nip":         data.get("nip"),
+        "regon":       data.get("regon"),
+        "street":      parsed.get("street")   if parsed else None,
+        "building":    parsed.get("building") if parsed else None,
+        "local":       parsed.get("local")    if parsed else None,
+        "postcode":    parsed.get("postcode") if parsed else None,
+        "city":        parsed.get("city")     if parsed else None
     }
+
+
+def _normalize(address: str) -> str:
+    address = re.sub(r"\s*/\s*", "/", address)
+    address = re.sub(r"\bul\.\s*", "ul. ", address, flags=re.IGNORECASE)
+    address = re.sub(r"\s+", " ", address)
+    return address.strip()
 
 
 def parse_mf_address(address: str):
     if not address:
         return None
 
-    address = address.strip()
+    address = _normalize(address)
 
     parsers = [
-        _parse_format_1,  # UL. X 10/5, 00-001 CITY
-        _parse_format_2,  # UL X 10 00-001 CITY
-        _parse_format_3,  # UL. X 10, CITY 00-001
-        _parse_format_4,  # X 10/5 00-001 CITY
-        _parse_format_5,  # CITY UL. X 10/5 00-001
-        _parse_format_6,  # UL. X, 10/5, 00-001 CITY
-        _parse_format_7,  # UL. X 10/5 - CITY 00-001
-        _parse_format_8,  # UL. X 10/5, MIASTO
-        _parse_format_9,  # UL. X 10/5
-        _parse_format_10, # fallback heuristic
+        _parse_format_1,   # ul. X 10/5, 00-001 CITY 
+        _parse_format_2,   # ul. X 10/5 00-001 CITY 
+        _parse_format_3,   # ul. X 10/5, CITY 00-001
+        _parse_format_4,   # 10/5 00-001 CITY 
+        _parse_format_5,   # CITY ul. X 10/5 00-001
+        _parse_format_6,   # ul. X, 10/5, 00-001 CITY
+        _parse_format_7,   # ul. X 10/5 - CITY 00-001
+        _parse_format_8,   # ul. X 10/5, CITY
+        _parse_format_9,   # ul. X 10/5
+        _parse_format_10,  # fallback heurystyczny
     ]
 
     for parser in parsers:
@@ -52,17 +66,12 @@ def parse_mf_address(address: str):
         if result:
             return result
 
-    return {
-        "raw": address
-    }
+    return {"raw": address}
 
-
-POSTCODE_RE = r"\d{2}-\d{3}"
 
 def _split_number(number):
     if not number:
         return None, None
-
     if "/" in number:
         b, l = number.split("/", 1)
         return b.strip(), l.strip()
@@ -71,183 +80,123 @@ def _split_number(number):
 
 def _base_result(street=None, building=None, local=None, postcode=None, city=None):
     return {
-        "street": street,
+        "street":   street,
         "building": building,
-        "local": local,
+        "local":    local,
         "postcode": postcode,
-        "city": city
+        "city":     city,
     }
 
 
 def _parse_format_1(a):
     m = re.search(
-        rf"(?P<street>.+?)\s+(?P<number>\d+[A-Za-z]?(?:/\d+[A-Za-z]?)?)\s*,\s*(?P<postcode>{POSTCODE_RE})\s+(?P<city>.+)",
+        rf"(?P<street>.+?)\s+(?P<number>{NUMBER_RE})\s*,\s*(?P<postcode>{POSTCODE_RE})\s+(?P<city>.+)",
         a
     )
     if not m:
         return None
-
     b, l = _split_number(m.group("number"))
-
-    return _base_result(
-        street=m.group("street").strip(),
-        building=b,
-        local=l,
-        postcode=m.group("postcode"),
-        city=m.group("city").strip()
-    )
+    return _base_result(street=m.group("street").strip(), building=b, local=l,
+                        postcode=m.group("postcode"), city=m.group("city").strip())
 
 
 def _parse_format_2(a):
     m = re.search(
-        rf"(?P<street>.+?)\s+(?P<number>\d+)\s+(?P<postcode>{POSTCODE_RE})\s+(?P<city>.+)",
+        rf"(?P<street>.+?)\s+(?P<number>{NUMBER_RE})\s+(?P<postcode>{POSTCODE_RE})\s+(?P<city>.+)",
         a
     )
     if not m:
         return None
-
-    return _base_result(
-        street=m.group("street"),
-        building=m.group("number"),
-        postcode=m.group("postcode"),
-        city=m.group("city")
-    )
+    b, l = _split_number(m.group("number"))
+    return _base_result(street=m.group("street").strip(), building=b, local=l,
+                        postcode=m.group("postcode"), city=m.group("city").strip())
 
 
 def _parse_format_3(a):
     m = re.search(
-        rf"(?P<street>.+?)\s+(?P<number>\d+[A-Za-z]?(?:/\d+)?)\s*,\s*(?P<city>.+)\s+(?P<postcode>{POSTCODE_RE})",
+        rf"(?P<street>.+?)\s+(?P<number>{NUMBER_RE})\s*,\s*(?P<city>.+?)\s+(?P<postcode>{POSTCODE_RE})",
         a
     )
     if not m:
         return None
-
     b, l = _split_number(m.group("number"))
-
-    return _base_result(
-        street=m.group("street"),
-        building=b,
-        local=l,
-        postcode=m.group("postcode"),
-        city=m.group("city")
-    )
+    return _base_result(street=m.group("street").strip(), building=b, local=l,
+                        postcode=m.group("postcode"), city=m.group("city").strip())
 
 
 def _parse_format_4(a):
     m = re.search(
-        rf"(?P<number>\d+[A-Za-z]?(?:/\d+[A-Za-z]?)?)\s+(?P<postcode>{POSTCODE_RE})\s+(?P<city>.+)",
+        rf"^(?P<number>{NUMBER_RE})\s+(?P<postcode>{POSTCODE_RE})\s+(?P<city>.+)",
         a
     )
     if not m:
         return None
-
     b, l = _split_number(m.group("number"))
-
-    return _base_result(
-        building=b,
-        local=l,
-        postcode=m.group("postcode"),
-        city=m.group("city")
-    )
+    return _base_result(building=b, local=l,
+                        postcode=m.group("postcode"), city=m.group("city").strip())
 
 
 def _parse_format_5(a):
     m = re.search(
-        rf"(?P<city>.+?)\s+(?P<street>.+?)\s+(?P<number>\d+[A-Za-z]?(?:/\d+)?)\s+(?P<postcode>{POSTCODE_RE})",
+        rf"(?P<city>.+?)\s+(?P<street>.+?)\s+(?P<number>{NUMBER_RE})\s+(?P<postcode>{POSTCODE_RE})",
         a
     )
     if not m:
         return None
-
     b, l = _split_number(m.group("number"))
-
-    return _base_result(
-        street=m.group("street"),
-        building=b,
-        local=l,
-        postcode=m.group("postcode"),
-        city=m.group("city")
-    )
+    return _base_result(street=m.group("street").strip(), building=b, local=l,
+                        postcode=m.group("postcode"), city=m.group("city").strip())
 
 
 def _parse_format_6(a):
     parts = [p.strip() for p in a.split(",")]
     if len(parts) < 2:
         return None
-
     street_part = parts[0]
-
-    m = re.search(rf"(?P<number>\d+[A-Za-z]?(?:/\d+)?)", street_part)
+    m = re.search(rf"(?P<number>{NUMBER_RE})", street_part)
     if not m:
         return None
-
     b, l = _split_number(m.group("number"))
-
     m2 = re.search(rf"(?P<postcode>{POSTCODE_RE})\s+(?P<city>.+)", parts[-1])
     if not m2:
         return None
-
-    return _base_result(
-        street=re.sub(r"\d+.*", "", street_part).strip(),
-        building=b,
-        local=l,
-        postcode=m2.group("postcode"),
-        city=m2.group("city")
-    )
+    return _base_result(street=re.sub(r"\d+.*", "", street_part).strip(), building=b, local=l,
+                        postcode=m2.group("postcode"), city=m2.group("city").strip())
 
 
 def _parse_format_7(a):
     m = re.search(
-        rf"(?P<street>.+?)\s+(?P<number>\d+[A-Za-z]?(?:/\d+)?)\s*-\s*(?P<city>.+)\s+(?P<postcode>{POSTCODE_RE})",
+        rf"(?P<street>.+?)\s+(?P<number>{NUMBER_RE})\s*-\s*(?P<city>.+?)\s+(?P<postcode>{POSTCODE_RE})",
         a
     )
     if not m:
         return None
-
     b, l = _split_number(m.group("number"))
-
-    return _base_result(
-        street=m.group("street"),
-        building=b,
-        local=l,
-        postcode=m.group("postcode"),
-        city=m.group("city")
-    )
+    return _base_result(street=m.group("street").strip(), building=b, local=l,
+                        postcode=m.group("postcode"), city=m.group("city").strip())
 
 
 def _parse_format_8(a):
     m = re.search(
-        r"(?P<street>.+?)\s+(?P<number>\d+[A-Za-z]?(?:/\d+)?)\s*,\s*(?P<city>.+)",
+        rf"(?P<street>.+?)\s+(?P<number>{NUMBER_RE})\s*,\s*(?P<city>.+)",
         a
     )
     if not m:
         return None
-
     b, l = _split_number(m.group("number"))
-
-    return _base_result(
-        street=m.group("street"),
-        building=b,
-        local=l,
-        city=m.group("city")
-    )
+    return _base_result(street=m.group("street").strip(), building=b, local=l,
+                        city=m.group("city").strip())
 
 
 def _parse_format_9(a):
     m = re.search(
-        r"(?P<street>.+?)\s+(?P<number>\d+[A-Za-z]?(?:/\d+)?)$",
+        rf"(?P<street>.+?)\s+(?P<number>{NUMBER_RE})$",
         a
     )
     if not m:
         return None
-
     b, l = _split_number(m.group("number"))
-
-    return _base_result(
-        street=m.group("street"),
-        building=b,
-        local=l
-    )
+    return _base_result(street=m.group("street").strip(), building=b, local=l)
 
 
 def _parse_format_10(a):
@@ -257,7 +206,7 @@ def _parse_format_10(a):
     m = re.search(POSTCODE_RE, a)
     if m:
         postcode = m.group(0)
-        a = a.replace(postcode, "")
+        a = a.replace(postcode, "").strip()
 
     parts = a.split()
     if len(parts) >= 2:
@@ -266,8 +215,4 @@ def _parse_format_10(a):
     else:
         street = a
 
-    return _base_result(
-        street=street.strip(),
-        postcode=postcode,
-        city=city
-    )
+    return _base_result(street=street.strip(), postcode=postcode, city=city)
