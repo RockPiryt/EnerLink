@@ -1,33 +1,27 @@
 import requests
 import time
+from urllib.parse import quote
 
-def get_postcode(city, street, number):
+def get_postcode(city, street="", number=""):
     try:
-        url = "https://geo.stat.gov.pl/api/fts/gc/pkt"
-        body = {
-            "reqs": [{
-                "miejsc_nazwa": city,
-                "ul_pelna": street,
-                "pkt_numer": number
-            }],
-            "useExtServiceIfNotFound": False
+        url = "https://nominatim.openstreetmap.org/search"
+        params = {
+            "street": f"{number} {street}",
+            "city": city,
+            "country": "Poland",
+            "format": "json",
+            "addressdetails": 1,
+            "limit": 1
         }
-        r = requests.post(url, json=body, timeout=5)
-        postcode = r.json()[0]["single"]["record"]["properties"]["pkt_kodPocztowy"]
-        if postcode:
-            return postcode
-    except:
-        pass
+        headers = {"User-Agent": "my-teryt-app/1.0"}
+        
 
-    try:
-        url = f"https://kodpocztowy.intami.pl/city/{city}/street/{street}"
-        r = requests.get(url, headers={"Accept": "application/json"}, timeout=5)
+        r = requests.get(url, params=params, headers=headers, timeout=10)
         data = r.json()
         if data:
-            return data[0].get("postCode")
-    except:
-        pass
-
+            postcode = data[0].get("address", {}).get("postcode")
+            if postcode:
+                return postcode
+    except Exception as e:
+        print("Error Nominatim:", e)
     return None
-
-print(get_postcode("Olsztyn", "Piłsudskiego", "1"))
