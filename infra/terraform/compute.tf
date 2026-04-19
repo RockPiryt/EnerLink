@@ -31,14 +31,13 @@ resource "aws_instance" "enerlink_ec2" {
   associate_public_ip_address = false
   subnet_id                   = aws_subnet.enerlink-public-subnet.id
 
-  vpc_security_group_ids = [aws_security_group.k3s_nodes_sg.id]
+  vpc_security_group_ids = [aws_security_group.enerlink_ec2_sg.id]
   iam_instance_profile = aws_iam_instance_profile.ec2_node_profile.name
   user_data_replace_on_change = true
 
   user_data = templatefile("${path.module}/scripts/run_app.sh", {
     MASTER_TLS_SAN                = "127.0.0.1"
     AWS_REGION                    = var.region
-    ECR_CREDENTIAL_PROVIDER_VER   = var.ecr_credential_provider_ver
     
     APP_ENV      = local.app_env
     DATABASE_URL = local.database_url
