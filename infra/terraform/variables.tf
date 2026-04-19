@@ -42,5 +42,5 @@ variable "secret_key" {
 variable "environment" {
   description = "App environment"
   type        = string
-  default     = "produciton"
+  default     = "production"
 }
