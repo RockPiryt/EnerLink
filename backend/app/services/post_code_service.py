@@ -41,3 +41,26 @@ def get_postcodes_for_city(city):
     except Exception as e:
         print("Error INTAMI:", e)
         return []
+    
+
+def get_city_for_postcode(postcode):
+    try:
+        r = requests.get(
+            f"https://kodpocztowy.intami.pl/api/{postcode}",
+            headers={"Accept": "application/json"},
+            timeout=5
+        )
+        if r.status_code != 200:
+            return []
+        data = r.json()
+        if not data:
+            return []
+
+        miejscowosci = sorted(set(
+            item["miejscowosc"] for item in data if item.get("miejscowosc")
+        ))
+        return miejscowosci
+
+    except Exception as e:
+        print("Error INTAMI:", e)
+        return []
