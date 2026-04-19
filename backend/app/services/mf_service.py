@@ -106,3 +106,22 @@ def _parse_format_2(a):
         city=m.group("city")
     )
 
+
+def _parse_format_3(a):
+    m = re.search(
+        rf"(?P<street>.+?)\s+(?P<number>\d+[A-Za-z]?(?:/\d+)?)\s*,\s*(?P<city>.+)\s+(?P<postcode>{POSTCODE_RE})",
+        a
+    )
+    if not m:
+        return None
+
+    b, l = _split_number(m.group("number"))
+
+    return _base_result(
+        street=m.group("street"),
+        building=b,
+        local=l,
+        postcode=m.group("postcode"),
+        city=m.group("city")
+    )
+
