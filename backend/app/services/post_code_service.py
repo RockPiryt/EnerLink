@@ -1,66 +1,75 @@
 import requests
-import time
 from urllib.parse import quote
+
+NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
+INTAMI_CITY_URL = "https://kodpocztowy.intami.pl/city/{city}"
+INTAMI_POSTCODE_URL = "https://kodpocztowy.intami.pl/api/{postcode}"
+NOMINATIM_HEADERS = {"User-Agent": "my-teryt-app/1.0"}
+INTAMI_HEADERS = {"Accept": "application/json"}
+
 
 def get_postcode(city, street="", number=""):
     try:
-        url = "https://nominatim.openstreetmap.org/search"
         params = {
-            "street": f"{number} {street}",
-            "city": city,
+            "street":  f"{number} {street}".strip(),
+            "city":    city,
             "country": "Poland",
-            "format": "json",
+            "format":  "json",
             "addressdetails": 1,
-            "limit": 1
+            "limit":   1,
         }
-        headers = {"User-Agent": "my-teryt-app/1.0"}
-        
-
-        r = requests.get(url, params=params, headers=headers, timeout=10)
+        r = requests.get(NOMINATIM_URL, params=params, headers=NOMINATIM_HEADERS, timeout=10)
         data = r.json()
         if data:
-            postcode = data[0].get("address", {}).get("postcode")
-            if postcode:
-                return postcode
+            return data[0].get("address", {}).get("postcode")
     except Exception as e:
-        print("Error Nominatim:", e)
+        print(f"Nominatim error: {e}")
     return None
 
 
 def get_postcodes_for_city(city):
-
     try:
-        city_enc = quote(city)
-        url = f"https://kodpocztowy.intami.pl/city/{city_enc}"
-        r = requests.get(url, headers={"Accept": "application/json"}, timeout=5)
-        data = r.json()
-        if data:
-            return sorted(set(data))
-        else:
+        url = INTAMI_CITY_URL.format(city=quote(city))
+        r = requests.get(url, headers=INTAMI_HEADERS, timeout=5)
+        if r.status_code == 429:
+            print("INTAMI: daily limit of 50 requests exceeded")
             return []
+        data = r.json()
+        return sorted(set(data)) if data else []
     except Exception as e:
-        print("Error INTAMI:", e)
+        print(f"INTAMI error: {e}")
         return []
-    
+
+
+def get_postcodes_for_street(city, street):
+    try:
+        url = INTAMI_CITY_URL.format(city=quote(city)) + f"/street/{quote(street)}"
+        r = requests.get(url, headers=INTAMI_HEADERS, timeout=5)
+        if r.status_code == 429:
+            print("INTAMI: daily limit of 50 requests exceeded")
+            return []
+        if r.status_code == 200 and r.json():
+            return sorted(set(r.json()))
+        print(f"INTAMI: street '{street}' not found in '{city}', falling back to city")
+        return get_postcodes_for_city(city)
+    except Exception as e:
+        print(f"INTAMI error: {e}")
+        return []
+
 
 def get_city_for_postcode(postcode):
     try:
-        r = requests.get(
-            f"https://kodpocztowy.intami.pl/api/{postcode}",
-            headers={"Accept": "application/json"},
-            timeout=5
-        )
+        url = INTAMI_POSTCODE_URL.format(postcode=postcode)
+        r = requests.get(url, headers=INTAMI_HEADERS, timeout=5)
+        if r.status_code == 429:
+            print("INTAMI: daily limit of 50 requests exceeded")
+            return []
         if r.status_code != 200:
             return []
         data = r.json()
-        if not data:
-            return []
-
-        miejscowosci = sorted(set(
+        return sorted(set(
             item["miejscowosc"] for item in data if item.get("miejscowosc")
-        ))
-        return miejscowosci
-
+        )) if data else []
     except Exception as e:
-        print("Error INTAMI:", e)
+        print(f"INTAMI error: {e}")
         return []
