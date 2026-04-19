@@ -13,11 +13,18 @@ def mf_lookup(nip):
     data = r.json().get("result", {}).get("subject")
     if not data:
         return None
+    
+    parsed = parse_mf_address(data.get("workingAddress"))
+
     return {
-        "name": data.get("name"),
-        "nip": data.get("nip"),
-        "regon": data.get("regon"),
-        "address": data.get("workingAddress")
+        "name":     data.get("name"),
+        "nip":      data.get("nip"),
+        "regon":    data.get("regon"),
+        "street":   parsed.get("street")   if parsed else None,
+        "building": parsed.get("building") if parsed else None,
+        "local":    parsed.get("local")    if parsed else None,
+        "postcode": parsed.get("postcode") if parsed else None,
+        "city":     parsed.get("city")     if parsed else None,
     }
 
 
