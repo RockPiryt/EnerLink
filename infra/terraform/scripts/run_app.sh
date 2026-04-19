@@ -24,12 +24,18 @@ systemctl start docker
 mkdir -p /opt/enerlink
 cd /opt/enerlink
 
-git clone https://github.com/RockPiryt/EnerLink.git
+if [ ! -d EnerLink ]; then
+  git clone https://github.com/RockPiryt/EnerLink.git
+fi
+
 cd EnerLink
 
 cat > .env <<EOF
+APP_ENV=${APP_ENV}
 DATABASE_URL=${DATABASE_URL}
 SECRET_KEY=${SECRET_KEY}
 EOF
+
+mkdir -p /opt/enerlink/data
 
 docker compose -f docker-compose.prod.yml up -d --build
