@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
-from app.services.post_code_service import get_postcode, get_postcodes_for_city
+from backend.app.services.postcode_service import get_postcode, get_postcodes_for_city, get_city_for_postcode
+import re
 
 postcode_bp = Blueprint("postcode", __name__, url_prefix="/api/postcode")
 
@@ -33,3 +34,20 @@ def search_postcode():
         }), 200
 
     return jsonify({"error": f"No postcode found for city '{city}'."}), 404
+
+
+@postcode_bp.route("/city/<string:postcode>", methods=["GET"])
+@jwt_required()
+def search_city_by_postcode(postcode):
+    
+    if not re.match(r"^\d{2}-\d{3}$", postcode):
+        return jsonify({"error": "Invalid postcode format — expected XX-XXX."}), 400
+ 
+    cities = get_city_for_postcode(postcode)
+    if not cities:
+        return jsonify({"error": f"No cities found for postcode '{postcode}'."}), 404
+ 
+    return jsonify({
+        "postcode": postcode,
+        "cities":   cities,
+    }), 200
