@@ -90,3 +90,19 @@ def _parse_format_1(a):
         city=m.group("city").strip()
     )
 
+
+def _parse_format_2(a):
+    m = re.search(
+        rf"(?P<street>.+?)\s+(?P<number>\d+)\s+(?P<postcode>{POSTCODE_RE})\s+(?P<city>.+)",
+        a
+    )
+    if not m:
+        return None
+
+    return _base_result(
+        street=m.group("street"),
+        building=m.group("number"),
+        postcode=m.group("postcode"),
+        city=m.group("city")
+    )
+
