@@ -16,14 +16,6 @@ data "aws_ami" "ubuntu" {
 }
 
 
-locals {
-  app_env = var.environment
-
-  database_url = var.environment == "production" ? (
-    "postgresql://${var.db_user}:${var.db_password}@${aws_db_instance.preg_postgres.address}:5432/${var.db_name}?sslmode=require"
-  ) : ""
-}
-
 # EC2 (public)
 resource "aws_instance" "enerlink_ec2" {
   ami                         = data.aws_ami.ubuntu.id
@@ -39,6 +31,7 @@ resource "aws_instance" "enerlink_ec2" {
     AWS_REGION = var.region
     APP_ENV    = var.environment
     SECRET_KEY = var.secret_key
+    DATABASE_URL = var.database_url
   })
 
   tags = { Name = "enerlink-compute" }
