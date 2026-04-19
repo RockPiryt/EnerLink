@@ -20,29 +20,73 @@ def mf_lookup(nip):
         "address": data.get("workingAddress")
     }
 
-def parse_address(address):
-    pattern = (
-        r'(?P<street>.+?)\s+'
-        r'(?P<number>\d+[A-Za-z]?'
-        r'(?:[\/]\d+[A-Za-z]?)?)'
-        r'\,?\s*'
-        r'(?P<postcode>\d{2}-\d{3})\s+'
-        r'(?P<city>.+)'
-    )
-    match = re.search(pattern, address)
-    if not match:
+
+def parse_mf_address(address: str):
+    if not address:
         return None
-    
-    number = match.group("number")
-    if "/" in number:
-        building, local = number.split("/", 1)
-    else:
-        building, local = number, None
+
+    address = address.strip()
+
+    parsers = [
+        _parse_format_1,  # UL. X 10/5, 00-001 CITY
+        _parse_format_2,  # UL X 10 00-001 CITY
+        _parse_format_3,  # UL. X 10, CITY 00-001
+        _parse_format_4,  # X 10/5 00-001 CITY
+        _parse_format_5,  # CITY UL. X 10/5 00-001
+        _parse_format_6,  # UL. X, 10/5, 00-001 CITY
+        _parse_format_7,  # UL. X 10/5 - CITY 00-001
+        _parse_format_8,  # UL. X 10/5, MIASTO
+        _parse_format_9,  # UL. X 10/5
+        _parse_format_10, # fallback heuristic
+    ]
+
+    for parser in parsers:
+        result = parser(address)
+        if result:
+            return result
 
     return {
-        "street": match.group("street"),
+        "raw": address
+    }
+
+
+POSTCODE_RE = r"\d{2}-\d{3}"
+
+def _split_number(number):
+    if not number:
+        return None, None
+
+    if "/" in number:
+        b, l = number.split("/", 1)
+        return b.strip(), l.strip()
+    return number.strip(), None
+
+
+def _base_result(street=None, building=None, local=None, postcode=None, city=None):
+    return {
+        "street": street,
         "building": building,
         "local": local,
-        "postcode": match.group("postcode"),
-        "city": match.group("city")
+        "postcode": postcode,
+        "city": city
     }
+
+
+def _parse_format_1(a):
+    m = re.search(
+        rf"(?P<street>.+?)\s+(?P<number>\d+[A-Za-z]?(?:/\d+[A-Za-z]?)?)\s*,\s*(?P<postcode>{POSTCODE_RE})\s+(?P<city>.+)",
+        a
+    )
+    if not m:
+        return None
+
+    b, l = _split_number(m.group("number"))
+
+    return _base_result(
+        street=m.group("street").strip(),
+        building=b,
+        local=l,
+        postcode=m.group("postcode"),
+        city=m.group("city").strip()
+    )
+
