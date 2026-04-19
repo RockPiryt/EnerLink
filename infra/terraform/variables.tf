@@ -10,26 +10,10 @@ variable "az" {
   default     = "eu-west-1a"
 }
 
-variable "db_name" {
-  description = "PostgreSQL database name"
+variable "database_url" {
+  description = "Application database URL"
   type        = string
-}
-
-variable "db_user" {
-  description = "PostgreSQL database user"
-  type        = string
-}
-
-variable "db_password" {
-  description = "PostgreSQL database password"
-  type        = string
-  sensitive   = true
-}
-
-variable "db_port" {
-  description = "PostgreSQL port"
-  type        = number
-  default     = 5432
+  default     = "sqlite:////data/enerlink.db"
 }
 
 variable "secret_key" {
@@ -37,7 +21,6 @@ variable "secret_key" {
   type        = string
   sensitive   = true
 }
-
 
 variable "environment" {
   description = "App environment"
