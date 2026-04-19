@@ -1,18 +1,20 @@
 import os
 import xml.etree.ElementTree as ET
 import requests
+import xlrd
 import zeep
 from contextlib import contextmanager
 from zeep.transports import Transport
 from dotenv import load_dotenv
 from tool_methods import normalize_street
-#from app.models import Pkwiu
-#from app.db import db
+
 
 load_dotenv()
 
 GUS_API_KEY  = os.getenv("GUS_API_KEY")
 GUS_WSDL     = "https://wyszukiwarkaregon.stat.gov.pl/wsBIR/wsdl/UslugaBIRzewnPubl-ver11-prod.wsdl"
+
+PKD_XLS_URL = "https://klasyfikacje.stat.gov.pl/static/pkd_25/pdf/StrukturaPKD2025.xls"
 
 
 def _make_client(sid=None):
@@ -74,3 +76,39 @@ def gus_lookup(nip):
         "postcode": _get_text(dane, "KodPocztowy"),
         "city":     _get_text(dane, "Miejscowosc"),
     }
+
+
+def fetch_pkd_catalog():
+
+    try:
+        response = requests.get(PKD_XLS_URL, timeout=30)
+        response.raise_for_status()
+    except requests.RequestException as e:
+        raise RuntimeError(f"Failed to download PKD file from GUS: {e}")
+
+    try:
+        workbook = xlrd.open_workbook(file_contents=response.content)
+    except Exception as e:
+        raise RuntimeError(f"Failed to open XLS file: {e}")
+
+    sheet = workbook.sheet_by_index(0)
+    items = []
+
+    for row_idx in range(sheet.nrows):
+        row = sheet.row_values(row_idx)
+
+        code = str(row[3]).strip() if len(row) > 3 else ""
+        name = str(row[4]).strip() if len(row) > 4 else ""
+
+        if not code or not name or code == "Podklasa":
+            continue
+
+        items.append({"code": code, "name": name})
+
+    if not items:
+        raise RuntimeError(
+            "Failed to find any PKD subclasses in the file — "
+            "please check the worksheet structure."
+        )
+
+    return items
