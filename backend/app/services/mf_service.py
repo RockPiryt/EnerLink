@@ -4,25 +4,25 @@ from datetime import date
 
 POSTCODE_RE = r"\d{2}-\d{3}"
 NUMBER_RE   = r"\d+[A-Za-z]?(?:/\d+[A-Za-z]?)?"
+MF_API_URL = "https://wl-api.mf.gov.pl/api/search/nip/{nip}"
 
 
 def mf_lookup(nip):
-   
-    url = f"https://wl-api.mf.gov.pl/api/search/nip/{nip}"
+    url = MF_API_URL.format(nip=nip)
     params = {"date": date.today().isoformat()}
- 
+
     r = requests.get(url, params=params)
     if r.status_code != 200:
         print(f"MF API error: {r.status_code} - {r.text}")
         return None
- 
+
     data = r.json().get("result", {}).get("subject")
     if not data:
         return None
- 
+
     raw_address = data.get("workingAddress") or data.get("residenceAddress")
     parsed = parse_mf_address(raw_address)
- 
+
     return {
         "name":        data.get("name"),
         "nip":         data.get("nip"),
@@ -31,7 +31,8 @@ def mf_lookup(nip):
         "building":    parsed.get("building") if parsed else None,
         "local":       parsed.get("local")    if parsed else None,
         "postcode":    parsed.get("postcode") if parsed else None,
-        "city":        parsed.get("city")     if parsed else None
+        "city":        parsed.get("city")     if parsed else None,
+        "address_raw": raw_address,
     }
 
 
