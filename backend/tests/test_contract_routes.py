@@ -1,3 +1,17 @@
+import pytest
+
+def get_token(client):
+    resp = client.post("/api/login", json={
+        "email": "david.wilson@enerlink.com",
+        "password": "analyst123"
+    })
+    assert resp.status_code == 200, f"Login failed: {resp.data}"
+    return resp.get_json()["token"]
+
+@pytest.fixture()
+def auth_header(seeded_client):
+    token = get_token(seeded_client)
+    return {"Authorization": f"Bearer {token}"}
 from datetime import date
 
 
@@ -21,8 +35,8 @@ def _get_first_ids(app):
         }
 
 
-def _create_contract_via_api(client, app, contract_number="CNTR-TEST-0001", status="NEW"):
-    ids = _get_first_ids(app)
+def _create_contract_via_api(seeded_client, seeded_app, auth_header, contract_number="CNTR-TEST-0001", status="NEW"):
+    ids = _get_first_ids(seeded_app)
     assert ids["customer_id"] is not None, "Seed must create at least one Customer"
 
     payload = {
@@ -36,26 +50,26 @@ def _create_contract_via_api(client, app, contract_number="CNTR-TEST-0001", stat
         "status": status,
         "description": "Created by test",
     }
-    resp = client.post("/api/contracts", json=payload)
+    resp = seeded_client.post("/api/contracts", json=payload, headers=auth_header)
     assert resp.status_code == 201, resp.get_json()
     return resp.get_json()["contract"]["id"]
 
 
-def test_get_contracts_returns_list(client):
-    resp = client.get("/api/contracts")
+def test_get_contracts_returns_list(seeded_client, auth_header):
+    resp = seeded_client.get("/api/contracts", headers=auth_header)
     assert resp.status_code == 200
     assert resp.is_json
     assert isinstance(resp.get_json(), list)
 
 
-def test_add_contract_missing_required_fields(client):
-    resp = client.post("/api/contracts", json={})
+def test_add_contract_missing_required_fields(seeded_client, auth_header):
+    resp = seeded_client.post("/api/contracts", json={}, headers=auth_header)
     assert resp.status_code == 400
     assert resp.get_json()["error"] == "id_customer and contract_number are required"
 
 
-def test_add_contract_invalid_date_format(client, app):
-    ids = _get_first_ids(app)
+def test_add_contract_invalid_date_format(seeded_client, seeded_app, auth_header):
+    ids = _get_first_ids(seeded_app)
     assert ids["customer_id"] is not None
 
     payload = {
@@ -63,7 +77,7 @@ def test_add_contract_invalid_date_format(client, app):
         "contract_number": "CNTR-TEST-BADDATE",
         "signed_at": "2025/01/01",  # invalid
     }
-    resp = client.post("/api/contracts", json=payload)
+    resp = seeded_client.post("/api/contracts", json=payload, headers=auth_header)
     assert resp.status_code == 400
 
     err = resp.get_json()["error"]
@@ -71,10 +85,10 @@ def test_add_contract_invalid_date_format(client, app):
     assert "signed_at" in err
 
 
-def test_add_contract_success_and_timeline_present(client, app):
-    contract_id = _create_contract_via_api(client, app, contract_number="CNTR-TEST-0002", status="NEW")
+def test_add_contract_success_and_timeline_present(seeded_client, seeded_app, auth_header):
+    contract_id = _create_contract_via_api(seeded_client, seeded_app, auth_header, contract_number="CNTR-TEST-0002", status="NEW")
 
-    resp = client.get(f"/api/contracts/{contract_id}")
+    resp = seeded_client.get(f"/api/contracts/{contract_id}", headers=auth_header)
     assert resp.status_code == 200
     data = resp.get_json()
     assert data["id"] == contract_id
@@ -85,19 +99,19 @@ def test_add_contract_success_and_timeline_present(client, app):
     assert any(t.get("status") == "NEW" for t in data["timelines"])
 
 
-def test_get_contract_not_found(client):
-    resp = client.get("/api/contracts/999999")
+def test_get_contract_not_found(seeded_client, auth_header):
+    resp = seeded_client.get("/api/contracts/999999", headers=auth_header)
     assert resp.status_code == 404
     assert resp.get_json()["error"] == "Contract not found"
 
 
-def test_update_contract_success(client, app):
-    contract_id = _create_contract_via_api(client, app, contract_number="CNTR-TEST-0003")
+def test_update_contract_success(seeded_client, seeded_app, auth_header):
+    contract_id = _create_contract_via_api(seeded_client, seeded_app, auth_header, contract_number="CNTR-TEST-0003")
 
-    resp = client.put(f"/api/contracts/{contract_id}", json={
+    resp = seeded_client.put(f"/api/contracts/{contract_id}", json={
         "contract_number": "CNTR-TEST-0003-UPDATED",
         "signed_at": None,  # clear date
-    })
+    }, headers=auth_header)
     assert resp.status_code == 200
     data = resp.get_json()
 
@@ -106,12 +120,12 @@ def test_update_contract_success(client, app):
     assert data["contract"]["signed_at"] is None
 
 
-def test_update_contract_invalid_date_format(client, app):
-    contract_id = _create_contract_via_api(client, app, contract_number="CNTR-TEST-0004")
+def test_update_contract_invalid_date_format(seeded_client, seeded_app, auth_header):
+    contract_id = _create_contract_via_api(seeded_client, seeded_app, auth_header, contract_number="CNTR-TEST-0004")
 
-    resp = client.put(f"/api/contracts/{contract_id}", json={
+    resp = seeded_client.put(f"/api/contracts/{contract_id}", json={
         "contract_from": "01-01-2025"  # invalid
-    })
+    }, headers=auth_header)
     assert resp.status_code == 400
 
     err = resp.get_json()["error"]
@@ -119,19 +133,19 @@ def test_update_contract_invalid_date_format(client, app):
     assert "contract_from" in err
 
 
-def test_toggle_contract_deleted_requires_field(client, app):
-    contract_id = _create_contract_via_api(client, app, contract_number="CNTR-TEST-0005")
+def test_toggle_contract_deleted_requires_field(seeded_client, seeded_app, auth_header):
+    contract_id = _create_contract_via_api(seeded_client, seeded_app, auth_header, contract_number="CNTR-TEST-0005")
 
-    resp = client.patch(f"/api/contracts/{contract_id}/deleted", json={})
+    resp = seeded_client.patch(f"/api/contracts/{contract_id}/deleted", json={}, headers=auth_header)
     assert resp.status_code == 400
     assert resp.get_json()["error"] == "'is_deleted' field is required"
 
 
-def test_toggle_contract_deleted_success(client, app):
-    contract_id = _create_contract_via_api(client, app, contract_number="CNTR-TEST-0006")
+def test_toggle_contract_deleted_success(seeded_client, seeded_app, auth_header):
+    contract_id = _create_contract_via_api(seeded_client, seeded_app, auth_header, contract_number="CNTR-TEST-0006")
 
     # mark deleted
-    resp = client.patch(f"/api/contracts/{contract_id}/deleted", json={"is_deleted": True})
+    resp = seeded_client.patch(f"/api/contracts/{contract_id}/deleted", json={"is_deleted": True}, headers=auth_header)
     assert resp.status_code == 200
     data = resp.get_json()
 
@@ -139,27 +153,27 @@ def test_toggle_contract_deleted_success(client, app):
     assert data["is_deleted"] is True
 
     # default GET should hide deleted
-    resp2 = client.get("/api/contracts")
+    resp2 = seeded_client.get("/api/contracts", headers=auth_header)
     assert resp2.status_code == 200
     ids = [c["id"] for c in resp2.get_json()]
     assert contract_id not in ids
 
     # include_deleted should show it
-    resp3 = client.get("/api/contracts?include_deleted=true")
+    resp3 = seeded_client.get("/api/contracts?include_deleted=true", headers=auth_header)
     assert resp3.status_code == 200
     ids3 = [c["id"] for c in resp3.get_json()]
     assert contract_id in ids3
 
 
-def test_filter_contracts_by_customer(client, app):
-    ids = _get_first_ids(app)
+def test_filter_contracts_by_customer(seeded_client, seeded_app, auth_header):
+    ids = _get_first_ids(seeded_app)
     assert ids["customer_id"] is not None
 
     # create 2 contracts for same customer
-    _create_contract_via_api(client, app, contract_number="CNTR-TEST-CUST-01")
-    _create_contract_via_api(client, app, contract_number="CNTR-TEST-CUST-02")
+    _create_contract_via_api(seeded_client, seeded_app, auth_header, contract_number="CNTR-TEST-CUST-01")
+    _create_contract_via_api(seeded_client, seeded_app, auth_header, contract_number="CNTR-TEST-CUST-02")
 
-    resp = client.get(f"/api/contracts?customer_id={ids['customer_id']}")
+    resp = seeded_client.get(f"/api/contracts?customer_id={ids['customer_id']}", headers=auth_header)
     assert resp.status_code == 200
     data = resp.get_json()
 
@@ -167,21 +181,21 @@ def test_filter_contracts_by_customer(client, app):
     assert all(c["id_customer"] == ids["customer_id"] for c in data)
 
 
-def test_get_timeline_list(client, app):
-    contract_id = _create_contract_via_api(client, app, contract_number="CNTR-TEST-TL-01")
+def test_get_timeline_list(seeded_client, seeded_app, auth_header):
+    contract_id = _create_contract_via_api(seeded_client, seeded_app, auth_header, contract_number="CNTR-TEST-TL-01")
 
-    resp = client.get(f"/api/contracts/{contract_id}/timeline")
+    resp = seeded_client.get(f"/api/contracts/{contract_id}/timeline", headers=auth_header)
     assert resp.status_code == 200
     assert isinstance(resp.get_json(), list)
 
 
-def test_add_timeline_entry_success(client, app):
-    contract_id = _create_contract_via_api(client, app, contract_number="CNTR-TEST-TL-02")
+def test_add_timeline_entry_success(seeded_client, seeded_app, auth_header):
+    contract_id = _create_contract_via_api(seeded_client, seeded_app, auth_header, contract_number="CNTR-TEST-TL-02")
 
-    resp = client.post(f"/api/contracts/{contract_id}/timeline", json={
+    resp = seeded_client.post(f"/api/contracts/{contract_id}/timeline", json={
         "status": "SIGNED",
         "description": "Signed by customer"
-    })
+    }, headers=auth_header)
     assert resp.status_code == 201
     data = resp.get_json()
 
@@ -189,30 +203,30 @@ def test_add_timeline_entry_success(client, app):
     assert data["timeline"]["status"] == "SIGNED"
 
     # verify it appears in timeline list
-    resp2 = client.get(f"/api/contracts/{contract_id}/timeline")
+    resp2 = seeded_client.get(f"/api/contracts/{contract_id}/timeline", headers=auth_header)
     assert resp2.status_code == 200
     statuses = [t["status"] for t in resp2.get_json()]
     assert "SIGNED" in statuses
 
 
-def test_add_timeline_entry_missing_status(client, app):
-    contract_id = _create_contract_via_api(client, app, contract_number="CNTR-TEST-TL-03")
+def test_add_timeline_entry_missing_status(seeded_client, seeded_app, auth_header):
+    contract_id = _create_contract_via_api(seeded_client, seeded_app, auth_header, contract_number="CNTR-TEST-TL-03")
 
-    resp = client.post(f"/api/contracts/{contract_id}/timeline", json={})
+    resp = seeded_client.post(f"/api/contracts/{contract_id}/timeline", json={}, headers=auth_header)
     assert resp.status_code == 400
     assert resp.get_json()["error"] == "status is required"
 
 
-def test_add_timeline_entry_contract_not_found(client):
-    resp = client.post("/api/contracts/999999/timeline", json={"status": "NEW"})
+def test_add_timeline_entry_contract_not_found(seeded_client, auth_header):
+    resp = seeded_client.post("/api/contracts/999999/timeline", json={"status": "NEW"}, headers=auth_header)
     assert resp.status_code == 404
     assert resp.get_json()["error"] == "Contract not found"
 
 
-def test_get_contract_history_returns_list(client, app):
-    contract_id = _create_contract_via_api(client, app, contract_number="CNTR-TEST-HIST-01")
+def test_get_contract_history_returns_list(seeded_client, seeded_app, auth_header):
+    contract_id = _create_contract_via_api(seeded_client, seeded_app, auth_header, contract_number="CNTR-TEST-HIST-01")
 
-    resp = client.get(f"/api/contracts/{contract_id}/history")
+    resp = seeded_client.get(f"/api/contracts/{contract_id}/history", headers=auth_header)
     assert resp.status_code == 200
     assert isinstance(resp.get_json(), list)
 
