@@ -11,6 +11,7 @@ from .user_routes import user_bp
 from .supplier_routes import supplier_bp
 from .pkwiu_routes import pkwiu_bp
 from .api_locations_routes import location_bp
+from .api_pkd_routes import pkd_bp
 
 def register_routes(app):
     app.register_blueprint(address_bp, url_prefix="/api")
@@ -26,3 +27,4 @@ def register_routes(app):
     app.register_blueprint(supplier_bp, url_prefix='/api')
     app.register_blueprint(pkwiu_bp, url_prefix='/api')
     app.register_blueprint(location_bp, url_prefix='/api')
+    app.register_blueprint(pkd_bp, url_prefix='/api')
