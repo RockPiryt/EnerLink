@@ -41,10 +41,3 @@ resource "aws_route_table_association" "public_assoc" {
   subnet_id      = aws_subnet.enerlink-public-subnet.id
   route_table_id = aws_route_table.enerlink-rt-public.id
 }
-
-# --------------------------------NAT + EIP
-# EIP for NAT
-resource "aws_eip" "enerlink_nat_eip" {
-  domain = "vpc"
-  tags   = { Name = "enerlink-nat-eip" }
-}
