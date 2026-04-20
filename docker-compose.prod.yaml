@@ -6,7 +6,7 @@ services:
     container_name: enerlink-backend
     restart: unless-stopped
     environment:
-      FLASK_ENV: ${APP_ENV}
+      APP_ENV: ${APP_ENV}
       DATABASE_URL: ${DATABASE_URL}
       SECRET_KEY: ${SECRET_KEY}
     volumes:
