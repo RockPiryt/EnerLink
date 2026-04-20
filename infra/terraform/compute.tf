@@ -40,6 +40,8 @@ resource "aws_instance" "enerlink_ec2" {
 resource "aws_eip" "enerlink_ec2_eip" {
   domain = "vpc"
 
+  depends_on = [aws_internet_gateway.igw-enerlink]
+
   tags = {
     Name = "enerlink_ec2_eip"
   }
