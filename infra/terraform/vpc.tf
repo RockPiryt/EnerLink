@@ -9,7 +9,7 @@ resource "aws_vpc" "enerlink-vpc" {
 resource "aws_subnet" "enerlink-public-subnet" {
   vpc_id                  = aws_vpc.enerlink-vpc.id
   cidr_block              = cidrsubnet(aws_vpc.enerlink-vpc.cidr_block, 4, 0)
-  availability_zone       = "eu-west-1a"
+  availability_zone       = var.az
   map_public_ip_on_launch = true
 
   tags = {
