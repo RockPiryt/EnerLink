@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
-from backend.app.services.postcode_service import get_postcode, get_postcodes_for_city, get_city_for_postcode
+from app.services.postcode_service import get_postcode, get_postcodes_for_city, get_city_for_postcode
 import re
 
 postcode_bp = Blueprint("postcode", __name__, url_prefix="/api/postcode")

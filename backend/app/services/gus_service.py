@@ -6,7 +6,7 @@ import zeep
 from contextlib import contextmanager
 from zeep.transports import Transport
 from dotenv import load_dotenv
-from tool_methods import normalize_street
+from app.services.tool_methods import normalize_street
 
 
 load_dotenv()
