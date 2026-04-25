@@ -46,3 +46,8 @@ EOF
 mkdir -p /opt/enerlink/data
 
 docker compose -f docker-compose.prod.yaml up -d --build
+
+sleep 10
+
+docker exec enerlink-backend flask db upgrade
+docker exec enerlink-backend python seed_database.py
