@@ -21,6 +21,13 @@ apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin do
 systemctl enable docker
 systemctl start docker
 
+export SECRET_KEY=$(aws ssm get-parameter \
+  --name "${SECRET_KEY}" \
+  --with-decryption \
+  --query "Parameter.Value" \
+  --output text \
+  --region "${AWS_REGION}")
+
 mkdir -p /opt/enerlink
 cd /opt/enerlink
 
