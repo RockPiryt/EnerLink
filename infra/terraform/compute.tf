@@ -15,6 +15,11 @@ data "aws_ami" "ubuntu" {
   }
 }
 
+data "aws_ssm_parameter" "secret_key" {
+  name            = "/enerlink/dev/SECRET_KEY"
+  with_decryption = true
+}
+
 
 # EC2 (public)
 resource "aws_instance" "enerlink_ec2" {
@@ -30,7 +35,7 @@ resource "aws_instance" "enerlink_ec2" {
   user_data = templatefile("${path.module}/scripts/run_app.sh", {
     AWS_REGION = var.region
     APP_ENV    = var.environment
-    SECRET_KEY = var.secret_key
+    SECRET_KEY   = data.aws_ssm_parameter.secret_key.value
     DATABASE_URL = var.database_url
   })
 
