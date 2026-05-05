@@ -286,31 +286,31 @@ def test_get_cities_pagination(seeded_client, seeded_app, auth_header):
 
 # ---------- DISTRICTS ----------
 
-def test_get_districts_empty(client, app):
-    with app.app_context():
+def test_get_districts_empty(seeded_client, seeded_app, auth_header):
+    with seeded_app.app_context():
         clear_tables(District)
 
-    resp = client.get("/api/address/districts")
+    resp = seeded_client.get("/api/address/districts", headers=auth_header)
     assert resp.status_code == 200
     data = resp.get_json()
     assert data["items"] == []
     assert data["total"] == 0
 
 
-def test_add_district_validation(client, app):
-    with app.app_context():
+def test_add_district_validation(seeded_client, seeded_app, auth_header):
+    with seeded_app.app_context():
         clear_tables(District)
 
-    resp = client.post("/api/address/districts", json={})
+    resp = seeded_client.post("/api/address/districts", json={}, headers=auth_header)
     assert resp.status_code == 400
     assert resp.get_json()["error"] == "name is required"
 
 
-def test_add_district_success(client, app):
-    with app.app_context():
+def test_add_district_success(seeded_client, seeded_app, auth_header):
+    with seeded_app.app_context():
         clear_tables(District)
 
-    resp = client.post("/api/address/districts", json={"name": "Pomorskie"})
+    resp = seeded_client.post("/api/address/districts", json={"name": "Pomorskie"}, headers=auth_header)
     assert resp.status_code == 201
     data = resp.get_json()
     assert data["message"] == "District added"
@@ -318,46 +318,46 @@ def test_add_district_success(client, app):
     assert data["district"]["is_active"] is True
 
 
-def test_get_district_not_found(client, app):
-    with app.app_context():
+def test_get_district_not_found(seeded_client, seeded_app, auth_header):
+    with seeded_app.app_context():
         clear_tables(District)
 
-    resp = client.get("/api/address/districts/999999")
+    resp = seeded_client.get("/api/address/districts/999999", headers=auth_header)
     assert resp.status_code == 404
     assert resp.get_json()["error"] == "District not found"
 
 
-def test_get_district_success(client, app):
-    with app.app_context():
+def test_get_district_success(seeded_client, seeded_app, auth_header):
+    with seeded_app.app_context():
         clear_tables(District)
 
-    r = client.post("/api/address/districts", json={"name": "Mazowieckie"})
+    r = seeded_client.post("/api/address/districts", json={"name": "Mazowieckie"}, headers=auth_header)
     district_id = r.get_json()["district"]["id"]
 
-    resp = client.get(f"/api/address/districts/{district_id}")
+    resp = seeded_client.get(f"/api/address/districts/{district_id}", headers=auth_header)
     assert resp.status_code == 200
     data = resp.get_json()
     assert data["id"] == district_id
     assert data["name"] == "Mazowieckie"
 
 
-def test_update_district_not_found(client, app):
-    with app.app_context():
+def test_update_district_not_found(seeded_client, seeded_app, auth_header):
+    with seeded_app.app_context():
         clear_tables(District)
 
-    resp = client.put("/api/address/districts/999999", json={"name": "X"})
+    resp = seeded_client.put("/api/address/districts/999999", json={"name": "X"}, headers=auth_header)
     assert resp.status_code == 404
     assert resp.get_json()["error"] == "District not found"
 
 
-def test_update_district_success(client, app):
-    with app.app_context():
+def test_update_district_success(seeded_client, seeded_app, auth_header):
+    with seeded_app.app_context():
         clear_tables(District)
 
-    r = client.post("/api/address/districts", json={"name": "Old"})
+    r = seeded_client.post("/api/address/districts", json={"name": "Old"}, headers=auth_header)
     district_id = r.get_json()["district"]["id"]
 
-    resp = client.put(f"/api/address/districts/{district_id}", json={"name": "New", "is_active": False})
+    resp = seeded_client.put(f"/api/address/districts/{district_id}", json={"name": "New", "is_active": False}, headers=auth_header)
     assert resp.status_code == 200
     data = resp.get_json()
     assert data["message"] == "District updated"
@@ -365,44 +365,44 @@ def test_update_district_success(client, app):
     assert data["district"]["is_active"] is False
 
 
-def test_delete_district_not_found(client, app):
-    with app.app_context():
+def test_delete_district_not_found(seeded_client, seeded_app, auth_header):
+    with seeded_app.app_context():
         clear_tables(District)
 
-    resp = client.delete("/api/address/districts/999999")
+    resp = seeded_client.delete("/api/address/districts/999999", headers=auth_header)
     assert resp.status_code == 404
     assert resp.get_json()["error"] == "District not found"
 
 
-def test_delete_district_success(client, app):
-    with app.app_context():
+def test_delete_district_success(seeded_client, seeded_app, auth_header):
+    with seeded_app.app_context():
         clear_tables(District)
 
-    r = client.post("/api/address/districts", json={"name": "ToDelete"})
+    r = seeded_client.post("/api/address/districts", json={"name": "ToDelete"}, headers=auth_header)
     district_id = r.get_json()["district"]["id"]
 
-    resp = client.delete(f"/api/address/districts/{district_id}")
+    resp = seeded_client.delete(f"/api/address/districts/{district_id}", headers=auth_header)
     assert resp.status_code == 200
     assert resp.get_json()["message"] == "District deleted successfully"
 
-    resp2 = client.get(f"/api/address/districts/{district_id}")
+    resp2 = seeded_client.get(f"/api/address/districts/{district_id}", headers=auth_header)
     assert resp2.status_code == 404
 
 
-def test_patch_district_status_validation_and_success(client, app):
-    with app.app_context():
+def test_patch_district_status_validation_and_success(seeded_client, seeded_app, auth_header):
+    with seeded_app.app_context():
         clear_tables(District)
 
-    r = client.post("/api/address/districts", json={"name": "StatusTest"})
+    r = seeded_client.post("/api/address/districts", json={"name": "StatusTest"}, headers=auth_header)
     district_id = r.get_json()["district"]["id"]
 
     # missing field
-    resp_missing = client.patch(f"/api/address/districts/{district_id}/status", json={})
+    resp_missing = seeded_client.patch(f"/api/address/districts/{district_id}/status", json={}, headers=auth_header)
     assert resp_missing.status_code == 400
     assert resp_missing.get_json()["error"] == "'is_active' field is required"
 
     # success
-    resp = client.patch(f"/api/address/districts/{district_id}/status", json={"is_active": False})
+    resp = seeded_client.patch(f"/api/address/districts/{district_id}/status", json={"is_active": False}, headers=auth_header)
     assert resp.status_code == 200
     data = resp.get_json()
     assert data["message"] == "District status updated"
