@@ -1,5 +1,8 @@
+
+import pytest
 from app.db import db
 from app.models.address_model import Country, City, District
+from tests.test_auth_routes import auth_header
 
 
 # ---------- helpers ----------
@@ -37,8 +40,8 @@ def seed_districts(items):
 
 # ---------- COUNTRIES ----------
 
-def test_get_countries_returns_list(client):
-    resp = client.get("/api/address/countries")
+def test_get_countries_returns_list(seeded_client, seeded_app, auth_header):
+    resp = seeded_client.get("/api/address/countries", headers=auth_header)
     assert resp.status_code == 200
     assert resp.is_json
 
@@ -46,12 +49,12 @@ def test_get_countries_returns_list(client):
     assert isinstance(data, list)
 
 
-def test_get_countries_structure_when_not_empty(client, app):
-    with app.app_context():
+def test_get_countries_structure_when_not_empty(seeded_client, seeded_app, auth_header):
+    with seeded_app.app_context():
         clear_tables(Country)
         seed_countries([("Poland", "PL", True)])
 
-    resp = client.get("/api/address/countries")
+    resp = seeded_client.get("/api/address/countries", headers=auth_header)
     assert resp.status_code == 200
     data = resp.get_json()
 
@@ -65,12 +68,12 @@ def test_get_countries_structure_when_not_empty(client, app):
     assert "is_active" in first
 
 
-def test_add_country_success(client, app):
-    with app.app_context():
+def test_add_country_success(seeded_client, seeded_app, auth_header):
+    with seeded_app.app_context():
         clear_tables(Country)
 
     payload = {"name": "Poland", "shortcut": "PL"}
-    resp = client.post("/api/address/countries", json=payload)
+    resp = seeded_client.post("/api/address/countries", json=payload, headers=auth_header)
     assert resp.status_code == 201
 
     data = resp.get_json()
@@ -81,24 +84,24 @@ def test_add_country_success(client, app):
     assert "id" in data["country"]
 
 
-def test_add_country_missing_fields(client, app):
-    with app.app_context():
+def test_add_country_missing_fields(seeded_client, seeded_app, auth_header):
+    with seeded_app.app_context():
         clear_tables(Country)
 
-    resp = client.post("/api/address/countries", json={"name": "Poland"})
+    resp = seeded_client.post("/api/address/countries", json={"name": "Poland"}, headers=auth_header)
     assert resp.status_code == 400
     assert resp.get_json()["error"] == "name and shortcut are required"
 
 
-def test_patch_country_status_success(client, app):
-    with app.app_context():
+def test_patch_country_status_success(seeded_client, seeded_app, auth_header):
+    with seeded_app.app_context():
         clear_tables(Country)
 
-    resp_create = client.post("/api/address/countries", json={"name": "Germany", "shortcut": "DE"})
+    resp_create = seeded_client.post("/api/address/countries", json={"name": "Germany", "shortcut": "DE"}, headers=auth_header)
     assert resp_create.status_code == 201
     country_id = resp_create.get_json()["country"]["id"]
 
-    resp = client.patch(f"/api/address/countries/{country_id}/status", json={"is_active": False})
+    resp = seeded_client.patch(f"/api/address/countries/{country_id}/status", json={"is_active": False}, headers=auth_header)
     assert resp.status_code == 200
     data = resp.get_json()
     assert data["message"] == "Country status updated"
