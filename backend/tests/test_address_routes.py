@@ -108,24 +108,24 @@ def test_patch_country_status_success(seeded_client, seeded_app, auth_header):
     assert data["is_active"] is False
 
 
-def test_patch_country_status_not_found(client, app):
-    with app.app_context():
+def test_patch_country_status_not_found(seeded_client, seeded_app, auth_header):
+    with seeded_app.app_context():
         clear_tables(Country)
 
-    resp = client.patch("/api/address/countries/999999/status", json={"is_active": False})
+    resp = seeded_client.patch("/api/address/countries/999999/status", json={"is_active": False}, headers=auth_header)
     assert resp.status_code == 404
     assert resp.get_json()["error"] == "Country not found"
 
 
-def test_patch_country_status_missing_field(client, app):
-    with app.app_context():
+def test_patch_country_status_missing_field(seeded_client, seeded_app, auth_header):
+    with seeded_app.app_context():
         clear_tables(Country)
 
-    resp_create = client.post("/api/address/countries", json={"name": "France", "shortcut": "FR"})
+    resp_create = seeded_client.post("/api/address/countries", json={"name": "France", "shortcut": "FR"}, headers=auth_header)
     assert resp_create.status_code == 201
     country_id = resp_create.get_json()["country"]["id"]
 
-    resp = client.patch(f"/api/address/countries/{country_id}/status", json={})
+    resp = seeded_client.patch(f"/api/address/countries/{country_id}/status", json={}, headers=auth_header)
     assert resp.status_code == 400
     assert resp.get_json()["error"] == "'is_active' field is required"
 
