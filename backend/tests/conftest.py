@@ -49,3 +49,14 @@ def client(app):
 @pytest.fixture()
 def seeded_client(seeded_app):
     return seeded_app.test_client()
+
+@pytest.fixture()
+def auth_header(seeded_client):
+    """Returns a valid authentication header for a seeded test user."""
+    resp = seeded_client.post("/api/login", json={
+        "email": "david.wilson@enerlink.com",
+        "password": "analyst123"
+    })
+    assert resp.status_code == 200, f"Login failed: {resp.data}"
+    token = resp.get_json()["token"]
+    return {"Authorization": f"Bearer {token}"}
