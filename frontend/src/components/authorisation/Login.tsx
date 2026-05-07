@@ -21,7 +21,7 @@ const Login: React.FC = () => {
     try {
       const success = await login(email, password);
       if (!success) {
-        setError('Niepoprawne dane logowania!');
+        setError('Invalid login credentials!');
       }
     } catch (err: any) {
       setError(typeof err === 'string' ? err : 'Login failed');
@@ -51,15 +51,15 @@ const Login: React.FC = () => {
         <div className="login-brand-hero">
           <div className="login-brand-eyebrow">
             <span className="pulse-dot" />
-            CRM dla sprzedawców energii
+            CRM for energy vendors
           </div>
           <h2 className="login-brand-title">
-            Zarządzaj klientami i&nbsp;<span>sprzedażą energii</span> w&nbsp;jednym miejscu.
+            Manage customers and&nbsp;<span>energy sales</span> in&nbsp;one place.
           </h2>
           <p className="login-brand-subtitle">
-            EnerLink usprawnia zarządzanie klientami, śledzenie kontraktów
-            i&nbsp;analizę wyników sprzedaży — z&nbsp;dedykowanymi widokami dla
-            administratorów, managerów i&nbsp;handlowców.
+            EnerLink streamlines customer management, contract tracking and
+            sales performance analysis — with dedicated views for
+            administrators, managers and sales representatives.
           </p>
 
           <ul className="login-brand-features">
@@ -69,7 +69,7 @@ const Login: React.FC = () => {
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
               </span>
-              Baza klientów, kontraktów i&nbsp;taryf u&nbsp;dostawców energii
+              Database of customers, contracts and energy provider tariffs
             </li>
             <li>
               <span className="check">
@@ -77,7 +77,7 @@ const Login: React.FC = () => {
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
               </span>
-              Pulpity analityczne i&nbsp;ranking wyników zespołów
+              Analytics dashboards and team performance ranking
             </li>
           </ul>
         </div>
@@ -91,9 +91,9 @@ const Login: React.FC = () => {
       <main className="login-form-panel">
         <div className="login-form-card">
           <div className="login-form-header">
-            <h2 className="login-form-title">Witaj ponownie</h2>
+            <h2 className="login-form-title">Welcome back</h2>
             <p className="login-form-subtitle">
-              Zaloguj się, aby przejść do panelu CRM EnerLink.
+              Sign in to access the EnerLink CRM panel.
             </p>
           </div>
 
@@ -119,7 +119,7 @@ const Login: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  placeholder="Wprowadź email"
+                  placeholder="Enter your email"
                   disabled={isLoading}
                   autoComplete="email"
                 />
@@ -133,7 +133,7 @@ const Login: React.FC = () => {
             </div>
 
             <div className="login-field">
-              <label htmlFor="login-password" className="login-label">Hasło</label>
+              <label htmlFor="login-password" className="login-label">Password</label>
               <div className="login-input-wrap">
                 <input
                   id="login-password"
@@ -142,7 +142,7 @@ const Login: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  placeholder="Wprowadź hasło"
+                  placeholder="Enter your password"
                   disabled={isLoading}
                   autoComplete="current-password"
                 />
@@ -156,7 +156,7 @@ const Login: React.FC = () => {
                   type="button"
                   className="login-input-toggle"
                   onClick={() => setShowPassword((v) => !v)}
-                  aria-label={showPassword ? 'Ukryj hasło' : 'Pokaż hasło'}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                   tabIndex={-1}
                 >
                   {showPassword ? (
@@ -183,7 +183,7 @@ const Login: React.FC = () => {
                   disabled={isLoading}
                 />
                 <span className="checkmark" />
-                Zapamiętaj mnie
+                Remember me
               </label>
             </div>
 
@@ -195,11 +195,11 @@ const Login: React.FC = () => {
               {isLoading ? (
                 <>
                   <span className="login-spinner" aria-hidden="true" />
-                  Logowanie...
+                  Signing in...
                 </>
               ) : (
                 <>
-                  Zaloguj się
+                  Sign in
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
                     <line x1="5" y1="12" x2="19" y2="12" />
                     <polyline points="12 5 19 12 12 19" />
@@ -210,7 +210,7 @@ const Login: React.FC = () => {
           </form>
 
           <div className="login-form-footer">
-            Problem z logowaniem? Skontaktuj się z administratorem systemu.
+            Trouble signing in? Contact your system administrator.
           </div>
         </div>
       </main>

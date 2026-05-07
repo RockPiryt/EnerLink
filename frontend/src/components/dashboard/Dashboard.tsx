@@ -58,16 +58,16 @@ type Tile = {
 };
 
 const TILES: Tile[] = [
-  { title: 'Klienci',          desc: 'Baza klientów i historia interakcji',     path: '/customers',           color: 'tile-blue',    icon: Icon.Briefcase },
-  { title: 'Kontrakty',        desc: 'Zarządzanie umowami i ich statusem',      path: '/contracts',           color: 'tile-violet',  icon: Icon.FileText },
-  { title: 'Dostawcy energii', desc: 'Dostawcy oraz dostępne taryfy',           path: '/providers',           color: 'tile-amber',   icon: Icon.Plug },
-  { title: 'Handlowcy',        desc: 'Przedstawiciele sprzedaży',                path: '/sales',               color: 'tile-emerald', icon: Icon.Headset },
-  { title: 'Tagi',             desc: 'Kategoryzacja klientów i kontraktów',     path: '/tags',                color: 'tile-pink',    icon: Icon.Tag },
-  { title: 'Analityka',        desc: 'Wyniki sprzedaży i kluczowe metryki',     path: '/analytics',           color: 'tile-cyan',    icon: Icon.BarChart },
-  { title: 'Panel managera',   desc: 'Ranking i zarządzanie zespołem',          path: '/manager',             color: 'tile-indigo',  icon: Icon.Trophy },
-  { title: 'Słowniki adresów', desc: 'Województwa, miasta, kody pocztowe',      path: '/address-dictionaries',color: 'tile-teal',    icon: Icon.MapPin },
-  { title: 'Użytkownicy',      desc: 'Konta i dostęp do systemu',                path: '/users',               color: 'tile-slate',   icon: Icon.Users },
-  { title: 'Role',             desc: 'Definicje ról i uprawnień',                path: '/roles',               color: 'tile-rose',    icon: Icon.Shield },
+  { title: 'Customers',           desc: 'Customer database and interaction history', path: '/customers',           color: 'tile-blue',    icon: Icon.Briefcase },
+  { title: 'Contracts',           desc: 'Manage contracts and their statuses',       path: '/contracts',           color: 'tile-violet',  icon: Icon.FileText },
+  { title: 'Energy Providers',    desc: 'Providers and available tariffs',           path: '/providers',           color: 'tile-amber',   icon: Icon.Plug },
+  { title: 'Sales Representatives',desc: 'Sales team members',                       path: '/sales',               color: 'tile-emerald', icon: Icon.Headset },
+  { title: 'Tags',                desc: 'Categorize customers and contracts',        path: '/tags',                color: 'tile-pink',    icon: Icon.Tag },
+  { title: 'Analytics',           desc: 'Sales results and key metrics',             path: '/analytics',           color: 'tile-cyan',    icon: Icon.BarChart },
+  { title: 'Manager Panel',       desc: 'Rankings and team management',              path: '/manager',             color: 'tile-indigo',  icon: Icon.Trophy },
+  { title: 'Address Dictionaries',desc: 'Provinces, cities and postal codes',        path: '/address-dictionaries',color: 'tile-teal',    icon: Icon.MapPin },
+  { title: 'Users',               desc: 'Accounts and system access',                path: '/users',               color: 'tile-slate',   icon: Icon.Users },
+  { title: 'Roles',               desc: 'Role and permission definitions',           path: '/roles',               color: 'tile-rose',    icon: Icon.Shield },
 ];
 
 const Dashboard: React.FC = () => {
@@ -82,9 +82,9 @@ const Dashboard: React.FC = () => {
 
   const greeting = (() => {
     const h = new Date().getHours();
-    if (h < 12) return 'Dzień dobry';
-    if (h < 18) return 'Witaj ponownie';
-    return 'Dobry wieczór';
+    if (h < 12) return 'Good morning';
+    if (h < 18) return 'Welcome back';
+    return 'Good evening';
   })();
 
   return (
@@ -112,13 +112,13 @@ const Dashboard: React.FC = () => {
             {user.role_name === 'Administrator' && (
               <button className="dashboard-btn dashboard-btn-primary" onClick={() => navigate('/admin')}>
                 <Icon.Settings />
-                <span>Panel admina</span>
+                <span>Admin Panel</span>
               </button>
             )}
 
             <button className="dashboard-btn dashboard-btn-danger" onClick={logout}>
               <Icon.Logout />
-              <span>Wyloguj</span>
+              <span>Logout</span>
             </button>
           </div>
         </div>
@@ -131,14 +131,14 @@ const Dashboard: React.FC = () => {
           <div className="dashboard-hero-grid" aria-hidden="true" />
           <div className="dashboard-hero-eyebrow">
             <span className="dot" />
-            Panel CRM EnerLink
+            EnerLink CRM Panel
           </div>
           <h2 className="dashboard-hero-title">
             {greeting}, <span className="accent">{user.first_name}</span>!
           </h2>
           <p className="dashboard-hero-subtitle">
-            Zarządzaj klientami, kontraktami i&nbsp;sprzedażą energii w&nbsp;jednym miejscu.
-            Wybierz moduł, aby przejść dalej.
+            Manage customers, contracts and energy sales in one place.
+            Pick a module to get started.
           </p>
         </section>
 
@@ -149,7 +149,7 @@ const Dashboard: React.FC = () => {
           </div>
           <div className="dashboard-profile-info">
             <div className="dashboard-profile-field">
-              <span className="dashboard-profile-label">Imię i nazwisko</span>
+              <span className="dashboard-profile-label">Full name</span>
               <span className="dashboard-profile-value">{fullName}</span>
             </div>
             <div className="dashboard-profile-field">
@@ -157,16 +157,16 @@ const Dashboard: React.FC = () => {
               <span className="dashboard-profile-value">{user.email}</span>
             </div>
             <div className="dashboard-profile-field">
-              <span className="dashboard-profile-label">Rola</span>
+              <span className="dashboard-profile-label">Role</span>
               <span className="dashboard-profile-value">
-                <span className="dashboard-badge dashboard-badge-role">{user.role_name || 'Użytkownik'}</span>
+                <span className="dashboard-badge dashboard-badge-role">{user.role_name || 'User'}</span>
               </span>
             </div>
             <div className="dashboard-profile-field">
               <span className="dashboard-profile-label">Status</span>
               <span className="dashboard-profile-value">
                 <span className={`dashboard-badge ${user.active ? 'dashboard-badge-active' : 'dashboard-badge-inactive'}`}>
-                  {user.active ? 'Aktywne' : 'Nieaktywne'}
+                  {user.active ? 'Active' : 'Inactive'}
                 </span>
               </span>
             </div>
@@ -176,8 +176,8 @@ const Dashboard: React.FC = () => {
         {/* Navigation tiles */}
         <div className="dashboard-section-header">
           <div>
-            <h3 className="dashboard-section-title">Moduły systemu</h3>
-            <p className="dashboard-section-subtitle">Szybki dostęp do wszystkich części CRM-u</p>
+            <h3 className="dashboard-section-title">System modules</h3>
+            <p className="dashboard-section-subtitle">Quick access to every part of the CRM</p>
           </div>
         </div>
 

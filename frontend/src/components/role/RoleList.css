@@ -1,0 +1,194 @@
+/* ============================================================
+   EnerLink — Role List (embedded in Admin Panel)
+   ============================================================ */
+
+.role-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.role-search {
+  position: relative;
+  flex: 1;
+  min-width: 240px;
+  max-width: 380px;
+  display: flex;
+}
+
+.role-search-input {
+  width: 100%;
+  height: 42px;
+  padding: 0 14px 0 40px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  background: #fff;
+  font-size: 14px;
+  color: #0f172a;
+  outline: none;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.role-search-input::placeholder { color: #94a3b8; }
+
+.role-search-input:focus {
+  border-color: #0066ff;
+  box-shadow: 0 0 0 4px rgba(0, 102, 255, 0.12);
+}
+
+.role-search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+.role-search-icon svg { width: 16px; height: 16px; }
+
+.role-filters {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+.role-filter {
+  height: 34px;
+  padding: 0 14px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.role-filter:hover { color: #0f172a; }
+
+.role-filter.active {
+  background: #fff;
+  color: #0066ff;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+}
+
+.role-filter.active.active-success { color: #047857; }
+.role-filter.active.active-danger  { color: #b91c1c; }
+
+.role-filter .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+.role-filter.active-success .dot { background: #10b981; }
+.role-filter.active-danger  .dot { background: #ef4444; }
+
+/* Result summary */
+.role-summary {
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 12px;
+  text-align: left;
+}
+
+.role-summary strong { color: #0f172a; font-weight: 700; }
+
+/* Column widths so the table doesn't sprawl across the panel */
+.admin-table.role-table { table-layout: fixed; }
+.admin-table.role-table th:nth-child(1),
+.admin-table.role-table td:nth-child(1) { width: 110px; }
+.admin-table.role-table th:nth-child(3),
+.admin-table.role-table td:nth-child(3) { width: 140px; }
+.admin-table.role-table th:nth-child(4),
+.admin-table.role-table td:nth-child(4) { width: 180px; }
+.admin-table.role-table th,
+.admin-table.role-table td { text-align: left; }
+.admin-table.role-table th:last-child,
+.admin-table.role-table td:last-child { text-align: right; }
+
+/* Success alert */
+.role-success {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #047857;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 18px;
+}
+
+.role-success svg { flex-shrink: 0; width: 18px; height: 18px; margin-top: 1px; }
+
+/* ID code style */
+.role-id-code {
+  font-family: 'SFMono-Regular', Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* Pagination */
+.role-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.role-pagination .pager-info {
+  padding: 0 14px;
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.role-page-btn {
+  height: 36px;
+  padding: 0 14px;
+  border: 1.5px solid #e2e8f0;
+  background: #fff;
+  color: #0f172a;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 9px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.role-page-btn:hover:not(:disabled) {
+  border-color: #0066ff;
+  color: #0066ff;
+}
+
+.role-page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.role-page-btn svg { width: 14px; height: 14px; }
+
+@media (max-width: 600px) {
+  .role-search { max-width: none; flex: 1 1 100%; }
+  .role-toolbar { flex-direction: column; align-items: stretch; }
+  .role-filters { justify-content: center; }
+}
