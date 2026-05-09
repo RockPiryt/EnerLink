@@ -5,7 +5,7 @@
 * [Project description](#project-descriptionn)
 * [Features](#features)
 * [Screenshots](#screenshots)
-* [Functional Requierements](#functional-requierements)
+* [Functional Requierements](#functional-requirements)
 * [Diagrams](#diagrams)
 * [Databases](#databases)
 * [Setup](#setup)
