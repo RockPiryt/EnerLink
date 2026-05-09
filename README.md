@@ -12,6 +12,7 @@
 API Documentation (Swagger)
 * [API Documentation (Swagger)](#api-Documentation-swagger)
 * [Tests](#tests)
+* [Integrations with external APIs and data sources](#api)
 * [Technologies Used](#technologies-used)
 * [Room for Improvement](#room-for-improvement)
 * [Project Status](#project-status)
@@ -227,6 +228,15 @@ Configuration
 - conftest.py defines shared fixtures (e.g. test client, database setup, authentication helpers).
 
 The test environment uses a separate database configuration to avoid modifying production data.
+
+
+## Api
+
+### Integration with external API
+
+1. Integration with the VAT Taxpayer Register (the so-called “White List of VAT taxpayers”) REST API provided by the Ministry of Finance.
+Retrieval of business entity data (name, REGON, address) based on the NIP number.
+
 
 
 ## Room for Improvement
