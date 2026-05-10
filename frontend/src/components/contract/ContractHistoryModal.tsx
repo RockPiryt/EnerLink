@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Button, Table, Spinner, Alert } from 'react-bootstrap';
+import './Contract.css';
 
 interface ContractHistoryEntry {
   id: number;
@@ -16,6 +16,18 @@ interface ContractHistoryModalProps {
   show: boolean;
   onHide: () => void;
 }
+
+const Icon = {
+  Close: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  ),
+  History: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
+  ),
+  AlertCircle: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  ),
+};
 
 const ContractHistoryModal: React.FC<ContractHistoryModalProps> = ({ contractId, show, onHide }) => {
   const [history, setHistory] = useState<ContractHistoryEntry[]>([]);
@@ -36,54 +48,73 @@ const ContractHistoryModal: React.FC<ContractHistoryModalProps> = ({ contractId,
       .finally(() => setLoading(false));
   }, [contractId, show]);
 
+  if (!show) return null;
+
   return (
-    <Modal show={show} onHide={onHide} size="lg" centered>
-      <Modal.Header closeButton>
-        <Modal.Title>Contract Change History</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        {loading ? (
-          <div className="text-center py-4">
-            <Spinner animation="border" variant="primary" />
-            <div className="mt-2">Loading history...</div>
-          </div>
-        ) : error ? (
-          <Alert variant="danger">{error}</Alert>
-        ) : history.length === 0 ? (
-          <div className="text-center text-muted">No history found for this contract.</div>
-        ) : (
-          <div className="table-responsive">
-            <Table striped hover>
-              <thead className="table-dark">
-                <tr>
-                  <th>Date</th>
-                  <th>User</th>
-                  <th>Field</th>
-                  <th>Old Value</th>
-                  <th>New Value</th>
-                </tr>
-              </thead>
-              <tbody>
-                {history.map(entry => (
-                  <tr key={entry.id}>
-                    <td>{new Date(entry.changed_at).toLocaleString()}</td>
-                    <td>{entry.changed_by}</td>
-                    <td>{entry.field}</td>
-                    <td>{entry.old_value ?? '-'}</td>
-                    <td>{entry.new_value ?? '-'}</td>
+    <div className="co-history-overlay" onClick={onHide}>
+      <div className="co-history-modal" onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
+        <div className="co-history-header">
+          <h3 className="co-history-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ width: 22, height: 22, color: 'var(--el-primary)', display: 'flex' }}><Icon.History /></span>
+            Contract Change History
+          </h3>
+          <button className="co-modal-close" onClick={onHide}>
+            <Icon.Close />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="co-history-body">
+          {loading ? (
+            <div className="co-state-center">
+              <span className="co-spinner" />
+              <p className="co-state-label">Loading history…</p>
+            </div>
+          ) : error ? (
+            <div style={{ padding: '20px 24px' }}>
+              <div className="co-alert co-alert-danger">
+                <Icon.AlertCircle /><span>{error}</span>
+              </div>
+            </div>
+          ) : history.length === 0 ? (
+            <div className="co-state-center">
+              <p className="co-state-label">No history found for this contract.</p>
+            </div>
+          ) : (
+            <div className="co-table-wrap">
+              <table className="co-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>User</th>
+                    <th>Field</th>
+                    <th>Old Value</th>
+                    <th>New Value</th>
                   </tr>
-                ))}
-              </tbody>
-            </Table>
-          </div>
-        )}
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={onHide}>
-          Close
-        </Button>
-      </Modal.Footer>
-    </Modal>
+                </thead>
+                <tbody>
+                  {history.map(entry => (
+                    <tr key={entry.id}>
+                      <td style={{ whiteSpace: 'nowrap' }}>{new Date(entry.changed_at).toLocaleString('pl-PL')}</td>
+                      <td>{entry.changed_by}</td>
+                      <td><span className="co-table-id" style={{ fontFamily: 'inherit', fontSize: 13 }}>{entry.field}</span></td>
+                      <td style={{ color: 'var(--el-text-muted)' }}>{entry.old_value ?? '—'}</td>
+                      <td style={{ fontWeight: 600 }}>{entry.new_value ?? '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="co-history-footer">
+          <button className="co-btn co-btn-ghost" onClick={onHide}>Close</button>
+        </div>
+      </div>
+    </div>
   );
 };
 

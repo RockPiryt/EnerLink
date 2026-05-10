@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Form, Spinner } from 'react-bootstrap';
+import { Modal } from 'react-bootstrap';
 import { RoleService } from '../services/roleService';
 import { Role } from '../models/role';
+import './Modal.css';
 
 interface AddUserData {
     username: string;
@@ -20,12 +21,31 @@ interface AddUserModalProps {
     loading?: boolean;
 }
 
+/* ----- Inline SVG icons ----- */
+const I = {
+    UserPlus: () => (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+    ),
+    Close: () => (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    ),
+    Eye: () => (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+    ),
+    EyeOff: () => (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+    ),
+    Alert: () => (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    ),
+};
+
 const AddUserModal: React.FC<AddUserModalProps> = ({
-                                                       show,
-                                                       onHide,
-                                                       onConfirm,
-                                                       loading = false
-                                                   }) => {
+    show,
+    onHide,
+    onConfirm,
+    loading = false,
+}) => {
     const [formData, setFormData] = useState<AddUserData>({
         username: '',
         first_name: '',
@@ -33,10 +53,13 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
         email: '',
         role_name: '',
         password: '',
-        active: true
+        active: true,
     });
     const [roles, setRoles] = useState<Role[]>([]);
     const [rolesLoading, setRolesLoading] = useState(true);
+    const [errors, setErrors] = useState<{ [key: string]: string }>({});
+    const [showPassword, setShowPassword] = useState(false);
+
     useEffect(() => {
         const fetchRoles = async () => {
             setRolesLoading(true);
@@ -52,62 +75,45 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
         fetchRoles();
     }, []);
 
-    const [errors, setErrors] = useState<{ [key: string]: string }>({});
-
-    const handleChange = (e: any) => {
-        const { name, value } = e.target;
-
-        setFormData(prev => ({
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const target = e.target as HTMLInputElement;
+        const { name, type, value, checked } = target;
+        setFormData((prev) => ({
             ...prev,
-            [name]: value
+            [name]: type === 'checkbox' ? checked : value,
         }));
-
         if (errors[name]) {
-            setErrors(prev => {
-                const newErrors = { ...prev };
-                delete newErrors[name];
-                return newErrors;
+            setErrors((prev) => {
+                const next = { ...prev };
+                delete next[name];
+                return next;
             });
         }
     };
 
     const validateForm = (): boolean => {
         const newErrors: { [key: string]: string } = {};
-
-
-        if (!formData.username.trim()) {
-            newErrors.username = 'Username is required';
-        }
-        if (!formData.first_name.trim()) {
-            newErrors.first_name = 'First name is required';
-        }
-        if (!formData.last_name.trim()) {
-            newErrors.last_name = 'Last name is required';
-        }
+        if (!formData.username.trim()) newErrors.username = 'Username is required';
+        if (!formData.first_name.trim()) newErrors.first_name = 'First name is required';
+        if (!formData.last_name.trim()) newErrors.last_name = 'Last name is required';
         if (!formData.email.trim()) {
             newErrors.email = 'Email is required';
         } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
             newErrors.email = 'Email is invalid';
         }
-        if (!formData.role_name) {
-            newErrors.role_name = 'Role is required';
-        }
+        if (!formData.role_name) newErrors.role_name = 'Role is required';
         if (!formData.password.trim()) {
             newErrors.password = 'Password is required';
         } else if (formData.password.length < 6) {
             newErrors.password = 'Password must be at least 6 characters';
         }
-
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-
-        if (validateForm()) {
-            onConfirm(formData);
-        }
+        if (validateForm()) onConfirm(formData);
     };
 
     const handleClose = () => {
@@ -118,112 +124,141 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
             email: '',
             role_name: '',
             password: '',
-            active: true
+            active: true,
         });
         setErrors({});
+        setShowPassword(false);
         onHide();
     };
 
     return (
-        <Modal show={show} onHide={handleClose} centered size="lg">
-            <Modal.Header closeButton className="bg-success text-white">
-                <Modal.Title>
-                    <i className="fas fa-user-plus me-2"></i>
-                    Add New User
-                </Modal.Title>
-            </Modal.Header>
-            <Form onSubmit={handleSubmit}>
-                <Modal.Body>
-                    <Form.Group className="mb-3">
-                        <Form.Label>
-                            Username <span className="text-danger">*</span>
-                        </Form.Label>
-                        <Form.Control
-                            type="text"
+        <Modal
+            show={show}
+            onHide={handleClose}
+            centered
+            size="lg"
+            dialogClassName="elm-modal"
+            backdrop={loading ? 'static' : true}
+        >
+            {/* ---------- HEADER ---------- */}
+            <div className="elm-modal-header">
+                <span className="elm-modal-header-icon" aria-hidden="true">
+                    <I.UserPlus />
+                </span>
+                <div className="elm-modal-header-text">
+                    <h5 className="elm-modal-title">Add new user</h5>
+                    <p className="elm-modal-subtitle">Create an account and assign it a role</p>
+                </div>
+                <button
+                    type="button"
+                    className="elm-modal-close"
+                    onClick={handleClose}
+                    disabled={loading}
+                    aria-label="Close"
+                >
+                    <I.Close />
+                </button>
+            </div>
+
+            <form onSubmit={handleSubmit} noValidate>
+                {/* ---------- BODY ---------- */}
+                <div className="elm-modal-body">
+                    {/* First name + Last name */}
+                    <div className="elm-form-row">
+                        <div className="elm-field">
+                            <label htmlFor="first_name" className="elm-label">
+                                First name <span className="required">*</span>
+                            </label>
+                            <input
+                                id="first_name"
+                                name="first_name"
+                                type="text"
+                                className={`elm-input ${errors.first_name ? 'is-invalid' : ''}`}
+                                value={formData.first_name}
+                                onChange={handleChange}
+                                placeholder="First name"
+                                disabled={loading}
+                                autoComplete="given-name"
+                            />
+                            {errors.first_name && (
+                                <div className="elm-feedback"><I.Alert />{errors.first_name}</div>
+                            )}
+                        </div>
+
+                        <div className="elm-field">
+                            <label htmlFor="last_name" className="elm-label">
+                                Last name <span className="required">*</span>
+                            </label>
+                            <input
+                                id="last_name"
+                                name="last_name"
+                                type="text"
+                                className={`elm-input ${errors.last_name ? 'is-invalid' : ''}`}
+                                value={formData.last_name}
+                                onChange={handleChange}
+                                placeholder="Last name"
+                                disabled={loading}
+                                autoComplete="family-name"
+                            />
+                            {errors.last_name && (
+                                <div className="elm-feedback"><I.Alert />{errors.last_name}</div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Username */}
+                    <div className="elm-field">
+                        <label htmlFor="username" className="elm-label">
+                            Username <span className="required">*</span>
+                        </label>
+                        <input
+                            id="username"
                             name="username"
+                            type="text"
+                            className={`elm-input ${errors.username ? 'is-invalid' : ''}`}
                             value={formData.username}
                             onChange={handleChange}
-                            isInvalid={!!errors.username}
-                            placeholder="Enter username"
+                            placeholder="Username"
                             disabled={loading}
+                            autoComplete="username"
                         />
-                        <Form.Control.Feedback type="invalid">
-                            {errors.username}
-                        </Form.Control.Feedback>
-                    </Form.Group>
-                    <Form.Group className="mb-3">
-                        <Form.Check
-                            type="checkbox"
-                            name="active"
-                            label="Active user"
-                            checked={formData.active}
-                            onChange={handleChange}
-                            disabled={loading}
-                        />
-                    </Form.Group>
-                    <Form.Group className="mb-3">
-                        <Form.Label>
-                            First Name <span className="text-danger">*</span>
-                        </Form.Label>
-                        <Form.Control
-                            type="text"
-                            name="first_name"
-                            value={formData.first_name}
-                            onChange={handleChange}
-                            isInvalid={!!errors.first_name}
-                            placeholder="Enter first name"
-                            disabled={loading}
-                        />
-                        <Form.Control.Feedback type="invalid">
-                            {errors.first_name}
-                        </Form.Control.Feedback>
-                    </Form.Group>
+                        {errors.username && (
+                            <div className="elm-feedback"><I.Alert />{errors.username}</div>
+                        )}
+                    </div>
 
-                    <Form.Group className="mb-3">
-                        <Form.Label>
-                            Last Name <span className="text-danger">*</span>
-                        </Form.Label>
-                        <Form.Control
-                            type="text"
-                            name="last_name"
-                            value={formData.last_name}
-                            onChange={handleChange}
-                            isInvalid={!!errors.last_name}
-                            placeholder="Enter last name"
-                            disabled={loading}
-                        />
-                        <Form.Control.Feedback type="invalid">
-                            {errors.last_name}
-                        </Form.Control.Feedback>
-                    </Form.Group>
-
-                    <Form.Group className="mb-3">
-                        <Form.Label>
-                            Email <span className="text-danger">*</span>
-                        </Form.Label>
-                        <Form.Control
-                            type="email"
+                    {/* Email */}
+                    <div className="elm-field">
+                        <label htmlFor="email" className="elm-label">
+                            Email <span className="required">*</span>
+                        </label>
+                        <input
+                            id="email"
                             name="email"
+                            type="email"
+                            className={`elm-input ${errors.email ? 'is-invalid' : ''}`}
                             value={formData.email}
                             onChange={handleChange}
-                            isInvalid={!!errors.email}
-                            placeholder="Enter email"
+                            placeholder="Email"
                             disabled={loading}
+                            autoComplete="email"
                         />
-                        <Form.Control.Feedback type="invalid">
-                            {errors.email}
-                        </Form.Control.Feedback>
-                    </Form.Group>
+                        {errors.email && (
+                            <div className="elm-feedback"><I.Alert />{errors.email}</div>
+                        )}
+                    </div>
 
-                    <Form.Group className="mb-3">
-                        <Form.Label>
-                            Role <span className="text-danger">*</span>
-                        </Form.Label>
-                        <Form.Select
+                    {/* Role */}
+                    <div className="elm-field">
+                        <label htmlFor="role_name" className="elm-label">
+                            Role <span className="required">*</span>
+                        </label>
+                        <select
+                            id="role_name"
                             name="role_name"
+                            className={`elm-select ${errors.role_name ? 'is-invalid' : ''}`}
                             value={formData.role_name}
                             onChange={handleChange}
-                            isInvalid={!!errors.role_name}
                             disabled={loading || rolesLoading}
                         >
                             <option value="">{rolesLoading ? 'Loading roles...' : 'Select role'}</option>
@@ -232,67 +267,87 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                                     {role.role_name}
                                 </option>
                             ))}
-                        </Form.Select>
-                        <Form.Control.Feedback type="invalid">
-                            {errors.role_name}
-                        </Form.Control.Feedback>
-                    </Form.Group>
+                        </select>
+                        {errors.role_name && (
+                            <div className="elm-feedback"><I.Alert />{errors.role_name}</div>
+                        )}
+                    </div>
 
-                    <Form.Group className="mb-3">
-                        <Form.Label>
-                            Password <span className="text-danger">*</span>
-                        </Form.Label>
-                        <Form.Control
-                            type="password"
-                            name="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            isInvalid={!!errors.password}
-                            placeholder="Enter password"
-                            disabled={loading}
-                        />
-                        <Form.Control.Feedback type="invalid">
-                            {errors.password}
-                        </Form.Control.Feedback>
-                        <Form.Text className="text-muted">
-                            Password must be at least 6 characters long
-                        </Form.Text>
-                    </Form.Group>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button
-                        variant="secondary"
-                        onClick={handleClose}
-                        disabled={loading}
-                    >
+                    {/* Password */}
+                    <div className="elm-field">
+                        <label htmlFor="password" className="elm-label">
+                            Password <span className="required">*</span>
+                        </label>
+                        <div className="elm-input-wrap">
+                            <input
+                                id="password"
+                                name="password"
+                                type={showPassword ? 'text' : 'password'}
+                                className={`elm-input elm-with-toggle ${errors.password ? 'is-invalid' : ''}`}
+                                value={formData.password}
+                                onChange={handleChange}
+                                placeholder="Password"
+                                disabled={loading}
+                                autoComplete="new-password"
+                            />
+                            <button
+                                type="button"
+                                className="elm-input-toggle"
+                                onClick={() => setShowPassword((v) => !v)}
+                                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                tabIndex={-1}
+                            >
+                                {showPassword ? <I.EyeOff /> : <I.Eye />}
+                            </button>
+                        </div>
+                        {errors.password ? (
+                            <div className="elm-feedback"><I.Alert />{errors.password}</div>
+                        ) : (
+                            <div className="elm-help">Password must be at least 6 characters long.</div>
+                        )}
+                    </div>
+
+                    {/* Active toggle */}
+                    <div className="elm-field">
+                        <label className="elm-switch-row">
+                            <div className="info">
+                                <div className="t">Active account</div>
+                                <div className="d">When disabled, the user will not be able to sign in.</div>
+                            </div>
+                            <span className="elm-switch" aria-hidden="true">
+                                <input
+                                    type="checkbox"
+                                    name="active"
+                                    checked={formData.active}
+                                    onChange={handleChange}
+                                    disabled={loading}
+                                />
+                                <span className="track" />
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                {/* ---------- FOOTER ---------- */}
+                <div className="elm-modal-footer">
+                    <button type="button" className="elm-btn" onClick={handleClose} disabled={loading}>
                         Cancel
-                    </Button>
-                    <Button
-                        variant="success"
-                        type="submit"
-                        disabled={loading}
-                    >
+                    </button>
+                    <button type="submit" className="elm-btn elm-btn-primary" disabled={loading}>
                         {loading ? (
                             <>
-                                <Spinner
-                                    as="span"
-                                    animation="border"
-                                    size="sm"
-                                    role="status"
-                                    aria-hidden="true"
-                                    className="me-2"
-                                />
+                                <span className="elm-btn-spinner" aria-hidden="true" />
                                 Creating...
                             </>
                         ) : (
                             <>
-                                <i className="fas fa-user-plus me-2"></i>
-                                Create User
+                                <I.UserPlus />
+                                Create user
                             </>
                         )}
-                    </Button>
-                </Modal.Footer>
-            </Form>
+                    </button>
+                </div>
+            </form>
         </Modal>
     );
 };

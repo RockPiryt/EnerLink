@@ -7,14 +7,13 @@ from flask_jwt_extended import jwt_required
 pkd_bp = Blueprint("pkd", __name__, url_prefix="/api/pkd")
 
 
-@pkd_bp.route("/", methods=["GET"])
+@pkd_bp.route("/", methods=["GET"], strict_slashes=False)
 @jwt_required()
 def get_all_pkd():
     items = Pkwiu.query.all()
     return jsonify([item.to_dict() for item in items]), 200
 
-
-@pkd_bp.route("/import", methods=["POST"])
+@pkd_bp.route("/import", methods=["POST"], strict_slashes=False)
 @jwt_required()
 def import_pkd():
     try:
@@ -40,7 +39,7 @@ def import_pkd():
     return jsonify({"message": f"Imported {len(catalog)} PKD entries."}), 201
 
 
-@pkd_bp.route("/<string:pkd_nr>", methods=["GET"])
+@pkd_bp.route("/<string:pkd_nr>", methods=["GET"], strict_slashes=False)
 @jwt_required()
 def get_pkd_by_nr(pkd_nr):
     item = Pkwiu.query.filter_by(pkwiu_nr=pkd_nr).first()

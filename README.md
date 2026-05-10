@@ -5,13 +5,14 @@
 * [Project description](#project-descriptionn)
 * [Features](#features)
 * [Screenshots](#screenshots)
-* [Functional Requierements](#functional-requierements)
+* [Functional Requierements](#functional-requirements)
 * [Diagrams](#diagrams)
 * [Databases](#databases)
 * [Setup](#setup)
 API Documentation (Swagger)
 * [API Documentation (Swagger)](#api-Documentation-swagger)
 * [Tests](#tests)
+* [Integrations with external APIs and data sources](#api)
 * [Technologies Used](#technologies-used)
 * [Room for Improvement](#room-for-improvement)
 * [Project Status](#project-status)
@@ -227,6 +228,30 @@ Configuration
 - conftest.py defines shared fixtures (e.g. test client, database setup, authentication helpers).
 
 The test environment uses a separate database configuration to avoid modifying production data.
+
+
+## API
+
+### Integration with external APIs
+
+The system has the following integrations with external APIs:
+
+1. Integration with the VAT Taxpayer Register (the so-called “White List of VAT taxpayers”) REST API provided by the Ministry of Finance.
+Retrieval of business entity data (company name, REGON, address) based on the NIP number.
+
+2. Integration with the BIR 1.1 WebService (SOAP API) provided by the Central Statistical Office (Statistics Poland), enabling automatic retrieval of business entity data (company name, REGON, address) based on the NIP number.
+
+3. Integration with the TERYT service (SOAP API) provided by the Central Statistical Office (Statistics Poland), enabling retrieval of territorial data for reference tables (cities, voivodeships).
+
+4. Integration with a public geocoding REST API (Nominatim – OpenStreetMap) used to retrieve postal codes based on an address.
+
+5. Integration with a public postal code REST API (Intami – Postal Code API) used to retrieve postal codes based on a city and to retrieve city information based on a postal code.
+
+### Integration with external data sources
+
+The system has the following integrations with external data sources:
+
+1. Retrieval of PKD and PKWiU data from the official PKD and PKWiU classification structure published by the Central Statistical Office (Statistics Poland), available in Excel spreadsheet format.
 
 
 ## Room for Improvement
