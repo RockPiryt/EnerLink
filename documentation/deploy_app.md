@@ -24,8 +24,8 @@ docker compose exec backend python seed_database.py
 ```
 ### Production
 ```bash
-docker compose -f docker-compose.yaml up --build -d
-docker compose -f docker-compose.yaml exec backend flask db upgrade
+docker compose -f docker-compose.prod.yaml up --build -d
+docker compose -f docker-compose.prod.yaml exec backend flask db upgrade
 docker compose exec backend python seed_database.py
 ```
 
