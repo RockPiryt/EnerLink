@@ -35,7 +35,7 @@ docker compose -f docker-compose.dev.yaml exec backend python seed_database.py
 ## Strona
 Po uruchomieniu frontend będzie dostępny pod adresem:
 ```
-http://localhost:3000
+http://127.0.0.1:3000
 ```
 
 
