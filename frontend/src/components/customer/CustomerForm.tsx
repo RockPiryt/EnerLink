@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { lookupNip, GusCompanyData } from '../../services/gusService';
+import { getCountries, Country } from '../../services/countryService';
+import { getCities, City } from '../../services/cityService';
 import { useNavigate } from 'react-router-dom';
 import './Customer.css';
 
@@ -54,6 +57,9 @@ const Icon = {
 
 const CustomerForm: React.FC = () => {
     const [form, setForm] = useState<CustomerFormData>({ company: '', email: '', address: {} });
+    const [gusLoading, setGusLoading] = useState(false);
+    const [gusError, setGusError] = useState<string | null>(null);
+    const [validationError, setValidationError] = useState<string | null>(null);
     const navigate = useNavigate();
     const [success, setSuccess] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -74,7 +80,31 @@ const CustomerForm: React.FC = () => {
         setLoading(true);
         setError(null);
         setSuccess(null);
+        setValidationError(null);
+        // --- WALIDACJA KRAJU ---
         try {
+            let countryValid = true;
+            let cityValid = true;
+            let countryList: Country[] = [];
+            let cityList: City[] = [];
+            if (form.address?.country) {
+                countryList = await getCountries();
+                countryValid = countryList.some(c => c.name.toLowerCase() === form.address!.country!.toLowerCase());
+            }
+            if (form.address?.city && form.address?.postal_code) {
+                cityList = await getCities({ name: form.address.city, postal_code: form.address.postal_code });
+                cityValid = cityList.length > 0;
+            }
+            if (!countryValid) {
+                setValidationError('Podany kraj nie istnieje w bazie.');
+                setLoading(false);
+                return;
+            }
+            if (!cityValid) {
+                setValidationError('Podane miasto lub kod pocztowy nie istnieje w bazie.');
+                setLoading(false);
+                return;
+            }
             const res = await fetch('http://localhost:8080/api/customers', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -90,6 +120,38 @@ const CustomerForm: React.FC = () => {
             setError(err.message);
         } finally {
             setLoading(false);
+        }
+    };
+
+    // GUS lookup handler
+    const handleGusLookup = async () => {
+        setGusLoading(true);
+        setGusError(null);
+        try {
+            if (!form.nip || form.nip.length < 10) {
+                setGusError('Enter a valid NIP');
+                setGusLoading(false);
+                return;
+            }
+            const data: GusCompanyData = await lookupNip(form.nip);
+            setForm(f => ({
+                ...f,
+                company: data.name || f.company,
+                nip: data.nip || f.nip,
+                address: {
+                    ...f.address,
+                    street_name: data.street || f.address?.street_name,
+                    building_number: data.building || f.address?.building_number,
+                    apartment_number: data.local || f.address?.apartment_number,
+                    postal_code: data.postcode || f.address?.postal_code,
+                    city: data.city || f.address?.city,
+                    // country: 'Poland' // Możesz dodać domyślnie jeśli zawsze Polska
+                }
+            }));
+        } catch (err: any) {
+            setGusError(err.response?.data?.error || 'GUS lookup failed');
+        } finally {
+            setGusLoading(false);
         }
     };
 
@@ -132,6 +194,11 @@ const CustomerForm: React.FC = () => {
                         <Icon.AlertCircle /><span>{error}</span>
                     </div>
                 )}
+                {validationError && (
+                    <div className="cm-alert cm-alert-danger">
+                        <Icon.AlertCircle /><span>{validationError}</span>
+                    </div>
+                )}
                 {success && (
                     <div className="cm-alert cm-alert-success">
                         <Icon.CheckCircle /><span>{success}</span>
@@ -172,14 +239,27 @@ const CustomerForm: React.FC = () => {
                                 </div>
                                 <div className="cm-form-group">
                                     <label className="cm-form-label">NIP (Tax Number)</label>
-                                    <input
-                                        className="cm-form-input"
-                                        type="text"
-                                        name="nip"
-                                        value={form.nip || ''}
-                                        onChange={handleChange}
-                                        placeholder="Enter NIP"
-                                    />
+                                    <div style={{display: 'flex', gap: 8}}>
+                                        <input
+                                            className="cm-form-input"
+                                            type="text"
+                                            name="nip"
+                                            value={form.nip || ''}
+                                            onChange={handleChange}
+                                            placeholder="Enter NIP"
+                                            style={{flex: 1}}
+                                        />
+                                        <button
+                                            type="button"
+                                            className="cm-btn cm-btn-primary"
+                                            style={{minWidth: 120}}
+                                            onClick={handleGusLookup}
+                                            disabled={gusLoading || !form.nip}
+                                        >
+                                            {gusLoading ? 'Loading…' : 'Pobierz z GUS'}
+                                        </button>
+                                    </div>
+                                    {gusError && <div className="cm-alert cm-alert-danger" style={{marginTop: 8}}>{gusError}</div>}
                                 </div>
                                 <div className="cm-form-group">
                                     <label className="cm-form-label">Phone Number</label>
