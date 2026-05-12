@@ -7,6 +7,7 @@ import EditUserModal from '../../dialogs/EditUserModal';
 import AddUserModal from '../../dialogs/AddUserModal';
 import { User } from '../../models/user';
 import RoleList from '../role/RoleList';
+import SyncCountriesPanel from './SyncCountriesPanel';
 import './AdminPanel.css';
 
 /* ----------------- Inline SVG icons ----------------- */
@@ -418,6 +419,11 @@ const AdminPanel: React.FC = () => {
                       </button>
                     </div>
                   </div>
+                </div>
+                {/* Sync Countries Panel */}
+                <div style={{marginTop: 32}}>
+                  <hr style={{margin: '2rem 0'}} />
+                  <SyncCountriesPanel />
                 </div>
               </>
             )}
