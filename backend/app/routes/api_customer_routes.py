@@ -16,6 +16,12 @@ def lookup_by_nip(nip):
         return jsonify({"error": "Wrong NIP."}), 400
 
     data = mf_lookup(nip_clean)
+    # Jeśli MF zwrócił dane, ale brakuje kluczowych pól adresowych, próbuj GUS
+    if data and (not data.get("street") or not data.get("postcode") or not data.get("city")):
+        gus_data = gus_lookup(nip_clean)
+        if gus_data:
+            return jsonify({**gus_data, "source": "gus"}), 200
+        return jsonify({**data, "source": "mf", "warning": "Brak pełnych danych adresowych w MF, GUS również nie zwrócił danych."}), 200
     if data:
         return jsonify({**data, "source": "mf"}), 200
 
