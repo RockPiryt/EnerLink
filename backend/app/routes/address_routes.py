@@ -60,12 +60,29 @@ def get_cities():
     per_page = request.args.get('per_page', 20, type=int)
     search = request.args.get('q', '', type=str)
     active = request.args.get('active', type=str)
+    name = request.args.get('name', type=str)
+    postal_code = request.args.get('postal_code', type=str)
+    country_id = request.args.get('country_id', type=int)
 
     query = City.query
 
     # Search filter
     if search:
         query = query.filter(City.name.ilike(f'%{search}%'))
+
+    # Filter by name (exact, case-insensitive)
+    if name:
+        query = query.filter(City.name.ilike(name))
+
+    # Filter by province (not used here, but can be added if needed)
+
+    # Filter by country_id (if your City model has country_id field)
+    # if country_id:
+    #     query = query.filter(City.country_id == country_id)
+
+    # Filter by postal_code (if your City model has postal_code field)
+    if postal_code and hasattr(City, 'postal_code'):
+        query = query.filter(City.postal_code == postal_code)
 
     # Active filter
     if active is not None:

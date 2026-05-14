@@ -11,7 +11,6 @@ interface AddressData {
     apartment_number?: string;
     postal_code?: string;
     city?: string;
-    province?: string;
     country?: string;
 }
 
@@ -81,7 +80,7 @@ const CustomerForm: React.FC = () => {
         setError(null);
         setSuccess(null);
         setValidationError(null);
-        // --- WALIDACJA KRAJU ---
+        // --- COUNTRY VALIDATION ---
         try {
             let countryValid = true;
             let cityValid = true;
@@ -96,12 +95,12 @@ const CustomerForm: React.FC = () => {
                 cityValid = cityList.length > 0;
             }
             if (!countryValid) {
-                setValidationError('Podany kraj nie istnieje w bazie.');
+                setValidationError('The specified country does not exist in the database.');
                 setLoading(false);
                 return;
             }
             if (!cityValid) {
-                setValidationError('Podane miasto lub kod pocztowy nie istnieje w bazie.');
+                setValidationError('The specified city or postal code does not exist in the database.');
                 setLoading(false);
                 return;
             }
@@ -129,11 +128,41 @@ const CustomerForm: React.FC = () => {
         setGusError(null);
         try {
             if (!form.nip || form.nip.length < 10) {
-                setGusError('Enter a valid NIP');
+                setGusError('Enter a valid NIP number');
                 setGusLoading(false);
                 return;
             }
             const data: GusCompanyData = await lookupNip(form.nip);
+
+            // Default values
+            let city = data.city || '';
+            let country = '';
+
+            // Try to get country from city dictionary
+            if (city && data.postcode) {
+                try {
+                    const cityList = await getCities({ name: city, postal_code: data.postcode });
+                    if (cityList && cityList.length > 0) {
+                        const cityObj = cityList[0];
+                        city = cityObj.name || city;
+                        // Try to get country from country_id
+                        if (cityObj.country_id) {
+                            const countries = await getCountries();
+                            const foundCountry = countries.find(c => c.id === cityObj.country_id);
+                            if (foundCountry) {
+                                country = foundCountry.name;
+                            }
+                        }
+                    }
+                } catch (e) {
+                    // ignore, country will remain empty
+                }
+            }
+            // Fallback: if country is still empty, set to Poland
+            if (!country) {
+                country = 'Poland';
+            }
+
             setForm(f => ({
                 ...f,
                 company: data.name || f.company,
@@ -144,8 +173,8 @@ const CustomerForm: React.FC = () => {
                     building_number: data.building || f.address?.building_number,
                     apartment_number: data.local || f.address?.apartment_number,
                     postal_code: data.postcode || f.address?.postal_code,
-                    city: data.city || f.address?.city,
-                    // country: 'Poland' // Możesz dodać domyślnie jeśli zawsze Polska
+                    city: city || f.address?.city,
+                    country: country || f.address?.country,
                 }
             }));
         } catch (err: any) {
@@ -334,17 +363,6 @@ const CustomerForm: React.FC = () => {
                                         value={form.address?.city || ''}
                                         onChange={handleChange}
                                         placeholder="Enter city"
-                                    />
-                                </div>
-                                <div className="cm-form-group">
-                                    <label className="cm-form-label">Province</label>
-                                    <input
-                                        className="cm-form-input"
-                                        type="text"
-                                        name="address.province"
-                                        value={form.address?.province || ''}
-                                        onChange={handleChange}
-                                        placeholder="Enter province"
                                     />
                                 </div>
                                 <div className="cm-form-group">
