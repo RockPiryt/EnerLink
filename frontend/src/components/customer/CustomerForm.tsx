@@ -256,7 +256,7 @@ const CustomerForm: React.FC = () => {
                                             onClick={handleGusLookup}
                                             disabled={gusLoading || !form.nip}
                                         >
-                                            {gusLoading ? 'Loading…' : 'Pobierz z GUS'}
+                                            {gusLoading ? 'Loading…' : 'Fetch from GUS'}
                                         </button>
                                     </div>
                                     {gusError && <div className="cm-alert cm-alert-danger" style={{marginTop: 8}}>{gusError}</div>}
