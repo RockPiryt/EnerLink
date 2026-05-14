@@ -43,13 +43,13 @@ const SyncCountriesPanel: React.FC = () => {
           {loading ? "Synchronizing..." : "Sync Countries"}
         </button>
         {result && (
-          <div className="admin-alert admin-alert-success" style={{marginTop: 16, display: 'flex', alignItems: 'center'}}>
+          <div className="admin-success" style={{marginTop: 16, display: 'flex', alignItems: 'center'}}>
             <IconCheck />
             <span>{result}</span>
           </div>
         )}
         {error && (
-          <div className="admin-alert admin-alert-error" style={{marginTop: 16}}>
+          <div className="admin-error" style={{marginTop: 16}}>
             {error}
           </div>
         )}

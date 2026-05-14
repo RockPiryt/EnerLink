@@ -39,7 +39,7 @@ export const SyncCitiesPanel: React.FC = () => {
           onClick={handleSync}
           disabled={loading}
         >
-          {loading ? "Syncing..." : "Sync Cities"}
+          {loading ? "Synchronizing..." : "Sync Cities"}
         </button>
         {result && <div className="admin-success" style={{marginTop: 12}}>{result}</div>}
         {error && <div className="admin-error" style={{marginTop: 12}}>{error}</div>}
@@ -82,7 +82,7 @@ export const SyncProvincesPanel: React.FC = () => {
           onClick={handleSync}
           disabled={loading}
         >
-          {loading ? "Syncing..." : "Sync Districts"}
+          {loading ? "Synchronizing..." : "Sync Districts"}
         </button>
         {result && <div className="admin-success" style={{marginTop: 12}}>{result}</div>}
         {error && <div className="admin-error" style={{marginTop: 12}}>{error}</div>}
