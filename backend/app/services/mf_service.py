@@ -32,6 +32,7 @@ def mf_lookup(nip):
         "local":       parsed.get("local")    if parsed else None,
         "postcode":    parsed.get("postcode") if parsed else None,
         "city":        parsed.get("city")     if parsed else None,
+        "country":     "Poland",
      #   "address_raw": raw_address,
     }
 
