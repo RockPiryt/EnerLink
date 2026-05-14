@@ -16,8 +16,9 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    # Enable CORS for frontend communication
-    CORS(app, origins=["http://localhost:3000", "http://127.0.0.1:3000"])
+
+    # Enable CORS for frontend communication (must be before blueprints)
+    CORS(app, origins=["http://localhost:3000", "http://127.0.0.1:3000"], supports_credentials=True)
 
     # Initialize database and migrations
     db.init_app(app)

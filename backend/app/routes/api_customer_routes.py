@@ -1,14 +1,19 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 from app.services.gus_service import gus_lookup
 from app.services.mf_service import mf_lookup
 from app.services.tool_methods import validate_nip
 
-lookup_bp = Blueprint("lookup", __name__, url_prefix="/api/lookup")
+lookup_bp = Blueprint("lookup", __name__)
 
 
-@lookup_bp.route("/nip/<string:nip>", methods=["GET"])
-@jwt_required()
+
+@lookup_bp.route("/lookup/nip/<string:nip>", methods=["OPTIONS"])
+def lookup_by_nip_options(nip):
+    return '', 204
+
+@lookup_bp.route("/lookup/nip/<string:nip>", methods=["GET"])
+@jwt_required(optional=True)
 def lookup_by_nip(nip):
     nip_clean = nip.replace("-", "").strip()
 

@@ -12,6 +12,7 @@ export interface GusCompanyData {
   source: string;
 }
 
+// Standard GUS NIP lookup endpoint
 export async function lookupNip(nip: string): Promise<GusCompanyData> {
   const response = await axiosInstance.get(`/api/lookup/nip/${nip}`);
   return response.data;
