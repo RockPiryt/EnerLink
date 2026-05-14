@@ -59,7 +59,7 @@ export const SyncProvincesPanel: React.FC = () => {
     setResult("");
     try {
       const data = await syncProvinces();
-      setResult(`Provinces: ${data.message} (Added: ${data.added}, Total: ${data.total})`);
+      setResult(`Districts: ${data.message} (Added: ${data.added}, Total: ${data.total})`);
     } catch (err: any) {
       setError(err.response?.data?.error || "Sync failed");
     } finally {
@@ -71,18 +71,18 @@ export const SyncProvincesPanel: React.FC = () => {
     <div className="admin-settings-card" style={{maxWidth: 480, minWidth: 320}}>
       <header>
         <span className="icon"><IconSync /></span>
-        <h6>Synchronize Provinces</h6>
+        <h6>Synchronize Districts</h6>
       </header>
       <div className="body">
         <p className="admin-field" style={{marginBottom: 16}}>
-          Download and update the list of provinces in the system database.
+          Download and update the list of districts (powiaty) in the system database.
         </p>
         <button
           className="admin-btn admin-btn-primary"
           onClick={handleSync}
           disabled={loading}
         >
-          {loading ? "Syncing..." : "Sync Provinces"}
+          {loading ? "Syncing..." : "Sync Districts"}
         </button>
         {result && <div className="admin-success" style={{marginTop: 12}}>{result}</div>}
         {error && <div className="admin-error" style={{marginTop: 12}}>{error}</div>}

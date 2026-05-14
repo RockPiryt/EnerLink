@@ -14,6 +14,7 @@ from .api_locations_routes import location_bp
 from .api_pkd_routes import pkd_bp
 from .api_customer_routes import lookup_bp
 from .api_postode_routes import postcode_bp
+from .sync_routes import sync_bp
 
 def register_routes(app):
     app.register_blueprint(address_bp, url_prefix="/api")
@@ -32,4 +33,5 @@ def register_routes(app):
     app.register_blueprint(pkd_bp, url_prefix='/api')
     app.register_blueprint(lookup_bp, url_prefix='/api')
     app.register_blueprint(postcode_bp, url_prefix='/api')
+    app.register_blueprint(sync_bp, url_prefix='/api')
 
