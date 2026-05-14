@@ -75,6 +75,7 @@ def gus_lookup(nip):
         "local":    _get_text(dane, "NrLokalu"),
         "postcode": _get_text(dane, "KodPocztowy"),
         "city":     _get_text(dane, "Miejscowosc"),
+        "country":  "Poland",
     }
 
 
