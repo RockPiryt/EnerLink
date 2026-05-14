@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { lookupNip, GusCompanyData } from '../../services/gusService';
 import { getCountries, Country } from '../../services/countryService';
 import { getCities, City } from '../../services/cityService';
+import AutocompleteSelect, { OptionType } from '../common/AutocompleteSelect';
 import { useNavigate } from 'react-router-dom';
 import './Customer.css';
 
@@ -59,6 +60,56 @@ const CustomerForm: React.FC = () => {
     const [gusLoading, setGusLoading] = useState(false);
     const [gusError, setGusError] = useState<string | null>(null);
     const [validationError, setValidationError] = useState<string | null>(null);
+    const [countryOptions, setCountryOptions] = useState<OptionType[]>([]);
+    const [cityOptions, setCityOptions] = useState<OptionType[]>([]);
+    const [selectedCountry, setSelectedCountry] = useState<OptionType | null>(null);
+    const [selectedCity, setSelectedCity] = useState<OptionType | null>(null);
+            // Fetch country options on mount
+            React.useEffect(() => {
+                getCountries().then(countries => {
+                    const opts = countries.map(c => ({ value: c.name, label: c.name }));
+                    setCountryOptions(opts);
+                });
+            }, []);
+
+            // Dynamic city autocomplete: fetch cities as user types
+            const handleCityInputChange = (inputValue: string) => {
+                console.log('City input:', inputValue);
+                if (inputValue && inputValue.length >= 2) {
+                    const params = { name: inputValue, postal_code: form.address?.postal_code };
+                    console.log('Calling getCities with params:', params);
+                    getCities(params).then((cities: any) => {
+                        console.log('getCities response:', cities);
+                        // Support both array and paginated object with items
+                        let cityArr: any[] = Array.isArray(cities)
+                            ? cities
+                            : (cities && typeof cities === 'object' && Array.isArray((cities as any).items))
+                                ? (cities as any).items
+                                : [];
+                        setCityOptions(cityArr.map((city: any) => ({ value: city.name, label: city.name })));
+                    }).catch(err => {
+                        console.error('getCities error:', err);
+                        setCityOptions([]);
+                    });
+                } else {
+                    setCityOptions([]);
+                }
+            };
+
+            // Keep selectedCity and form.address.city in sync
+            React.useEffect(() => {
+                if (selectedCity?.value !== form.address?.city) {
+                    setForm(f => ({ ...f, address: { ...f.address, city: selectedCity?.value || '' } }));
+                }
+            }, [selectedCity]);
+
+            // Keep selectedCountry and form.address.country in sync
+            React.useEffect(() => {
+                if (selectedCountry?.value !== form.address?.country) {
+                    setForm(f => ({ ...f, address: { ...f.address, country: selectedCountry?.value || '' } }));
+                }
+            }, [selectedCountry]);
+        // Removed AutocompleteSelect effects
     const navigate = useNavigate();
     const [success, setSuccess] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -69,6 +120,9 @@ const CustomerForm: React.FC = () => {
         if (name.startsWith('address.')) {
             const addrField = name.replace('address.', '');
             setForm({ ...form, address: { ...form.address, [addrField]: value } });
+            if (addrField === 'postal_code') {
+                setSelectedCity(null); // Reset city selection if postal code changes
+            }
         } else {
             setForm({ ...form, [name]: value });
         }
@@ -177,6 +231,8 @@ const CustomerForm: React.FC = () => {
                     country: country || f.address?.country,
                 }
             }));
+            setSelectedCity(city ? { value: city, label: city } : null);
+            setSelectedCountry(country ? { value: country, label: country } : null);
         } catch (err: any) {
             setGusError(err.response?.data?.error || 'GUS lookup failed');
         } finally {
@@ -356,24 +412,25 @@ const CustomerForm: React.FC = () => {
                             <div className="cm-form-grid cm-form-grid-3">
                                 <div className="cm-form-group">
                                     <label className="cm-form-label">City</label>
-                                    <input
-                                        className="cm-form-input"
-                                        type="text"
-                                        name="address.city"
-                                        value={form.address?.city || ''}
-                                        onChange={handleChange}
-                                        placeholder="Enter city"
+                                    <AutocompleteSelect
+                                        options={cityOptions}
+                                        value={selectedCity}
+                                        onChange={option => setSelectedCity(option)}
+                                        placeholder="Select city"
+                                        isClearable
+                                        onInputChange={(inputValue, actionMeta) => {
+                                            if (actionMeta.action === 'input-change') handleCityInputChange(inputValue);
+                                        }}
                                     />
                                 </div>
                                 <div className="cm-form-group">
                                     <label className="cm-form-label">Country</label>
-                                    <input
-                                        className="cm-form-input"
-                                        type="text"
-                                        name="address.country"
-                                        value={form.address?.country || ''}
-                                        onChange={handleChange}
-                                        placeholder="Enter country"
+                                    <AutocompleteSelect
+                                        options={countryOptions}
+                                        value={selectedCountry}
+                                        onChange={option => setSelectedCountry(option)}
+                                        placeholder="Select country"
+                                        isClearable
                                     />
                                 </div>
                             </div>
