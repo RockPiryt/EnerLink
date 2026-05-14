@@ -148,19 +148,14 @@ const CustomerForm: React.FC = () => {
                 cityList = await getCities({ name: form.address.city, postal_code: form.address.postal_code });
                 cityValid = cityList.length > 0;
             }
-            if (!countryValid) {
-                setValidationError('The specified country does not exist in the database.');
-                setLoading(false);
-                return;
-            }
-            if (!cityValid) {
-                setValidationError('The specified city or postal code does not exist in the database.');
-                setLoading(false);
-                return;
-            }
+            
+            const token = localStorage.getItem('token');
             const res = await fetch('http://localhost:8080/api/customers', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                },
                 body: JSON.stringify({ ...form, address: form.address }),
             });
             if (!res.ok) {
