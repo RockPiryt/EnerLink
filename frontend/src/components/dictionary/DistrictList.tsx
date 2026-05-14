@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import DeleteDistrictModal from "../../dialogs/DeleteDistrictModal";
 import AddDistrictModal from "../../dialogs/AddDistrictModal";
 import EditDistrictModal from "../../dialogs/EditDistrictModal";
+import axiosInstance from '../../interceptor/interceptor';
 
 interface District {
     id: number;
@@ -130,18 +131,13 @@ const DistrictList: React.FC = () => {
         setDeleteLoading(true);
         setError('');
         try {
-            const response = await fetch(`http://localhost:8080/api/address/districts/${districtToDelete.id}`, {
-                method: 'DELETE',
-            });
-
-            if (!response.ok) throw new Error('Failed to delete district');
-
+            await axiosInstance.delete(`/api/address/districts/${districtToDelete.id}`);
             setSuccess('District deleted successfully!');
             setShowDeleteModal(false);
             setDistrictToDelete(null);
             loadDistricts(currentPage, searchQuery, activeFilter);
         } catch (err: any) {
-            setError('Error deleting district.');
+            setError(err?.response?.data?.error || 'Error deleting district.');
         } finally {
             setDeleteLoading(false);
         }

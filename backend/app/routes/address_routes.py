@@ -54,7 +54,7 @@ def update_country_status(id):
 
 # GET /api/address/cities
 @address_bp.route("/address/cities", methods=["GET"])
-@jwt_required()
+@jwt_required(optional=True)
 def get_cities():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 20, type=int)
@@ -152,7 +152,7 @@ def delete_city(id):
 
 # GET /api/address/districts
 @address_bp.route("/address/districts", methods=["GET"])
-@jwt_required()
+@jwt_required(optional=True)
 def get_districts():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 20, type=int)

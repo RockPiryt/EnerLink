@@ -6,7 +6,7 @@ pkwiu_bp = Blueprint("pkwiu_bp", __name__)
 
 # GET /api/pkwiu
 @pkwiu_bp.route("/pkwiu", methods=["GET"])
-@jwt_required()
+@jwt_required(optional=True)
 def get_pkwiu():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 20, type=int)
