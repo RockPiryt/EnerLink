@@ -1,0 +1,26 @@
+/* ============================================================
+   EnerLink — Manager Dashboard Styles (AdminPanel look)
+   ============================================================ */
+
+@import url('../admin/AdminPanel.css');
+
+/*
+  This file only overrides the admin panel's tag color and logo for the manager dashboard.
+  All other styles are inherited from AdminPanel.css for a visually identical look.
+*/
+
+.admin-brand-tag {
+  background: linear-gradient(135deg, #dbeafe 0%, #a5b4fc 100%);
+  color: #3730a3;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.admin-logo-mark {
+  background: linear-gradient(135deg, #2563eb 0%, #a5b4fc 100%);
+  color: #fff;
+}
+
+/* Optionally, you can add more manager-specific overrides below */
