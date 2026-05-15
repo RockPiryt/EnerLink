@@ -1,382 +1,146 @@
 import React, { useEffect, useState } from 'react';
-// No Bootstrap imports; use custom classes and native elements
-import AddCityModal from "../../dialogs/AddCityModal";
-import { useNavigate } from 'react-router-dom';
-import DeleteCityModal from "../../dialogs/DeleteCityModal";
-import EditCityModal from "../../dialogs/EditCityModal";
+import AddCityModal from '../../dialogs/AddCityModal';
+import DeleteCityModal from '../../dialogs/DeleteCityModal';
+import EditCityModal from '../../dialogs/EditCityModal';
+import '../provider/Provider.css';
 
+interface City { id: number; name: string; is_active: boolean; created_at: string; }
 
-
-// Inline SVG icons for hero and actions
 const Icon = {
-    Map: () => (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{width: 26, height: 26}}><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
-    ),
-    Plus: () => (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{width: 18, height: 18}}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-    ),
-    Back: () => (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{width: 18, height: 18}}><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-    ),
+  Search: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+  Plus: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+  Edit: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
+  Trash: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>,
+  AlertCircle: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>,
+  CheckCircle: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>,
+  ChevronLeft: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>,
+  ChevronRight: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>,
 };
 
-
-interface City {
-    id: number;
-    name: string;
-    is_active: boolean;
-    created_at: string;
-}
+const formatDate = (ds: string) => new Date(ds).toLocaleDateString('pl-PL', { year: 'numeric', month: 'short', day: 'numeric' });
 
 const CityList: React.FC = () => {
-    const [cities, setCities] = useState<City[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
-    const [searchQuery, setSearchQuery] = useState('');
-    const [activeFilter, setActiveFilter] = useState<boolean | undefined>(undefined);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const [totalCities, setTotalCities] = useState(0);
-    const [showAddModal, setShowAddModal] = useState(false);
-    const [showEditModal, setShowEditModal] = useState(false);
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [cityToEdit, setCityToEdit] = useState<City | null>(null);
-    const [cityToDelete, setCityToDelete] = useState<City | null>(null);
-    const [deleteLoading, setDeleteLoading] = useState(false);
+  const [cities, setCities] = useState<City[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState<boolean | undefined>(undefined);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCities, setTotalCities] = useState(0);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [cityToEdit, setCityToEdit] = useState<City | null>(null);
+  const [cityToDelete, setCityToDelete] = useState<City | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
-    const navigate = useNavigate();
+  const loadCities = async (page = 1, search = '', active?: boolean) => {
+    setLoading(true); setError(''); setSuccess('');
+    try {
+      const params = new URLSearchParams();
+      params.append('page', page.toString()); params.append('per_page', '20');
+      if (search.trim()) params.append('q', search.trim());
+      if (active !== undefined) params.append('active', active.toString());
+      const response = await fetch(`http://localhost:8080/api/address/cities?${params}`);
+      if (!response.ok) throw new Error();
+      const data = await response.json();
+      if (data.items) { setCities(data.items); setTotalPages(data.pages || 1); setTotalCities(data.total || data.items.length); }
+      else { let f = data; if (search.trim()) f = f.filter((c: City) => c.name.toLowerCase().includes(search.toLowerCase())); if (active !== undefined) f = f.filter((c: City) => c.is_active === active); setCities(f); setTotalCities(f.length); setTotalPages(Math.max(1, Math.ceil(f.length / 20))); }
+      setCurrentPage(page);
+    } catch { setError('Error loading cities.'); setCities([]); } finally { setLoading(false); }
+  };
 
-    const loadCities = async (page: number = 1, search: string = '', active?: boolean) => {
-        setLoading(true);
-        setError('');
-        setSuccess('');
+  useEffect(() => { loadCities(); }, []);
 
-        try {
-            const params = new URLSearchParams();
-            params.append('page', page.toString());
-            params.append('per_page', '20');
+  const handleToggleActive = async (id: number, cur: boolean) => {
+    try {
+      const r = await fetch(`http://localhost:8080/api/address/cities/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ is_active: !cur }) });
+      if (!r.ok) throw new Error();
+      setSuccess(`City ${!cur ? 'activated' : 'deactivated'}.`);
+      loadCities(currentPage, searchQuery, activeFilter);
+      setTimeout(() => setSuccess(''), 3000);
+    } catch { setError('Error updating city status.'); }
+  };
 
-            if (search.trim()) {
-                params.append('q', search.trim());
-            }
-            if (active !== undefined) {
-                params.append('active', active.toString());
-            }
+  const handleConfirmDelete = async () => {
+    if (!cityToDelete) return;
+    setDeleteLoading(true); setError('');
+    try {
+      const r = await fetch(`http://localhost:8080/api/address/cities/${cityToDelete.id}`, { method: 'DELETE' });
+      if (!r.ok) throw new Error();
+      setSuccess('City deleted.'); setShowDeleteModal(false); setCityToDelete(null);
+      loadCities(currentPage, searchQuery, activeFilter);
+      setTimeout(() => setSuccess(''), 3000);
+    } catch { setError('Error deleting city.'); } finally { setDeleteLoading(false); }
+  };
 
-            const response = await fetch(`http://localhost:8080/api/address/cities?${params}`);
-            if (!response.ok) throw new Error('Failed to fetch cities');
-
-            const data = await response.json();
-
-            if (data.items) {
-                setCities(data.items);
-                setTotalPages(data.pages || 1);
-                setTotalCities(data.total || data.items.length);
-            } else {
-                let filteredCities = data;
-
-                if (search.trim()) {
-                    filteredCities = filteredCities.filter((city: City) =>
-                        city.name.toLowerCase().includes(search.toLowerCase())
-                    );
-                }
-
-                if (active !== undefined) {
-                    filteredCities = filteredCities.filter((city: City) => city.is_active === active);
-                }
-
-                setCities(filteredCities);
-                setTotalCities(filteredCities.length);
-                setTotalPages(Math.ceil(filteredCities.length / 20));
-            }
-            setCurrentPage(page);
-        } catch (err: any) {
-            setError('Error loading cities.');
-            setCities([]);
-            setTotalCities(0);
-            setTotalPages(1);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        setCurrentPage(1);
-        loadCities(1, searchQuery, activeFilter);
-    };
-
-    const handleFilterChange = (active?: boolean) => {
-        setActiveFilter(active);
-        setCurrentPage(1);
-        loadCities(1, searchQuery, active);
-    };
-
-    const handleToggleActive = async (cityId: number, currentStatus: boolean) => {
-        try {
-            const response = await fetch(`http://localhost:8080/api/address/cities/${cityId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ is_active: !currentStatus }),
-            });
-
-            if (!response.ok) throw new Error('Failed to update city status');
-
-            setSuccess(`City ${!currentStatus ? 'activated' : 'deactivated'} successfully!`);
-            loadCities(currentPage, searchQuery, activeFilter);
-        } catch (err: any) {
-            setError('Error updating city status.');
-        }
-    };
-
-    const handleEditCity = (city: City) => {
-        setCityToEdit(city);
-        setShowEditModal(true);
-    };
-
-    const handleDeleteCity = (city: City) => {
-        setCityToDelete(city);
-        setShowDeleteModal(true);
-    };
-
-    const handleConfirmDelete = async () => {
-        if (!cityToDelete) return;
-
-        setDeleteLoading(true);
-        setError('');
-        try {
-            const response = await fetch(`http://localhost:8080/api/address/cities/${cityToDelete.id}`, {
-                method: 'DELETE',
-            });
-
-            if (!response.ok) throw new Error('Failed to delete city');
-
-            setSuccess('City deleted successfully!');
-            setShowDeleteModal(false);
-            setCityToDelete(null);
-            loadCities(currentPage, searchQuery, activeFilter);
-        } catch (err: any) {
-            setError('Error deleting city.');
-        } finally {
-            setDeleteLoading(false);
-        }
-    };
-
-    const handleCityAdded = () => {
-        setSuccess('City added successfully!');
-        loadCities(currentPage, searchQuery, activeFilter);
-    };
-
-    const handleCityEdited = () => {
-        setSuccess('City updated successfully!');
-        loadCities(currentPage, searchQuery, activeFilter);
-    };
-
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    };
-
-    const handleBackToDashboard = () => {
-        navigate('/dashboard');
-    };
-
-    useEffect(() => {
-        loadCities();
-    }, []);
-
-    // --- MODERN HERO LAYOUT (MATCH TARIFF) ---
-    return (
-        <div className="dashboard-main" style={{paddingTop: 0}}>
-            {/* HEADER BUTTONS */}
-            <div style={{display: 'flex', justifyContent: 'flex-end', gap: 12, marginBottom: 8}}>
-                <button className="dashboard-btn" onClick={handleBackToDashboard}>
-                    <Icon.Back /> <span>Dashboard</span>
-                </button>
-                <button className="dashboard-btn dashboard-btn-primary" onClick={() => setShowAddModal(true)}>
-                    <Icon.Plus /> <span>Add City</span>
-                </button>
-            </div>
-
-            {/* HERO SECTION */}
-            <div className="pr-hero" style={{marginBottom: 28}}>
-                <div className="pr-hero-grid" aria-hidden="true" />
-                <div className="pr-hero-left">
-                    <div className="pr-hero-icon" aria-hidden="true"><Icon.Map /></div>
-                    <div>
-                        <h2 className="pr-hero-title">City Management</h2>
-                        <p className="pr-hero-subtitle">Manage cities and their active status</p>
-                    </div>
-                </div>
-            </div>
-
-            {/* ALERTS */}
-            {error && (
-                <div className="cm-alert cm-alert-danger" style={{marginBottom: 12}}>{error}</div>
-            )}
-            {success && (
-                <div className="cm-alert cm-alert-success" style={{marginBottom: 12}}>{success}</div>
-            )}
-
-            {/* TOOLBAR */}
-            <div className="cm-toolbar" style={{marginBottom: 18}}>
-                <form onSubmit={handleSearch} style={{display: 'flex', gap: 12, flex: 1}}>
-                    <div className="cm-search-wrap">
-                        <input
-                            className="cm-search-input"
-                            type="text"
-                            placeholder="Search cities by name..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                    </div>
-                    <button className="cm-btn" type="submit">Search</button>
-                </form>
-                <div className="cm-filter-group">
-                    <button
-                        className={`cm-filter-btn${activeFilter === undefined ? ' active-all' : ''}`}
-                        type="button"
-                        onClick={() => handleFilterChange(undefined)}
-                    >
-                        All
-                    </button>
-                    <button
-                        className={`cm-filter-btn${activeFilter === true ? ' active-yes' : ''}`}
-                        type="button"
-                        onClick={() => handleFilterChange(true)}
-                    >
-                        Active
-                    </button>
-                    <button
-                        className={`cm-filter-btn${activeFilter === false ? ' active-no' : ''}`}
-                        type="button"
-                        onClick={() => handleFilterChange(false)}
-                    >
-                        Inactive
-                    </button>
-                </div>
-            </div>
-
-            {/* TABLE CARD */}
-            <div className="cm-table-card">
-                {loading ? (
-                    <div className="cm-state-center">
-                        <div className="cm-spinner" />
-                        <div className="cm-state-label">Loading cities...</div>
-                    </div>
-                ) : (
-                    <>
-                        <div className="cm-results-info">
-                            Showing {cities.length} of {totalCities} cities
-                        </div>
-                        <div className="cm-table-wrap">
-                            <table className="cm-table">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Name</th>
-                                        <th>Status</th>
-                                        <th>Created</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {cities.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={5} className="cm-table-empty">
-                                                <div className="cm-table-empty-icon">🏙️</div>
-                                                No cities found
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        cities.map((city) => (
-                                            <tr key={city.id}>
-                                                <td className="cm-table-id">{city.id}</td>
-                                                <td className="cm-table-name">{city.name}</td>
-                                                <td>
-                                                    <span className={`cm-badge ${city.is_active ? 'cm-badge-active' : 'cm-badge-inactive'}`}>
-                                                        {city.is_active ? 'Active' : 'Inactive'}
-                                                    </span>
-                                                </td>
-                                                <td>{formatDate(city.created_at)}</td>
-                                                <td>
-                                                    <div className="cm-row-actions">
-                                                        <button className="cm-action-btn" onClick={() => handleEditCity(city)}>Edit</button>
-                                                        <button className="cm-action-btn" style={{color: city.is_active ? '#f59e0b' : '#10b981'}} onClick={() => handleToggleActive(city.id, city.is_active)}>
-                                                            {city.is_active ? 'Deactivate' : 'Activate'}
-                                                        </button>
-                                                        <button className="cm-action-btn cm-action-btn-danger" onClick={() => handleDeleteCity(city)}>Delete</button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                        {totalPages > 1 && (
-                            <div className="cm-pagination">
-                                <button
-                                    className="cm-page-btn"
-                                    disabled={currentPage <= 1}
-                                    onClick={() => loadCities(currentPage - 1, searchQuery, activeFilter)}
-                                >
-                                    Previous
-                                </button>
-                                <span className="cm-page-info">
-                                    Page {currentPage} of {totalPages}
-                                </span>
-                                <button
-                                    className="cm-page-btn"
-                                    disabled={currentPage >= totalPages}
-                                    onClick={() => loadCities(currentPage + 1, searchQuery, activeFilter)}
-                                >
-                                    Next
-                                </button>
-                            </div>
-                        )}
-                    </>
-                )}
-            </div>
-
-            {/* Modals */}
-            <AddCityModal
-                show={showAddModal}
-                onHide={() => setShowAddModal(false)}
-                onCityAdded={handleCityAdded}
-            />
-            {cityToEdit && (
-                <EditCityModal
-                    show={showEditModal}
-                    onHide={() => {
-                        setShowEditModal(false);
-                        setCityToEdit(null);
-                    }}
-                    city={cityToEdit}
-                    onCityEdited={handleCityEdited}
-                />
-            )}
-            {cityToDelete && (
-                <DeleteCityModal
-                    show={showDeleteModal}
-                    onHide={() => {
-                        setShowDeleteModal(false);
-                        setCityToDelete(null);
-                    }}
-                    cityName={cityToDelete.name}
-                    loading={deleteLoading}
-                    error={error}
-                    onConfirm={handleConfirmDelete}
-                />
-            )}
+  return (
+    <div>
+      {/* Toolbar */}
+      <div className="pr-toolbar" style={{ marginBottom: 16 }}>
+        <form className="pr-search-wrap" onSubmit={e => { e.preventDefault(); loadCities(1, searchQuery, activeFilter); }}>
+          <span className="pr-search-icon"><Icon.Search /></span>
+          <input className="pr-search-input" type="text" placeholder="Search cities…" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+        </form>
+        <div className="pr-filter-group">
+          <button className={`pr-filter-btn${activeFilter === undefined ? ' active' : ''}`} onClick={() => { setActiveFilter(undefined); loadCities(1, searchQuery, undefined); }}>All</button>
+          <button className={`pr-filter-btn${activeFilter === true ? ' active' : ''}`} onClick={() => { setActiveFilter(true); loadCities(1, searchQuery, true); }}>Active</button>
+          <button className={`pr-filter-btn${activeFilter === false ? ' active' : ''}`} onClick={() => { setActiveFilter(false); loadCities(1, searchQuery, false); }}>Inactive</button>
         </div>
-    );
+        <button className="pr-btn pr-btn-primary" onClick={() => setShowAddModal(true)}><Icon.Plus /><span>Add City</span></button>
+      </div>
+
+      {error && <div className="pr-alert pr-alert-danger" style={{ marginBottom: 12 }}><Icon.AlertCircle /><span>{error}</span></div>}
+      {success && <div className="pr-alert pr-alert-success" style={{ marginBottom: 12 }}><Icon.CheckCircle /><span>{success}</span></div>}
+
+      {loading ? (
+        <div className="pr-state-center"><span className="pr-spinner" /><p className="pr-state-label">Loading cities…</p></div>
+      ) : (
+        <>
+          <p className="pr-results-info">Showing {cities.length} of {totalCities} cities</p>
+          <div className="pr-table-card">
+            <div className="pr-table-wrap">
+              <table className="pr-table">
+                <thead><tr><th>ID</th><th>Name</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
+                <tbody>
+                  {cities.length === 0 ? (
+                    <tr><td colSpan={5}><div className="pr-table-empty">No cities found.</div></td></tr>
+                  ) : cities.map(city => (
+                    <tr key={city.id}>
+                      <td><span className="pr-table-id">{city.id}</span></td>
+                      <td className="pr-table-name">{city.name}</td>
+                      <td><span className={`pr-badge ${city.is_active ? 'pr-badge-active' : 'pr-badge-inactive'}`}>{city.is_active ? 'Active' : 'Inactive'}</span></td>
+                      <td>{formatDate(city.created_at)}</td>
+                      <td>
+                        <div className="pr-row-actions">
+                          <button className="pr-action-btn" onClick={() => { setCityToEdit(city); setShowEditModal(true); }}><Icon.Edit />Edit</button>
+                          <button className={`pr-action-btn ${city.is_active ? 'pr-action-btn-warning' : 'pr-action-btn-success'}`} onClick={() => handleToggleActive(city.id, city.is_active)}>{city.is_active ? 'Deactivate' : 'Activate'}</button>
+                          <button className="pr-action-btn pr-action-btn-danger" onClick={() => { setCityToDelete(city); setShowDeleteModal(true); }}><Icon.Trash />Delete</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {totalPages > 1 && (
+              <div className="pr-pagination">
+                <button className="pr-page-btn" disabled={currentPage <= 1} onClick={() => loadCities(currentPage - 1, searchQuery, activeFilter)}><Icon.ChevronLeft /></button>
+                <span className="pr-page-info">Page {currentPage} of {totalPages}</span>
+                <button className="pr-page-btn" disabled={currentPage >= totalPages} onClick={() => loadCities(currentPage + 1, searchQuery, activeFilter)}><Icon.ChevronRight /></button>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      <AddCityModal show={showAddModal} onHide={() => setShowAddModal(false)} onCityAdded={() => { setSuccess('City added.'); loadCities(currentPage, searchQuery, activeFilter); setTimeout(() => setSuccess(''), 3000); }} />
+      {cityToEdit && <EditCityModal show={showEditModal} onHide={() => { setShowEditModal(false); setCityToEdit(null); }} city={cityToEdit} onCityEdited={() => { setSuccess('City updated.'); loadCities(currentPage, searchQuery, activeFilter); setTimeout(() => setSuccess(''), 3000); }} />}
+      {cityToDelete && <DeleteCityModal show={showDeleteModal} onHide={() => { setShowDeleteModal(false); setCityToDelete(null); }} cityName={cityToDelete.name} loading={deleteLoading} error={error} onConfirm={handleConfirmDelete} />}
+    </div>
+  );
 };
 
 export default CityList;

@@ -1,22 +1,32 @@
-import React from 'react';
-import { Tabs, Tab } from 'react-bootstrap';
+import React, { useState } from 'react';
 import CityList from '../dictionary/CityList';
 import CountryList from '../dictionary/CountryList';
 import DistrictList from '../dictionary/DistrictList';
 import PKWiUList from '../pkwiu/PKWiUList';
 import TariffList from '../tariff/TariffList';
+import '../provider/Provider.css';
 
-// Inline SVG icon for Address Dictionaries
 const Icon = {
   MapPin: () => (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{width: 22, height: 22, marginRight: 8}}><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
   )
 };
 
+type TabKey = 'cities' | 'countries' | 'districts' | 'pkwiu' | 'tariffs';
+
+const TABS: { key: TabKey; label: string }[] = [
+  { key: 'cities', label: 'Cities' },
+  { key: 'countries', label: 'Countries' },
+  { key: 'districts', label: 'Provinces' },
+  { key: 'pkwiu', label: 'PKWiU' },
+  { key: 'tariffs', label: 'Energy Tariffs' },
+];
+
 const AddressDictionaries: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<TabKey>('cities');
+
   return (
     <div className="dashboard-page">
-      {/* Header section, consistent with Dashboard */}
       <header className="dashboard-header">
         <div className="dashboard-header-inner">
           <div className="dashboard-brand">
@@ -32,9 +42,7 @@ const AddressDictionaries: React.FC = () => {
         </div>
       </header>
 
-      {/* Main content area */}
       <main className="dashboard-main">
-        {/* Section header styled like Dashboard */}
         <div className="dashboard-section-header">
           <div>
             <h3 className="dashboard-section-title">Address Dictionaries</h3>
@@ -42,44 +50,53 @@ const AddressDictionaries: React.FC = () => {
           </div>
         </div>
 
-        {/* Flat, borderless, modern tab/content area */}
-        <section style={{
-          background: 'none',
-          borderRadius: 0,
-          boxShadow: 'none',
-          padding: 0,
-          border: 'none',
-          margin: 0
-        }}>
+        <section>
           <div style={{
             background: 'var(--el-surface)',
             borderRadius: 20,
             boxShadow: '0 6px 24px -8px rgba(15,23,42,0.08)',
-            padding: 0,
-            border: '1px solid var(--el-border)'
+            border: '1px solid var(--el-border)',
+            overflow: 'hidden'
           }}>
-            <Tabs
-              defaultActiveKey="cities"
-              id="address-dictionaries-tabs"
-              className="mb-3 dashboard-tabs"
-              style={{padding: '0 24px', marginTop: 0}}
-            >
-              <Tab eventKey="cities" title="Cities">
-                <div style={{padding: 24}}><CityList /></div>
-              </Tab>
-              <Tab eventKey="countries" title="Countries">
-                <div style={{padding: 24}}><CountryList /></div>
-              </Tab>
-              <Tab eventKey="districts" title="Provinces">
-                <div style={{padding: 24}}><DistrictList /></div>
-              </Tab>
-              <Tab eventKey="pkwiu" title="PKWiU">
-                <div style={{padding: 24}}><PKWiUList /></div>
-              </Tab>
-              <Tab eventKey="tariffs" title="Energy Tariffs">
-                <div style={{padding: 24}}><TariffList hideHeader /></div>
-              </Tab>
-            </Tabs>
+            {/* Custom tab bar */}
+            <div style={{
+              display: 'flex',
+              gap: 0,
+              borderBottom: '1px solid var(--el-border)',
+              padding: '0 24px',
+              background: 'var(--el-surface)'
+            }}>
+              {TABS.map(tab => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    borderBottom: activeTab === tab.key ? '2px solid #0066ff' : '2px solid transparent',
+                    color: activeTab === tab.key ? '#0066ff' : 'var(--el-text-secondary, #64748b)',
+                    fontWeight: activeTab === tab.key ? 600 : 400,
+                    fontSize: 14,
+                    padding: '14px 18px',
+                    cursor: 'pointer',
+                    transition: 'color 0.15s, border-color 0.15s',
+                    outline: 'none',
+                    marginBottom: -1,
+                  }}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Tab content */}
+            <div style={{ padding: 24 }}>
+              {activeTab === 'cities' && <CityList />}
+              {activeTab === 'countries' && <CountryList />}
+              {activeTab === 'districts' && <DistrictList />}
+              {activeTab === 'pkwiu' && <PKWiUList />}
+              {activeTab === 'tariffs' && <TariffList hideHeader />}
+            </div>
           </div>
         </section>
       </main>

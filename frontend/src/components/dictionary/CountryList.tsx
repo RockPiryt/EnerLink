@@ -1,346 +1,122 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Card, Table, Button, Form, InputGroup, Alert, Spinner, Badge } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
 import { getCountries, Country } from '../../services/countryService';
 import AddCountryModal from '../../dialogs/AddCountryModal';
 import EditCountryModal from '../../dialogs/EditCountryModal';
 import DeleteCountryModal from '../../dialogs/DeleteCountryModal';
+import '../provider/Provider.css';
+
+const Icon = {
+  Search: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+  Plus: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+  Edit: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
+  Trash: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>,
+  AlertCircle: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>,
+  CheckCircle: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>,
+  ChevronLeft: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>,
+  ChevronRight: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>,
+};
+
+const formatDate = (ds: string) => new Date(ds).toLocaleDateString('pl-PL', { year: 'numeric', month: 'short', day: 'numeric' });
 
 const CountryList: React.FC = () => {
-    const [countries, setCountries] = useState<Country[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
-    const [searchQuery, setSearchQuery] = useState('');
-    const [activeFilter, setActiveFilter] = useState<boolean | undefined>(undefined);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const [totalCountries, setTotalCountries] = useState(0);
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState<boolean | undefined>(undefined);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCountries, setTotalCountries] = useState(0);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
+  const [countryToDelete, setCountryToDelete] = useState<Country | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
-    const [showAddModal, setShowAddModal] = useState(false);
-    const [showEditModal, setShowEditModal] = useState(false);
-    const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [countryToDelete, setCountryToDelete] = useState<Country | null>(null);
-    const [deleteLoading, setDeleteLoading] = useState(false);
+  const loadCountries = async (page = 1, search = '', active?: boolean) => {
+    setLoading(true); setError(''); setSuccess('');
+    try {
+      const data = await getCountries();
+      let f = data;
+      if (search.trim()) f = f.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.shortcut.toLowerCase().includes(search.toLowerCase()));
+      if (active !== undefined) f = f.filter(c => c.is_active === active);
+      setCountries(f); setTotalCountries(f.length); setTotalPages(Math.max(1, Math.ceil(f.length / 20))); setCurrentPage(page);
+    } catch { setError('Error loading countries.'); } finally { setLoading(false); }
+  };
 
-    const navigate = useNavigate();
+  useEffect(() => { loadCountries(); }, []);
 
-    const loadCountries = async (page: number = 1, search: string = '', active?: boolean) => {
-        setLoading(true);
-        setError('');
-        setSuccess('');
+  const handleConfirmDelete = async () => {
+    setDeleteLoading(true);
+    setTimeout(() => { setDeleteLoading(false); setShowDeleteModal(false); setCountryToDelete(null); setSuccess('Country deleted.'); loadCountries(currentPage, searchQuery, activeFilter); setTimeout(() => setSuccess(''), 3000); }, 1000);
+  };
 
-        try {
-            const data = await getCountries();
+  return (
+    <div>
+      <div className="pr-toolbar" style={{ marginBottom: 16 }}>
+        <form className="pr-search-wrap" onSubmit={e => { e.preventDefault(); loadCountries(1, searchQuery, activeFilter); }}>
+          <span className="pr-search-icon"><Icon.Search /></span>
+          <input className="pr-search-input" type="text" placeholder="Search countries…" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+        </form>
+        <div className="pr-filter-group">
+          <button className={`pr-filter-btn${activeFilter === undefined ? ' active' : ''}`} onClick={() => { setActiveFilter(undefined); loadCountries(1, searchQuery, undefined); }}>All</button>
+          <button className={`pr-filter-btn${activeFilter === true ? ' active' : ''}`} onClick={() => { setActiveFilter(true); loadCountries(1, searchQuery, true); }}>Active</button>
+          <button className={`pr-filter-btn${activeFilter === false ? ' active' : ''}`} onClick={() => { setActiveFilter(false); loadCountries(1, searchQuery, false); }}>Inactive</button>
+        </div>
+        <button className="pr-btn pr-btn-primary" onClick={() => setShowAddModal(true)}><Icon.Plus /><span>Add Country</span></button>
+      </div>
 
-            // Client-side filtering for now
-            let filteredCountries = data;
+      {error && <div className="pr-alert pr-alert-danger" style={{ marginBottom: 12 }}><Icon.AlertCircle /><span>{error}</span></div>}
+      {success && <div className="pr-alert pr-alert-success" style={{ marginBottom: 12 }}><Icon.CheckCircle /><span>{success}</span></div>}
 
-            if (search.trim()) {
-                filteredCountries = filteredCountries.filter(country =>
-                    country.name.toLowerCase().includes(search.toLowerCase()) ||
-                    country.shortcut.toLowerCase().includes(search.toLowerCase())
-                );
-            }
-
-            if (active !== undefined) {
-                filteredCountries = filteredCountries.filter(country => country.is_active === active);
-            }
-
-            setCountries(filteredCountries);
-            setTotalCountries(filteredCountries.length);
-            setTotalPages(Math.ceil(filteredCountries.length / 20));
-            setCurrentPage(page);
-        } catch (err: any) {
-            setError('Błąd podczas pobierania krajów.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        setCurrentPage(1);
-        loadCountries(1, searchQuery, activeFilter);
-    };
-
-    const handleFilterChange = (active?: boolean) => {
-        setActiveFilter(active);
-        setCurrentPage(1);
-        loadCountries(1, searchQuery, active);
-    };
-
-    const handleEditCountry = (country: Country) => {
-        setSelectedCountry(country);
-        setShowEditModal(true);
-    };
-
-    const handleDeleteCountry = (country: Country) => {
-        setCountryToDelete(country);
-        setShowDeleteModal(true);
-    };
-
-    const handleConfirmDelete = async () => {
-        setDeleteLoading(true);
-        setTimeout(() => {
-            setDeleteLoading(false);
-            setShowDeleteModal(false);
-            setCountryToDelete(null);
-            setSuccess('Kraj został usunięty (symulacja).');
-            loadCountries(currentPage, searchQuery, activeFilter);
-        }, 1000);
-    };
-
-    const handleModalSuccess = () => {
-        loadCountries(currentPage, searchQuery, activeFilter);
-    };
-
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('pl-PL', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    };
-
-    const handleBackToDashboard = () => {
-        navigate('/dashboard');
-    };
-
-    useEffect(() => {
-        loadCountries();
-    }, []);
-
-    return (
-        <Container fluid className="py-4">
-            <Row>
-                <Col>
-                    <Card>
-                        <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
-                            <div className="d-flex align-items-center">
-                                <Button
-                                    variant="light"
-                                    size="sm"
-                                    onClick={handleBackToDashboard}
-                                    className="me-3"
-                                >
-                                    &larr; Back to Dashboard
-                                </Button>
-                                <h4 className="mb-0">Country Management</h4>
-                            </div>
-                            <Button
-                                variant="light"
-                                size="sm"
-                                onClick={() => setShowAddModal(true)}
-                            >
-                                Add Country
-                            </Button>
-                        </Card.Header>
-
-                        <Card.Body>
-                            {/* Search and Filter Controls */}
-                            <Row className="mb-3">
-                                <Col md={6}>
-                                    <Form onSubmit={handleSearch}>
-                                        <InputGroup>
-                                            <Form.Control
-                                                type="text"
-                                                placeholder="Search countries by name or shortcut..."
-                                                value={searchQuery}
-                                                onChange={(e) => setSearchQuery(e.target.value)}
-                                            />
-                                            <Button variant="outline-secondary" type="submit">
-                                                Search
-                                            </Button>
-                                        </InputGroup>
-                                    </Form>
-                                </Col>
-                                <Col md={6}>
-                                    <div className="d-flex gap-2">
-                                        <Button
-                                            variant={activeFilter === undefined ? "primary" : "outline-primary"}
-                                            size="sm"
-                                            onClick={() => handleFilterChange(undefined)}
-                                        >
-                                            All
-                                        </Button>
-                                        <Button
-                                            variant={activeFilter === true ? "success" : "outline-success"}
-                                            size="sm"
-                                            onClick={() => handleFilterChange(true)}
-                                        >
-                                            Active
-                                        </Button>
-                                        <Button
-                                            variant={activeFilter === false ? "danger" : "outline-danger"}
-                                            size="sm"
-                                            onClick={() => handleFilterChange(false)}
-                                        >
-                                            Inactive
-                                        </Button>
-                                    </div>
-                                </Col>
-                            </Row>
-
-                            {/* Error Alert */}
-                            {error && (
-                                <Alert variant="danger" className="mb-3">
-                                    {error}
-                                </Alert>
-                            )}
-
-                            {/* Success Alert */}
-                            {success && (
-                                <Alert variant="success" className="mb-3">
-                                    {success}
-                                </Alert>
-                            )}
-
-                            {/* Loading Spinner */}
-                            {loading ? (
-                                <div className="text-center py-4">
-                                    <Spinner animation="border" variant="primary" />
-                                    <div className="mt-2">Loading countries...</div>
-                                </div>
-                            ) : (
-                                <>
-                                    {/* Results Summary */}
-                                    <div className="mb-3 text-muted">
-                                        Showing {countries.length} of {totalCountries} countries
-                                    </div>
-
-                                    {/* Countries Table */}
-                                    <div className="table-responsive">
-                                        <Table striped hover>
-                                            <thead className="table-dark">
-                                            <tr>
-                                                <th>ID</th>
-                                                <th>Name</th>
-                                                <th>Shortcut</th>
-                                                <th>Status</th>
-                                                <th>Created</th>
-                                                <th>Actions</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            {countries.length === 0 ? (
-                                                <tr>
-                                                    <td colSpan={6} className="text-center py-4">
-                                                        No countries found
-                                                    </td>
-                                                </tr>
-                                            ) : (
-                                                countries.map((country) => (
-                                                    <tr key={country.id}>
-                                                        <td>
-                                                            <code>{country.id}</code>
-                                                        </td>
-                                                        <td>
-                                                            <strong>{country.name}</strong>
-                                                        </td>
-                                                        <td>
-                                                            <Badge bg="info">{country.shortcut}</Badge>
-                                                        </td>
-                                                        <td>
-                                                            <Badge bg={country.is_active ? 'success' : 'secondary'}>
-                                                                {country.is_active ? 'Active' : 'Inactive'}
-                                                            </Badge>
-                                                        </td>
-                                                        <td>{formatDate(country.created_at)}</td>
-                                                        <td>
-                                                            <div className="d-flex gap-1">
-                                                                <Button
-                                                                    variant="outline-primary"
-                                                                    size="sm"
-                                                                    onClick={() => handleEditCountry(country)}
-                                                                >
-                                                                    Edit
-                                                                </Button>
-                                                                <Button
-                                                                    variant="outline-danger"
-                                                                    size="sm"
-                                                                    onClick={() => handleDeleteCountry(country)}
-                                                                >
-                                                                    Delete
-                                                                </Button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))
-                                            )}
-                                            </tbody>
-                                        </Table>
-                                    </div>
-
-                                    {/* Pagination */}
-                                    {totalPages > 1 && (
-                                        <div className="d-flex justify-content-center mt-3">
-                                            <div className="d-flex gap-2">
-                                                <Button
-                                                    variant="outline-primary"
-                                                    size="sm"
-                                                    disabled={currentPage <= 1}
-                                                    onClick={() => loadCountries(currentPage - 1, searchQuery, activeFilter)}
-                                                >
-                                                    Previous
-                                                </Button>
-
-                                                <span className="align-self-center px-3">
-                          Page {currentPage} of {totalPages}
-                        </span>
-
-                                                <Button
-                                                    variant="outline-primary"
-                                                    size="sm"
-                                                    disabled={currentPage >= totalPages}
-                                                    onClick={() => loadCountries(currentPage + 1, searchQuery, activeFilter)}
-                                                >
-                                                    Next
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </>
-                            )}
-                        </Card.Body>
-                    </Card>
-                </Col>
-            </Row>
-
-            {/* Modals */}
-            <AddCountryModal
-                show={showAddModal}
-                onHide={() => setShowAddModal(false)}
-                onCountryAdded={handleModalSuccess}
-            />
-
-            {selectedCountry && (
-                <EditCountryModal
-                    show={showEditModal}
-                    onHide={() => setShowEditModal(false)}
-                    country={selectedCountry}
-                    onCountryEdited={handleModalSuccess}
-                />
+      {loading ? (
+        <div className="pr-state-center"><span className="pr-spinner" /><p className="pr-state-label">Loading countries…</p></div>
+      ) : (
+        <>
+          <p className="pr-results-info">Showing {countries.length} of {totalCountries} countries</p>
+          <div className="pr-table-card">
+            <div className="pr-table-wrap">
+              <table className="pr-table">
+                <thead><tr><th>ID</th><th>Name</th><th>Shortcut</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
+                <tbody>
+                  {countries.length === 0 ? (
+                    <tr><td colSpan={6}><div className="pr-table-empty">No countries found.</div></td></tr>
+                  ) : countries.map(c => (
+                    <tr key={c.id}>
+                      <td><span className="pr-table-id">{c.id}</span></td>
+                      <td className="pr-table-name">{c.name}</td>
+                      <td><span className="pr-badge" style={{ background: 'rgba(6,182,212,0.1)', color: '#0e7490', border: '1px solid rgba(6,182,212,0.2)' }}>{c.shortcut}</span></td>
+                      <td><span className={`pr-badge ${c.is_active ? 'pr-badge-active' : 'pr-badge-inactive'}`}>{c.is_active ? 'Active' : 'Inactive'}</span></td>
+                      <td>{formatDate(c.created_at)}</td>
+                      <td>
+                        <div className="pr-row-actions">
+                          <button className="pr-action-btn" onClick={() => { setSelectedCountry(c); setShowEditModal(true); }}><Icon.Edit />Edit</button>
+                          <button className="pr-action-btn pr-action-btn-danger" onClick={() => { setCountryToDelete(c); setShowDeleteModal(true); }}><Icon.Trash />Delete</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {totalPages > 1 && (
+              <div className="pr-pagination">
+                <button className="pr-page-btn" disabled={currentPage <= 1} onClick={() => loadCountries(currentPage - 1, searchQuery, activeFilter)}><Icon.ChevronLeft /></button>
+                <span className="pr-page-info">Page {currentPage} of {totalPages}</span>
+                <button className="pr-page-btn" disabled={currentPage >= totalPages} onClick={() => loadCountries(currentPage + 1, searchQuery, activeFilter)}><Icon.ChevronRight /></button>
+              </div>
             )}
+          </div>
+        </>
+      )}
 
-            {countryToDelete && (
-                <DeleteCountryModal
-                    show={showDeleteModal}
-                    onHide={() => {
-                        setShowDeleteModal(false);
-                        setCountryToDelete(null);
-                    }}
-                    countryName={countryToDelete.name}
-                    loading={deleteLoading}
-                    error={error}
-                    onConfirm={handleConfirmDelete}
-                />
-            )}
-        </Container>
-    );
+      <AddCountryModal show={showAddModal} onHide={() => setShowAddModal(false)} onCountryAdded={() => { setSuccess('Country added.'); loadCountries(currentPage, searchQuery, activeFilter); setTimeout(() => setSuccess(''), 3000); }} />
+      {selectedCountry && <EditCountryModal show={showEditModal} onHide={() => { setShowEditModal(false); setSelectedCountry(null); }} country={selectedCountry} onCountryEdited={() => { setSuccess('Country updated.'); loadCountries(currentPage, searchQuery, activeFilter); setTimeout(() => setSuccess(''), 3000); }} />}
+      {countryToDelete && <DeleteCountryModal show={showDeleteModal} onHide={() => { setShowDeleteModal(false); setCountryToDelete(null); }} countryName={countryToDelete.name} loading={deleteLoading} error={error} onConfirm={handleConfirmDelete} />}
+    </div>
+  );
 };
 
 export default CountryList;

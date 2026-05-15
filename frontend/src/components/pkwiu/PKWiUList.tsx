@@ -1,15 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Card, Table, Button, Form, InputGroup, Alert, Spinner, Badge } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
 import DeletePKWiUModal from "../../dialogs/DeletePKWiuModal";
 import EditPKWiUModal from "../../dialogs/EditPkwiuModal";
 import AddPKWiUModal from "../../dialogs/AddPKWiuModal";
+import '../provider/Provider.css';
 
 interface PKWiU {
     id: number;
     pkwiu_nr: string;
     pkwiu_name: string;
 }
+
+const Icon = {
+  Search: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+  Plus: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+  Edit: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
+  Trash: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>,
+  AlertCircle: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>,
+  CheckCircle: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>,
+  ChevronLeft: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>,
+  ChevronRight: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>,
+};
 
 const PKWiUList: React.FC = () => {
     const [pkwius, setPkwius] = useState<PKWiU[]>([]);
@@ -27,317 +37,97 @@ const PKWiUList: React.FC = () => {
     const [pkwiuToDelete, setPkwiuToDelete] = useState<PKWiU | null>(null);
     const [deleteLoading, setDeleteLoading] = useState(false);
 
-    const navigate = useNavigate();
-
     const loadPkwius = async (page: number = 1, search: string = '') => {
-        setLoading(true);
-        setError('');
-        setSuccess('');
-
+        setLoading(true); setError(''); setSuccess('');
         try {
             const params = new URLSearchParams();
             params.append('page', page.toString());
             params.append('per_page', '20');
-
-            if (search.trim()) {
-                params.append('q', search.trim());
-            }
-
+            if (search.trim()) params.append('q', search.trim());
             const response = await fetch(`http://localhost:8080/api/pkwiu?${params}`);
-            if (!response.ok) throw new Error('Failed to fetch PKWiU codes');
-
+            if (!response.ok) throw new Error();
             const data = await response.json();
-
             if (data.items) {
-                setPkwius(data.items);
-                setTotalPages(data.pages || 1);
-                setTotalPkwius(data.total || data.items.length);
+                setPkwius(data.items); setTotalPages(data.pages || 1); setTotalPkwius(data.total || data.items.length);
             } else {
-                let filteredPkwius = data;
-
-                if (search.trim()) {
-                    filteredPkwius = filteredPkwius.filter((pkwiu: PKWiU) =>
-                        pkwiu.pkwiu_nr.toLowerCase().includes(search.toLowerCase()) ||
-                        pkwiu.pkwiu_name.toLowerCase().includes(search.toLowerCase())
-                    );
-                }
-
-                setPkwius(filteredPkwius);
-                setTotalPkwius(filteredPkwius.length);
-                setTotalPages(Math.ceil(filteredPkwius.length / 20));
+                let f = data;
+                if (search.trim()) f = f.filter((p: PKWiU) => p.pkwiu_nr.toLowerCase().includes(search.toLowerCase()) || p.pkwiu_name.toLowerCase().includes(search.toLowerCase()));
+                setPkwius(f); setTotalPkwius(f.length); setTotalPages(Math.max(1, Math.ceil(f.length / 20)));
             }
             setCurrentPage(page);
-        } catch (err: any) {
-            setError('Error loading PKWiU codes.');
-            setPkwius([]);
-            setTotalPkwius(0);
-            setTotalPages(1);
-        } finally {
-            setLoading(false);
-        }
+        } catch { setError('Error loading PKWiU codes.'); setPkwius([]); } finally { setLoading(false); }
     };
 
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        setCurrentPage(1);
-        loadPkwius(1, searchQuery);
-    };
-
-    const handleEditPkwiu = (pkwiu: PKWiU) => {
-        setPkwiuToEdit(pkwiu);
-        setShowEditModal(true);
-    };
-
-    const handleDeletePkwiu = (pkwiu: PKWiU) => {
-        setPkwiuToDelete(pkwiu);
-        setShowDeleteModal(true);
-    };
+    useEffect(() => { loadPkwius(); }, []);
 
     const handleConfirmDelete = async () => {
         if (!pkwiuToDelete) return;
-
-        setDeleteLoading(true);
-        setError('');
+        setDeleteLoading(true); setError('');
         try {
-            const response = await fetch(`http://localhost:8080/api/pkwiu/${pkwiuToDelete.id}`, {
-                method: 'DELETE',
-            });
-
-            if (!response.ok) throw new Error('Failed to delete PKWiU code');
-
-            setSuccess('PKWiU code deleted successfully!');
-            setShowDeleteModal(false);
-            setPkwiuToDelete(null);
+            const r = await fetch(`http://localhost:8080/api/pkwiu/${pkwiuToDelete.id}`, { method: 'DELETE' });
+            if (!r.ok) throw new Error();
+            setSuccess('PKWiU code deleted.'); setShowDeleteModal(false); setPkwiuToDelete(null);
             loadPkwius(currentPage, searchQuery);
-        } catch (err: any) {
-            setError('Error deleting PKWiU code.');
-        } finally {
-            setDeleteLoading(false);
-        }
+            setTimeout(() => setSuccess(''), 3000);
+        } catch { setError('Error deleting PKWiU code.'); } finally { setDeleteLoading(false); }
     };
-
-    const handlePkwiuAdded = () => {
-        setSuccess('PKWiU code added successfully!');
-        loadPkwius(currentPage, searchQuery);
-    };
-
-    const handlePkwiuEdited = () => {
-        setSuccess('PKWiU code updated successfully!');
-        loadPkwius(currentPage, searchQuery);
-    };
-
-    const handleBackToDashboard = () => {
-        navigate('/dashboard');
-    };
-
-    useEffect(() => {
-        loadPkwius();
-    }, []);
 
     return (
-        <Container fluid className="py-4">
-            <Row>
-                <Col>
-                    <Card>
-                        <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
-                            <div className="d-flex align-items-center">
-                                <Button
-                                    variant="light"
-                                    size="sm"
-                                    onClick={handleBackToDashboard}
-                                    className="me-3"
-                                >
-                                    &larr; Back to Dashboard
-                                </Button>
-                                <h4 className="mb-0">PKWiU Code Management</h4>
+        <div>
+            <div className="pr-toolbar" style={{ marginBottom: 16 }}>
+                <form className="pr-search-wrap" onSubmit={e => { e.preventDefault(); loadPkwius(1, searchQuery); }}>
+                    <span className="pr-search-icon"><Icon.Search /></span>
+                    <input className="pr-search-input" type="text" placeholder="Search PKWiU codes…" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+                </form>
+                <button className="pr-btn pr-btn-primary" onClick={() => setShowAddModal(true)}><Icon.Plus /><span>Add PKWiU</span></button>
+            </div>
+
+            {error && <div className="pr-alert pr-alert-danger" style={{ marginBottom: 12 }}><Icon.AlertCircle /><span>{error}</span></div>}
+            {success && <div className="pr-alert pr-alert-success" style={{ marginBottom: 12 }}><Icon.CheckCircle /><span>{success}</span></div>}
+
+            {loading ? (
+                <div className="pr-state-center"><span className="pr-spinner" /><p className="pr-state-label">Loading PKWiU codes…</p></div>
+            ) : (
+                <>
+                    <p className="pr-results-info">Showing {pkwius.length} of {totalPkwius} PKWiU codes</p>
+                    <div className="pr-table-card">
+                        <div className="pr-table-wrap">
+                            <table className="pr-table">
+                                <thead><tr><th>ID</th><th>PKWiU Number</th><th>PKWiU Name</th><th>Actions</th></tr></thead>
+                                <tbody>
+                                    {pkwius.length === 0 ? (
+                                        <tr><td colSpan={4}><div className="pr-table-empty">No PKWiU codes found.</div></td></tr>
+                                    ) : pkwius.map(p => (
+                                        <tr key={p.id}>
+                                            <td><span className="pr-table-id">{p.id}</span></td>
+                                            <td><span className="pr-badge" style={{ background: 'rgba(99,102,241,0.1)', color: '#4f46e5', border: '1px solid rgba(99,102,241,0.2)' }}>{p.pkwiu_nr}</span></td>
+                                            <td className="pr-table-name">{p.pkwiu_name}</td>
+                                            <td>
+                                                <div className="pr-row-actions">
+                                                    <button className="pr-action-btn" onClick={() => { setPkwiuToEdit(p); setShowEditModal(true); }}><Icon.Edit />Edit</button>
+                                                    <button className="pr-action-btn pr-action-btn-danger" onClick={() => { setPkwiuToDelete(p); setShowDeleteModal(true); }}><Icon.Trash />Delete</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                        {totalPages > 1 && (
+                            <div className="pr-pagination">
+                                <button className="pr-page-btn" disabled={currentPage <= 1} onClick={() => loadPkwius(currentPage - 1, searchQuery)}><Icon.ChevronLeft /></button>
+                                <span className="pr-page-info">Page {currentPage} of {totalPages}</span>
+                                <button className="pr-page-btn" disabled={currentPage >= totalPages} onClick={() => loadPkwius(currentPage + 1, searchQuery)}><Icon.ChevronRight /></button>
                             </div>
-                            <Button
-                                variant="light"
-                                size="sm"
-                                onClick={() => setShowAddModal(true)}
-                            >
-                                Add PKWiU Code
-                            </Button>
-                        </Card.Header>
-
-                        <Card.Body>
-                            <Row className="mb-3">
-                                <Col md={6}>
-                                    <Form onSubmit={handleSearch}>
-                                        <InputGroup>
-                                            <Form.Control
-                                                type="text"
-                                                placeholder="Search by PKWiU number or name..."
-                                                value={searchQuery}
-                                                onChange={(e) => setSearchQuery(e.target.value)}
-                                            />
-                                            <Button variant="outline-secondary" type="submit">
-                                                Search
-                                            </Button>
-                                        </InputGroup>
-                                    </Form>
-                                </Col>
-                                <Col md={6}>
-                                    <div className="d-flex gap-2 justify-content-end">
-                                        <Button
-                                            variant="outline-primary"
-                                            size="sm"
-                                            onClick={() => {
-                                                setSearchQuery('');
-                                                loadPkwius(1, '');
-                                            }}
-                                        >
-                                            Clear Filter
-                                        </Button>
-                                    </div>
-                                </Col>
-                            </Row>
-
-                            {error && (
-                                <Alert variant="danger" className="mb-3">
-                                    {error}
-                                </Alert>
-                            )}
-
-                            {success && (
-                                <Alert variant="success" className="mb-3">
-                                    {success}
-                                </Alert>
-                            )}
-
-                            {loading ? (
-                                <div className="text-center py-4">
-                                    <Spinner animation="border" variant="primary" />
-                                    <div className="mt-2">Loading PKWiU codes...</div>
-                                </div>
-                            ) : (
-                                <>
-                                    <div className="mb-3 text-muted">
-                                        Showing {pkwius.length} of {totalPkwius} PKWiU codes
-                                    </div>
-
-                                    <div className="table-responsive">
-                                        <Table striped hover>
-                                            <thead className="table-dark">
-                                            <tr>
-                                                <th>ID</th>
-                                                <th>PKWiU Number</th>
-                                                <th>PKWiU Name</th>
-                                                <th>Actions</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            {pkwius.length === 0 ? (
-                                                <tr>
-                                                    <td colSpan={4} className="text-center py-4">
-                                                        No PKWiU codes found
-                                                    </td>
-                                                </tr>
-                                            ) : (
-                                                pkwius.map((pkwiu) => (
-                                                    <tr key={pkwiu.id}>
-                                                        <td>
-                                                            <code>{pkwiu.id}</code>
-                                                        </td>
-                                                        <td>
-                                                            <Badge bg="primary">
-                                                                {pkwiu.pkwiu_nr}
-                                                            </Badge>
-                                                        </td>
-                                                        <td>
-                                                            <strong>{pkwiu.pkwiu_name}</strong>
-                                                        </td>
-                                                        <td>
-                                                            <div className="d-flex gap-1">
-                                                                <Button
-                                                                    variant="outline-primary"
-                                                                    size="sm"
-                                                                    onClick={() => handleEditPkwiu(pkwiu)}
-                                                                >
-                                                                    Edit
-                                                                </Button>
-                                                                <Button
-                                                                    variant="outline-danger"
-                                                                    size="sm"
-                                                                    onClick={() => handleDeletePkwiu(pkwiu)}
-                                                                >
-                                                                    Delete
-                                                                </Button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))
-                                            )}
-                                            </tbody>
-                                        </Table>
-                                    </div>
-
-                                    {totalPages > 1 && (
-                                        <div className="d-flex justify-content-center mt-3">
-                                            <div className="d-flex gap-2">
-                                                <Button
-                                                    variant="outline-primary"
-                                                    size="sm"
-                                                    disabled={currentPage <= 1}
-                                                    onClick={() => loadPkwius(currentPage - 1, searchQuery)}
-                                                >
-                                                    Previous
-                                                </Button>
-
-                                                <span className="align-self-center px-3">
-                          Page {currentPage} of {totalPages}
-                        </span>
-
-                                                <Button
-                                                    variant="outline-primary"
-                                                    size="sm"
-                                                    disabled={currentPage >= totalPages}
-                                                    onClick={() => loadPkwius(currentPage + 1, searchQuery)}
-                                                >
-                                                    Next
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </>
-                            )}
-                        </Card.Body>
-                    </Card>
-                </Col>
-            </Row>
-
-            <AddPKWiUModal
-                show={showAddModal}
-                onHide={() => setShowAddModal(false)}
-                onPkwiuAdded={handlePkwiuAdded}
-            />
-
-            {pkwiuToEdit && (
-                <EditPKWiUModal
-                    show={showEditModal}
-                    onHide={() => {
-                        setShowEditModal(false);
-                        setPkwiuToEdit(null);
-                    }}
-                    pkwiu={pkwiuToEdit}
-                    onPkwiuEdited={handlePkwiuEdited}
-                />
+                        )}
+                    </div>
+                </>
             )}
 
-            {pkwiuToDelete && (
-                <DeletePKWiUModal
-                    show={showDeleteModal}
-                    onHide={() => {
-                        setShowDeleteModal(false);
-                        setPkwiuToDelete(null);
-                    }}
-                    pkwiuName={`${pkwiuToDelete.pkwiu_nr} - ${pkwiuToDelete.pkwiu_name}`}
-                    loading={deleteLoading}
-                    error={error}
-                    onConfirm={handleConfirmDelete}
-                />
-            )}
-        </Container>
+            <AddPKWiUModal show={showAddModal} onHide={() => setShowAddModal(false)} onPkwiuAdded={() => { setSuccess('PKWiU code added.'); loadPkwius(currentPage, searchQuery); setTimeout(() => setSuccess(''), 3000); }} />
+            {pkwiuToEdit && <EditPKWiUModal show={showEditModal} onHide={() => { setShowEditModal(false); setPkwiuToEdit(null); }} pkwiu={pkwiuToEdit} onPkwiuEdited={() => { setSuccess('PKWiU code updated.'); loadPkwius(currentPage, searchQuery); setTimeout(() => setSuccess(''), 3000); }} />}
+            {pkwiuToDelete && <DeletePKWiUModal show={showDeleteModal} onHide={() => { setShowDeleteModal(false); setPkwiuToDelete(null); }} pkwiuName={`${pkwiuToDelete.pkwiu_nr} - ${pkwiuToDelete.pkwiu_name}`} loading={deleteLoading} error={error} onConfirm={handleConfirmDelete} />}
+        </div>
     );
 };
 

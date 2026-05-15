@@ -167,7 +167,7 @@ const TariffList: React.FC<TariffListProps> = ({ hideHeader = false }) => {
     new Date(ds).toLocaleDateString('pl-PL', { year: 'numeric', month: 'short', day: 'numeric' });
 
   return (
-    <div className="pr-page">
+    <div className={hideHeader ? '' : 'pr-page'}>
       {/* ---- HEADER ---- */}
       {!hideHeader && (
         <header className="pr-header">
@@ -190,18 +190,20 @@ const TariffList: React.FC<TariffListProps> = ({ hideHeader = false }) => {
       )}
 
       {/* ---- MAIN ---- */}
-      <main className="pr-main">
+      <main className={hideHeader ? '' : 'pr-main'}>
         {/* Hero */}
-        <div className="pr-hero">
-          <div className="pr-hero-grid" aria-hidden="true" />
-          <div className="pr-hero-left">
-            <div className="pr-hero-icon" aria-hidden="true"><Icon.Tag /></div>
-            <div>
-              <h2 className="pr-hero-title">Energy Tariff Management</h2>
-              <p className="pr-hero-subtitle">Manage tariffs and their active status</p>
+        {!hideHeader && (
+          <div className="pr-hero">
+            <div className="pr-hero-grid" aria-hidden="true" />
+            <div className="pr-hero-left">
+              <div className="pr-hero-icon" aria-hidden="true"><Icon.Tag /></div>
+              <div>
+                <h2 className="pr-hero-title">Energy Tariff Management</h2>
+                <p className="pr-hero-subtitle">Manage tariffs and their active status</p>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Alerts */}
         {error && (
