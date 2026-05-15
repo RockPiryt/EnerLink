@@ -59,9 +59,9 @@ const ContractForm: React.FC = () => {
 
   useEffect(() => {
     setCustomersLoading(true);
-    fetch('http://localhost:8080/api/customers')
+    fetch('http://localhost:8080/api/customers?per_page=1000')
       .then(res => res.json())
-      .then(data => setCustomers(data))
+      .then(data => setCustomers(Array.isArray(data) ? data : (data.items || [])))
       .catch(() => setCustomers([]))
       .finally(() => setCustomersLoading(false));
   }, []);
