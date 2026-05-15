@@ -17,7 +17,7 @@ def test_search_postcode_success(seeded_client, auth_header, monkeypatch):
     # Mock get_postcode to return a valid postcode
     def fake_get_postcode(city, street, number):
         return "12-345"
-    monkeypatch.setattr("app.routes.api_postode_routes.get_postcode", fake_get_postcode)
+    monkeypatch.setattr("app.routes.api_postcode_routes.get_postcode", fake_get_postcode)
     resp = seeded_client.get("/api/postcode/search?city=Warsaw&street=Main&number=1", headers=auth_header)
     assert resp.status_code == 200
     data = resp.get_json()
@@ -26,8 +26,8 @@ def test_search_postcode_success(seeded_client, auth_header, monkeypatch):
 
 def test_search_postcode_city_list(seeded_client, auth_header, monkeypatch):
     # Mock get_postcode to return None, get_postcodes_for_city to return a list
-    monkeypatch.setattr("app.routes.api_postode_routes.get_postcode", lambda city, street, number: None)
-    monkeypatch.setattr("app.routes.api_postode_routes.get_postcodes_for_city", lambda city: ["12-345", "12-346"])
+    monkeypatch.setattr("app.routes.api_postcode_routes.get_postcode", lambda city, street, number: None)
+    monkeypatch.setattr("app.routes.api_postcode_routes.get_postcodes_for_city", lambda city: ["12-345", "12-346"])
     resp = seeded_client.get("/api/postcode/search?city=Warsaw", headers=auth_header)
     assert resp.status_code == 200
     data = resp.get_json()
@@ -37,8 +37,8 @@ def test_search_postcode_city_list(seeded_client, auth_header, monkeypatch):
 
 def test_search_postcode_not_found(seeded_client, auth_header, monkeypatch):
     # Both functions return None/empty
-    monkeypatch.setattr("app.routes.api_postode_routes.get_postcode", lambda city, street, number: None)
-    monkeypatch.setattr("app.routes.api_postode_routes.get_postcodes_for_city", lambda city: [])
+    monkeypatch.setattr("app.routes.api_postcode_routes.get_postcode", lambda city, street, number: None)
+    monkeypatch.setattr("app.routes.api_postcode_routes.get_postcodes_for_city", lambda city: [])
     resp = seeded_client.get("/api/postcode/search?city=Nowhere", headers=auth_header)
     assert resp.status_code == 404
     data = resp.get_json()
@@ -46,7 +46,7 @@ def test_search_postcode_not_found(seeded_client, auth_header, monkeypatch):
 
 def test_search_city_by_postcode_success(seeded_client, auth_header, monkeypatch):
     # Mock get_city_for_postcode to return a list of cities
-    monkeypatch.setattr("app.routes.api_postode_routes.get_city_for_postcode", lambda postcode: ["Warsaw"])
+    monkeypatch.setattr("app.routes.api_postcode_routes.get_city_for_postcode", lambda postcode: ["Warsaw"])
     resp = seeded_client.get("/api/postcode/city/12-345", headers=auth_header)
     assert resp.status_code == 200
     data = resp.get_json()

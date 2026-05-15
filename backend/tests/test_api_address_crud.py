@@ -37,7 +37,7 @@ def test_city_crud(seeded_client, auth_header):
     city = resp.get_json()["city"]
     city_id = city["id"]
     # List
-    resp = seeded_client.get("/api/address/cities", headers=auth_header)
+    resp = seeded_client.get("/api/address/cities?per_page=100", headers=auth_header)
     assert resp.status_code == 200
     assert any(c["name"] == "Test City" for c in resp.get_json()["items"])
     # Get single
