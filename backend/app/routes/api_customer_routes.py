@@ -12,7 +12,7 @@ lookup_bp = Blueprint("lookup", __name__)
 def lookup_by_nip_options(nip):
     return '', 204
 
-@lookup_bp.route("/lookup/nip/<string:nip>", methods=["GET"])
+@lookup_bp.route("/lookup/nip/<path:nip>", methods=["GET"])
 @jwt_required(optional=True)
 def lookup_by_nip(nip):
     nip_clean = nip.replace("-", "").strip()
