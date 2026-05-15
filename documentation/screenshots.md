@@ -4,15 +4,12 @@
 ![Login page](images/enerlink_screenshots/login_page.png)
 
 ## Main Dashboard
-![Main dashboard](images/enerlink_screenshots/admin_dashboard.png)
+![Main dashboard](images/enerlink_screenshots/dashboard.png)
 
 ## Admin Panel
 
 ### Roles Managment
 ![Roles](images/enerlink_screenshots/admin_panel_roles.png)
-
-### System Reports
-![System reports](images/enerlink_screenshots/admin_panel_system_reports.png)
 
 ### System settings
 ![System settings](images/enerlink_screenshots/admin_panel_system_settings.png)
@@ -47,9 +44,3 @@
 
 ### Manager Panel
 ![Manager Panel](images/enerlink_screenshots/manager_dashboard.png)
-
-### Address Dict
-![Address Dict](images/enerlink_screenshots/address_dict.png)
-
-### Tariffs
-![Tariffs](images/enerlink_screenshots/tariffs.png)
