@@ -18,7 +18,8 @@ docker compose version
 ## Tryb development
 
 ```
-docker compose -f docker-compose.dev.yaml up --build
+docker compose -f docker-compose.dev.yaml build --no-cache
+docker compose -f docker-compose.dev.yaml up -d
 ```
 
 W osobnym terminalu
