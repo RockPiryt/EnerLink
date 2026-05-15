@@ -1,9 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Card, Table, Button, Form, InputGroup, Alert, Spinner, Badge } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
+// No Bootstrap imports; use custom classes and native elements
 import AddCityModal from "../../dialogs/AddCityModal";
+import { useNavigate } from 'react-router-dom';
 import DeleteCityModal from "../../dialogs/DeleteCityModal";
 import EditCityModal from "../../dialogs/EditCityModal";
+
+
+
+// Inline SVG icons for hero and actions
+const Icon = {
+    Map: () => (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{width: 26, height: 26}}><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+    ),
+    Plus: () => (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{width: 18, height: 18}}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    ),
+    Back: () => (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{width: 18, height: 18}}><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    ),
+};
+
 
 interface City {
     id: number;
@@ -175,204 +191,166 @@ const CityList: React.FC = () => {
         loadCities();
     }, []);
 
+    // --- MODERN HERO LAYOUT (MATCH TARIFF) ---
     return (
-        <Container fluid className="py-4">
-            <Row>
-                <Col>
-                    <Card>
-                        <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
-                            <div className="d-flex align-items-center">
-                                <Button
-                                    variant="light"
-                                    size="sm"
-                                    onClick={handleBackToDashboard}
-                                    className="me-3"
-                                >
-                                    &larr; Back to Dashboard
-                                </Button>
-                                <h4 className="mb-0">City Management</h4>
-                            </div>
-                            <Button
-                                variant="light"
-                                size="sm"
-                                onClick={() => setShowAddModal(true)}
-                            >
-                                Add City
-                            </Button>
-                        </Card.Header>
+        <div className="dashboard-main" style={{paddingTop: 0}}>
+            {/* HEADER BUTTONS */}
+            <div style={{display: 'flex', justifyContent: 'flex-end', gap: 12, marginBottom: 8}}>
+                <button className="dashboard-btn" onClick={handleBackToDashboard}>
+                    <Icon.Back /> <span>Dashboard</span>
+                </button>
+                <button className="dashboard-btn dashboard-btn-primary" onClick={() => setShowAddModal(true)}>
+                    <Icon.Plus /> <span>Add City</span>
+                </button>
+            </div>
 
-                        <Card.Body>
-                            <Row className="mb-3">
-                                <Col md={6}>
-                                    <Form onSubmit={handleSearch}>
-                                        <InputGroup>
-                                            <Form.Control
-                                                type="text"
-                                                placeholder="Search cities by name..."
-                                                value={searchQuery}
-                                                onChange={(e) => setSearchQuery(e.target.value)}
-                                            />
-                                            <Button variant="outline-secondary" type="submit">
-                                                Search
-                                            </Button>
-                                        </InputGroup>
-                                    </Form>
-                                </Col>
-                                <Col md={6}>
-                                    <div className="d-flex gap-2">
-                                        <Button
-                                            variant={activeFilter === undefined ? "primary" : "outline-primary"}
-                                            size="sm"
-                                            onClick={() => handleFilterChange(undefined)}
-                                        >
-                                            All
-                                        </Button>
-                                        <Button
-                                            variant={activeFilter === true ? "success" : "outline-success"}
-                                            size="sm"
-                                            onClick={() => handleFilterChange(true)}
-                                        >
-                                            Active
-                                        </Button>
-                                        <Button
-                                            variant={activeFilter === false ? "danger" : "outline-danger"}
-                                            size="sm"
-                                            onClick={() => handleFilterChange(false)}
-                                        >
-                                            Inactive
-                                        </Button>
-                                    </div>
-                                </Col>
-                            </Row>
+            {/* HERO SECTION */}
+            <div className="pr-hero" style={{marginBottom: 28}}>
+                <div className="pr-hero-grid" aria-hidden="true" />
+                <div className="pr-hero-left">
+                    <div className="pr-hero-icon" aria-hidden="true"><Icon.Map /></div>
+                    <div>
+                        <h2 className="pr-hero-title">City Management</h2>
+                        <p className="pr-hero-subtitle">Manage cities and their active status</p>
+                    </div>
+                </div>
+            </div>
 
-                            {error && (
-                                <Alert variant="danger" className="mb-3">
-                                    {error}
-                                </Alert>
-                            )}
+            {/* ALERTS */}
+            {error && (
+                <div className="cm-alert cm-alert-danger" style={{marginBottom: 12}}>{error}</div>
+            )}
+            {success && (
+                <div className="cm-alert cm-alert-success" style={{marginBottom: 12}}>{success}</div>
+            )}
 
-                            {success && (
-                                <Alert variant="success" className="mb-3">
-                                    {success}
-                                </Alert>
-                            )}
+            {/* TOOLBAR */}
+            <div className="cm-toolbar" style={{marginBottom: 18}}>
+                <form onSubmit={handleSearch} style={{display: 'flex', gap: 12, flex: 1}}>
+                    <div className="cm-search-wrap">
+                        <input
+                            className="cm-search-input"
+                            type="text"
+                            placeholder="Search cities by name..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+                    <button className="cm-btn" type="submit">Search</button>
+                </form>
+                <div className="cm-filter-group">
+                    <button
+                        className={`cm-filter-btn${activeFilter === undefined ? ' active-all' : ''}`}
+                        type="button"
+                        onClick={() => handleFilterChange(undefined)}
+                    >
+                        All
+                    </button>
+                    <button
+                        className={`cm-filter-btn${activeFilter === true ? ' active-yes' : ''}`}
+                        type="button"
+                        onClick={() => handleFilterChange(true)}
+                    >
+                        Active
+                    </button>
+                    <button
+                        className={`cm-filter-btn${activeFilter === false ? ' active-no' : ''}`}
+                        type="button"
+                        onClick={() => handleFilterChange(false)}
+                    >
+                        Inactive
+                    </button>
+                </div>
+            </div>
 
-                            {loading ? (
-                                <div className="text-center py-4">
-                                    <Spinner animation="border" variant="primary" />
-                                    <div className="mt-2">Loading cities...</div>
-                                </div>
-                            ) : (
-                                <>
-                                    <div className="mb-3 text-muted">
-                                        Showing {cities.length} of {totalCities} cities
-                                    </div>
-
-                                    <div className="table-responsive">
-                                        <Table striped hover>
-                                            <thead className="table-dark">
-                                            <tr>
-                                                <th>ID</th>
-                                                <th>Name</th>
-                                                <th>Status</th>
-                                                <th>Created</th>
-                                                <th>Actions</th>
+            {/* TABLE CARD */}
+            <div className="cm-table-card">
+                {loading ? (
+                    <div className="cm-state-center">
+                        <div className="cm-spinner" />
+                        <div className="cm-state-label">Loading cities...</div>
+                    </div>
+                ) : (
+                    <>
+                        <div className="cm-results-info">
+                            Showing {cities.length} of {totalCities} cities
+                        </div>
+                        <div className="cm-table-wrap">
+                            <table className="cm-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Status</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {cities.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={5} className="cm-table-empty">
+                                                <div className="cm-table-empty-icon">🏙️</div>
+                                                No cities found
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        cities.map((city) => (
+                                            <tr key={city.id}>
+                                                <td className="cm-table-id">{city.id}</td>
+                                                <td className="cm-table-name">{city.name}</td>
+                                                <td>
+                                                    <span className={`cm-badge ${city.is_active ? 'cm-badge-active' : 'cm-badge-inactive'}`}>
+                                                        {city.is_active ? 'Active' : 'Inactive'}
+                                                    </span>
+                                                </td>
+                                                <td>{formatDate(city.created_at)}</td>
+                                                <td>
+                                                    <div className="cm-row-actions">
+                                                        <button className="cm-action-btn" onClick={() => handleEditCity(city)}>Edit</button>
+                                                        <button className="cm-action-btn" style={{color: city.is_active ? '#f59e0b' : '#10b981'}} onClick={() => handleToggleActive(city.id, city.is_active)}>
+                                                            {city.is_active ? 'Deactivate' : 'Activate'}
+                                                        </button>
+                                                        <button className="cm-action-btn cm-action-btn-danger" onClick={() => handleDeleteCity(city)}>Delete</button>
+                                                    </div>
+                                                </td>
                                             </tr>
-                                            </thead>
-                                            <tbody>
-                                            {cities.length === 0 ? (
-                                                <tr>
-                                                    <td colSpan={5} className="text-center py-4">
-                                                        No cities found
-                                                    </td>
-                                                </tr>
-                                            ) : (
-                                                cities.map((city) => (
-                                                    <tr key={city.id}>
-                                                        <td>
-                                                            <code>{city.id}</code>
-                                                        </td>
-                                                        <td>
-                                                            <strong>{city.name}</strong>
-                                                        </td>
-                                                        <td>
-                                                            <Badge bg={city.is_active ? 'success' : 'secondary'}>
-                                                                {city.is_active ? 'Active' : 'Inactive'}
-                                                            </Badge>
-                                                        </td>
-                                                        <td>{formatDate(city.created_at)}</td>
-                                                        <td>
-                                                            <div className="d-flex gap-1">
-                                                                <Button
-                                                                    variant="outline-primary"
-                                                                    size="sm"
-                                                                    onClick={() => handleEditCity(city)}
-                                                                >
-                                                                    Edit
-                                                                </Button>
-                                                                <Button
-                                                                    variant={city.is_active ? "outline-warning" : "outline-success"}
-                                                                    size="sm"
-                                                                    onClick={() => handleToggleActive(city.id, city.is_active)}
-                                                                >
-                                                                    {city.is_active ? 'Deactivate' : 'Activate'}
-                                                                </Button>
-                                                                <Button
-                                                                    variant="outline-danger"
-                                                                    size="sm"
-                                                                    onClick={() => handleDeleteCity(city)}
-                                                                >
-                                                                    Delete
-                                                                </Button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))
-                                            )}
-                                            </tbody>
-                                        </Table>
-                                    </div>
-
-                                    {totalPages > 1 && (
-                                        <div className="d-flex justify-content-center mt-3">
-                                            <div className="d-flex gap-2">
-                                                <Button
-                                                    variant="outline-primary"
-                                                    size="sm"
-                                                    disabled={currentPage <= 1}
-                                                    onClick={() => loadCities(currentPage - 1, searchQuery, activeFilter)}
-                                                >
-                                                    Previous
-                                                </Button>
-
-                                                <span className="align-self-center px-3">
-                          Page {currentPage} of {totalPages}
-                        </span>
-
-                                                <Button
-                                                    variant="outline-primary"
-                                                    size="sm"
-                                                    disabled={currentPage >= totalPages}
-                                                    onClick={() => loadCities(currentPage + 1, searchQuery, activeFilter)}
-                                                >
-                                                    Next
-                                                </Button>
-                                            </div>
-                                        </div>
+                                        ))
                                     )}
-                                </>
-                            )}
-                        </Card.Body>
-                    </Card>
-                </Col>
-            </Row>
+                                </tbody>
+                            </table>
+                        </div>
+                        {totalPages > 1 && (
+                            <div className="cm-pagination">
+                                <button
+                                    className="cm-page-btn"
+                                    disabled={currentPage <= 1}
+                                    onClick={() => loadCities(currentPage - 1, searchQuery, activeFilter)}
+                                >
+                                    Previous
+                                </button>
+                                <span className="cm-page-info">
+                                    Page {currentPage} of {totalPages}
+                                </span>
+                                <button
+                                    className="cm-page-btn"
+                                    disabled={currentPage >= totalPages}
+                                    onClick={() => loadCities(currentPage + 1, searchQuery, activeFilter)}
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        )}
+                    </>
+                )}
+            </div>
 
+            {/* Modals */}
             <AddCityModal
                 show={showAddModal}
                 onHide={() => setShowAddModal(false)}
                 onCityAdded={handleCityAdded}
             />
-
             {cityToEdit && (
                 <EditCityModal
                     show={showEditModal}
@@ -384,7 +362,6 @@ const CityList: React.FC = () => {
                     onCityEdited={handleCityEdited}
                 />
             )}
-
             {cityToDelete && (
                 <DeleteCityModal
                     show={showDeleteModal}
@@ -398,7 +375,7 @@ const CityList: React.FC = () => {
                     onConfirm={handleConfirmDelete}
                 />
             )}
-        </Container>
+        </div>
     );
 };
 
