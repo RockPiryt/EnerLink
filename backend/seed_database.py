@@ -58,6 +58,9 @@ def seed_database(app=None):
 
     with app.app_context():
         print("Starting database seeding...")
+        # Drop all tables and recreate them to ensure a clean state for tests
+        db.drop_all()
+        db.create_all()
 
         # ---------- ROLES ----------
         for name in ["Administrator", "Manager", "Sales Representative", "Analyst"]:
