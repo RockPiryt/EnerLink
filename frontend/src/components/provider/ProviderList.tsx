@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getProviders, Provider } from '../../services/providerService';
+import axiosInstance from '../../interceptor/interceptor';
 import './Provider.css';
 
 /* ---- inline SVG icons ---- */
@@ -26,11 +27,11 @@ const Icon = {
   Trash: () => (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
   ),
-  X: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-  ),
   AlertCircle: () => (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  ),
+  CheckCircle: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
   ),
   Close: () => (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -47,23 +48,33 @@ const ProviderList: React.FC = () => {
   const [providers, setProviders] = useState<Provider[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalProviders, setTotalProviders] = useState(0);
 
+  // Edit modal
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [providerToEdit, setProviderToEdit] = useState<Provider | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editLoading, setEditLoading] = useState(false);
+  const [editError, setEditError] = useState('');
+
+  // Delete modal
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [providerToDelete, setProviderToDelete] = useState<Provider | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
   const navigate = useNavigate();
   const PAGE_SIZE = 20;
 
   const loadProviders = async (page = 1, search = '') => {
-    setLoading(true);
-    setError('');
+    setLoading(true); setError('');
     try {
       const data = await getProviders();
       let filtered = data;
-      if (search.trim()) {
-        filtered = filtered.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
-      }
+      if (search.trim()) filtered = filtered.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
       setTotalProviders(filtered.length);
       setTotalPages(Math.max(1, Math.ceil(filtered.length / PAGE_SIZE)));
       setProviders(filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE));
@@ -77,18 +88,52 @@ const ProviderList: React.FC = () => {
 
   useEffect(() => { loadProviders(); }, []);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    loadProviders(1, searchQuery);
-  };
-
-  const handleClear = () => {
-    setSearchQuery('');
-    loadProviders(1, '');
-  };
-
   const formatDate = (ds: string) =>
     new Date(ds).toLocaleDateString('pl-PL', { year: 'numeric', month: 'short', day: 'numeric' });
+
+  const openEdit = (p: Provider) => {
+    setProviderToEdit(p);
+    setEditName(p.name);
+    setEditError('');
+    setShowEditModal(true);
+  };
+
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!providerToEdit) return;
+    setEditLoading(true); setEditError('');
+    try {
+      await axiosInstance.put(`/api/providers/${providerToEdit.id}`, { name: editName });
+      setSuccess('Provider updated.'); setShowEditModal(false); setProviderToEdit(null);
+      loadProviders(currentPage, searchQuery);
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err: any) {
+      setEditError(err?.response?.data?.error || 'Error updating provider.');
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  const openDelete = (p: Provider) => {
+    setProviderToDelete(p);
+    setShowDeleteModal(true);
+  };
+
+  const handleDelete = async () => {
+    if (!providerToDelete) return;
+    setDeleteLoading(true); setError('');
+    try {
+      await axiosInstance.delete(`/api/providers/${providerToDelete.id}`);
+      setSuccess('Provider deleted.'); setShowDeleteModal(false); setProviderToDelete(null);
+      loadProviders(currentPage, searchQuery);
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err: any) {
+      setError(err?.response?.data?.error || 'Error deleting provider.');
+      setShowDeleteModal(false);
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
 
   return (
     <div className="pr-page">
@@ -125,16 +170,12 @@ const ProviderList: React.FC = () => {
           </div>
         </div>
 
-        {/* Error */}
-        {error && (
-          <div className="pr-alert pr-alert-danger">
-            <Icon.AlertCircle /><span>{error}</span>
-          </div>
-        )}
+        {error && <div className="pr-alert pr-alert-danger"><Icon.AlertCircle /><span>{error}</span></div>}
+        {success && <div className="pr-alert pr-alert-success"><Icon.CheckCircle /><span>{success}</span></div>}
 
         {/* Toolbar */}
         <div className="pr-toolbar">
-          <form className="pr-search-wrap" onSubmit={handleSearch}>
+          <form className="pr-search-wrap" onSubmit={e => { e.preventDefault(); loadProviders(1, searchQuery); }}>
             <span className="pr-search-icon" aria-hidden="true"><Icon.Search /></span>
             <input
               className="pr-search-input"
@@ -145,7 +186,7 @@ const ProviderList: React.FC = () => {
             />
           </form>
           <div className="pr-filter-group">
-            <button className="pr-filter-btn" onClick={handleClear}>
+            <button className="pr-filter-btn" onClick={() => { setSearchQuery(''); loadProviders(1, ''); }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: 12, height: 12, display: 'inline-block', verticalAlign: 'middle', marginRight: 4 }}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               Clear
             </button>
@@ -160,75 +201,101 @@ const ProviderList: React.FC = () => {
         ) : (
           <>
             <p className="pr-results-info">Showing {providers.length} of {totalProviders} providers</p>
-
             <div className="pr-table-card">
               <div className="pr-table-wrap">
                 <table className="pr-table">
                   <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>Name</th>
-                      <th>Status</th>
-                      <th>Created</th>
-                      <th>Actions</th>
-                    </tr>
+                    <tr><th>ID</th><th>Name</th><th>Status</th><th>Created</th><th>Actions</th></tr>
                   </thead>
                   <tbody>
                     {providers.length === 0 ? (
-                      <tr>
-                        <td colSpan={5}>
-                          <div className="pr-table-empty">
-                            <div className="pr-table-empty-icon"><Icon.Plug /></div>
-                            No providers found
+                      <tr><td colSpan={5}><div className="pr-table-empty"><div className="pr-table-empty-icon"><Icon.Plug /></div>No providers found</div></td></tr>
+                    ) : providers.map((provider) => (
+                      <tr key={provider.id}>
+                        <td><span className="pr-table-id">{provider.id}</span></td>
+                        <td className="pr-table-name">{provider.name}</td>
+                        <td><span className="pr-badge pr-badge-active">Active</span></td>
+                        <td>{formatDate(provider.created_at)}</td>
+                        <td>
+                          <div className="pr-row-actions">
+                            <button className="pr-action-btn" onClick={() => openEdit(provider)}><Icon.Edit />Edit</button>
+                            <button className="pr-action-btn pr-action-btn-danger" onClick={() => openDelete(provider)}><Icon.Trash />Delete</button>
                           </div>
                         </td>
                       </tr>
-                    ) : (
-                      providers.map((provider) => (
-                        <tr key={provider.id}>
-                          <td><span className="pr-table-id">{provider.id}</span></td>
-                          <td className="pr-table-name">{provider.name}</td>
-                          <td>
-                            <span className="pr-badge pr-badge-active">Active</span>
-                          </td>
-                          <td>{formatDate(provider.created_at)}</td>
-                          <td>
-                            <div className="pr-row-actions">
-                              <button
-                                className="pr-action-btn"
-                                onClick={() => navigate(`/providers/${provider.id}`)}
-                              >
-                                <Icon.Edit />Edit
-                              </button>
-                              <button className="pr-action-btn pr-action-btn-danger">
-                                <Icon.Trash />Delete
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
+                    ))}
                   </tbody>
                 </table>
               </div>
-
               {totalPages > 1 && (
                 <div className="pr-pagination">
-                  <button className="pr-page-btn" disabled={currentPage <= 1}
-                    onClick={() => loadProviders(currentPage - 1, searchQuery)}>
-                    <Icon.ChevronLeft />
-                  </button>
+                  <button className="pr-page-btn" disabled={currentPage <= 1} onClick={() => loadProviders(currentPage - 1, searchQuery)}><Icon.ChevronLeft /></button>
                   <span className="pr-page-info">Page {currentPage} of {totalPages}</span>
-                  <button className="pr-page-btn" disabled={currentPage >= totalPages}
-                    onClick={() => loadProviders(currentPage + 1, searchQuery)}>
-                    <Icon.ChevronRight />
-                  </button>
+                  <button className="pr-page-btn" disabled={currentPage >= totalPages} onClick={() => loadProviders(currentPage + 1, searchQuery)}><Icon.ChevronRight /></button>
                 </div>
               )}
             </div>
           </>
         )}
       </main>
+
+      {/* ---- EDIT MODAL ---- */}
+      {showEditModal && providerToEdit && (
+        <div className="pr-modal-overlay" onClick={() => setShowEditModal(false)}>
+          <div className="pr-modal" onClick={e => e.stopPropagation()}>
+            <div className="pr-modal-header">
+              <h3 className="pr-modal-title">Edit Provider</h3>
+              <button className="pr-modal-close" onClick={() => setShowEditModal(false)}><Icon.Close /></button>
+            </div>
+            <form onSubmit={handleEdit}>
+              <div className="pr-modal-body">
+                {editError && <div className="pr-alert pr-alert-danger" style={{ marginBottom: 12 }}><Icon.AlertCircle /><span>{editError}</span></div>}
+                <div className="pr-form-group">
+                  <label className="pr-form-label pr-form-label-required">Provider Name</label>
+                  <input
+                    className="pr-form-input"
+                    type="text"
+                    value={editName}
+                    onChange={e => setEditName(e.target.value)}
+                    placeholder="Enter provider name"
+                    required
+                    autoFocus
+                  />
+                </div>
+              </div>
+              <div className="pr-modal-footer">
+                <button className="pr-btn pr-btn-ghost" type="button" onClick={() => setShowEditModal(false)} disabled={editLoading}>Cancel</button>
+                <button className="pr-btn pr-btn-primary" type="submit" disabled={editLoading}>
+                  {editLoading ? <><span className="pr-spinner" style={{ width: 14, height: 14, borderWidth: 2, margin: 0, display: 'inline-block' }} />Saving…</> : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ---- DELETE MODAL ---- */}
+      {showDeleteModal && providerToDelete && (
+        <div className="pr-modal-overlay" onClick={() => setShowDeleteModal(false)}>
+          <div className="pr-modal" onClick={e => e.stopPropagation()}>
+            <div className="pr-modal-header">
+              <h3 className="pr-modal-title">Delete Provider</h3>
+              <button className="pr-modal-close" onClick={() => setShowDeleteModal(false)}><Icon.Close /></button>
+            </div>
+            <div className="pr-modal-body">
+              <p style={{ margin: 0, color: 'var(--el-text-secondary, #64748b)' }}>
+                Are you sure you want to delete <strong style={{ color: 'var(--el-text, #0f172a)' }}>{providerToDelete.name}</strong>? This action cannot be undone.
+              </p>
+            </div>
+            <div className="pr-modal-footer">
+              <button className="pr-btn pr-btn-ghost" onClick={() => setShowDeleteModal(false)} disabled={deleteLoading}>Cancel</button>
+              <button className="pr-btn pr-btn-danger" onClick={handleDelete} disabled={deleteLoading}>
+                {deleteLoading ? <><span className="pr-spinner" style={{ width: 14, height: 14, borderWidth: 2, margin: 0, display: 'inline-block' }} />Deleting…</> : <><Icon.Trash />Delete</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

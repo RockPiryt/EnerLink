@@ -56,7 +56,11 @@ const Icon = {
   ),
 };
 
-const TariffList: React.FC = () => {
+interface TariffListProps {
+  hideHeader?: boolean;
+}
+
+const TariffList: React.FC<TariffListProps> = ({ hideHeader = false }) => {
   const [tariffs, setTariffs] = useState<Tariff[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -87,15 +91,13 @@ const TariffList: React.FC = () => {
       if (search.trim()) params.append('q', search.trim());
       if (active !== undefined) params.append('active', active.toString());
 
-      const response = await tariffService.getTariffs(params);
-      if (!response.ok) throw new Error('Failed to fetch tariffs');
-      const data = await response.json();
+      const data = await tariffService.getTariffs(params);
 
-      if (data.items) {
+      if (data && data.items) {
         setTariffs(data.items);
         setTotalPages(data.pages || 1);
         setTotalTariffs(data.total || data.items.length);
-      } else {
+      } else if (Array.isArray(data)) {
         let filtered = data as Tariff[];
         if (search.trim()) filtered = filtered.filter(t => t.name.toLowerCase().includes(search.toLowerCase()));
         if (active !== undefined) filtered = filtered.filter(t => t.is_active === active);
@@ -165,39 +167,43 @@ const TariffList: React.FC = () => {
     new Date(ds).toLocaleDateString('pl-PL', { year: 'numeric', month: 'short', day: 'numeric' });
 
   return (
-    <div className="pr-page">
+    <div className={hideHeader ? '' : 'pr-page'}>
       {/* ---- HEADER ---- */}
-      <header className="pr-header">
-        <div className="pr-header-inner">
-          <div className="pr-brand">
-            <div className="pr-logo-mark" aria-hidden="true"><Icon.Bolt /></div>
-            <h1 className="pr-brand-name">EnerLink</h1>
-            <span className="pr-brand-tag">CRM</span>
-          </div>
-          <div className="pr-header-actions">
-            <button className="pr-btn" onClick={() => navigate('/dashboard')}>
-              <Icon.Back /><span>Dashboard</span>
-            </button>
-            <button className="pr-btn pr-btn-primary" onClick={() => setShowAddModal(true)}>
-              <Icon.Plus /><span>Add Tariff</span>
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* ---- MAIN ---- */}
-      <main className="pr-main">
-        {/* Hero */}
-        <div className="pr-hero">
-          <div className="pr-hero-grid" aria-hidden="true" />
-          <div className="pr-hero-left">
-            <div className="pr-hero-icon" aria-hidden="true"><Icon.Tag /></div>
-            <div>
-              <h2 className="pr-hero-title">Energy Tariff Management</h2>
-              <p className="pr-hero-subtitle">Manage tariffs and their active status</p>
+      {!hideHeader && (
+        <header className="pr-header">
+          <div className="pr-header-inner">
+            <div className="pr-brand">
+              <div className="pr-logo-mark" aria-hidden="true"><Icon.Bolt /></div>
+              <h1 className="pr-brand-name">EnerLink</h1>
+              <span className="pr-brand-tag">CRM</span>
+            </div>
+            <div className="pr-header-actions">
+              <button className="pr-btn" onClick={() => navigate('/dashboard')}>
+                <Icon.Back /><span>Dashboard</span>
+              </button>
+              <button className="pr-btn pr-btn-primary" onClick={() => setShowAddModal(true)}>
+                <Icon.Plus /><span>Add Tariff</span>
+              </button>
             </div>
           </div>
-        </div>
+        </header>
+      )}
+
+      {/* ---- MAIN ---- */}
+      <main className={hideHeader ? '' : 'pr-main'}>
+        {/* Hero */}
+        {!hideHeader && (
+          <div className="pr-hero">
+            <div className="pr-hero-grid" aria-hidden="true" />
+            <div className="pr-hero-left">
+              <div className="pr-hero-icon" aria-hidden="true"><Icon.Tag /></div>
+              <div>
+                <h2 className="pr-hero-title">Energy Tariff Management</h2>
+                <p className="pr-hero-subtitle">Manage tariffs and their active status</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Alerts */}
         {error && (

@@ -1,405 +1,146 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Card, Table, Button, Form, InputGroup, Alert, Spinner, Badge } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
-import AddCityModal from "../../dialogs/AddCityModal";
-import DeleteCityModal from "../../dialogs/DeleteCityModal";
-import EditCityModal from "../../dialogs/EditCityModal";
+import AddCityModal from '../../dialogs/AddCityModal';
+import DeleteCityModal from '../../dialogs/DeleteCityModal';
+import EditCityModal from '../../dialogs/EditCityModal';
+import '../provider/Provider.css';
 
-interface City {
-    id: number;
-    name: string;
-    is_active: boolean;
-    created_at: string;
-}
+interface City { id: number; name: string; is_active: boolean; created_at: string; }
+
+const Icon = {
+  Search: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+  Plus: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+  Edit: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
+  Trash: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>,
+  AlertCircle: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>,
+  CheckCircle: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>,
+  ChevronLeft: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>,
+  ChevronRight: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>,
+};
+
+const formatDate = (ds: string) => new Date(ds).toLocaleDateString('pl-PL', { year: 'numeric', month: 'short', day: 'numeric' });
 
 const CityList: React.FC = () => {
-    const [cities, setCities] = useState<City[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
-    const [searchQuery, setSearchQuery] = useState('');
-    const [activeFilter, setActiveFilter] = useState<boolean | undefined>(undefined);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const [totalCities, setTotalCities] = useState(0);
-    const [showAddModal, setShowAddModal] = useState(false);
-    const [showEditModal, setShowEditModal] = useState(false);
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [cityToEdit, setCityToEdit] = useState<City | null>(null);
-    const [cityToDelete, setCityToDelete] = useState<City | null>(null);
-    const [deleteLoading, setDeleteLoading] = useState(false);
+  const [cities, setCities] = useState<City[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState<boolean | undefined>(undefined);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCities, setTotalCities] = useState(0);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [cityToEdit, setCityToEdit] = useState<City | null>(null);
+  const [cityToDelete, setCityToDelete] = useState<City | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
-    const navigate = useNavigate();
+  const loadCities = async (page = 1, search = '', active?: boolean) => {
+    setLoading(true); setError(''); setSuccess('');
+    try {
+      const params = new URLSearchParams();
+      params.append('page', page.toString()); params.append('per_page', '20');
+      if (search.trim()) params.append('q', search.trim());
+      if (active !== undefined) params.append('active', active.toString());
+      const response = await fetch(`http://localhost:8080/api/address/cities?${params}`);
+      if (!response.ok) throw new Error();
+      const data = await response.json();
+      if (data.items) { setCities(data.items); setTotalPages(data.pages || 1); setTotalCities(data.total || data.items.length); }
+      else { let f = data; if (search.trim()) f = f.filter((c: City) => c.name.toLowerCase().includes(search.toLowerCase())); if (active !== undefined) f = f.filter((c: City) => c.is_active === active); setCities(f); setTotalCities(f.length); setTotalPages(Math.max(1, Math.ceil(f.length / 20))); }
+      setCurrentPage(page);
+    } catch { setError('Error loading cities.'); setCities([]); } finally { setLoading(false); }
+  };
 
-    const loadCities = async (page: number = 1, search: string = '', active?: boolean) => {
-        setLoading(true);
-        setError('');
-        setSuccess('');
+  useEffect(() => { loadCities(); }, []);
 
-        try {
-            const params = new URLSearchParams();
-            params.append('page', page.toString());
-            params.append('per_page', '20');
+  const handleToggleActive = async (id: number, cur: boolean) => {
+    try {
+      const r = await fetch(`http://localhost:8080/api/address/cities/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ is_active: !cur }) });
+      if (!r.ok) throw new Error();
+      setSuccess(`City ${!cur ? 'activated' : 'deactivated'}.`);
+      loadCities(currentPage, searchQuery, activeFilter);
+      setTimeout(() => setSuccess(''), 3000);
+    } catch { setError('Error updating city status.'); }
+  };
 
-            if (search.trim()) {
-                params.append('q', search.trim());
-            }
-            if (active !== undefined) {
-                params.append('active', active.toString());
-            }
+  const handleConfirmDelete = async () => {
+    if (!cityToDelete) return;
+    setDeleteLoading(true); setError('');
+    try {
+      const r = await fetch(`http://localhost:8080/api/address/cities/${cityToDelete.id}`, { method: 'DELETE' });
+      if (!r.ok) throw new Error();
+      setSuccess('City deleted.'); setShowDeleteModal(false); setCityToDelete(null);
+      loadCities(currentPage, searchQuery, activeFilter);
+      setTimeout(() => setSuccess(''), 3000);
+    } catch { setError('Error deleting city.'); } finally { setDeleteLoading(false); }
+  };
 
-            const response = await fetch(`http://localhost:8080/api/address/cities?${params}`);
-            if (!response.ok) throw new Error('Failed to fetch cities');
+  return (
+    <div>
+      {/* Toolbar */}
+      <div className="pr-toolbar" style={{ marginBottom: 16 }}>
+        <form className="pr-search-wrap" onSubmit={e => { e.preventDefault(); loadCities(1, searchQuery, activeFilter); }}>
+          <span className="pr-search-icon"><Icon.Search /></span>
+          <input className="pr-search-input" type="text" placeholder="Search cities…" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+        </form>
+        <div className="pr-filter-group">
+          <button className={`pr-filter-btn${activeFilter === undefined ? ' active' : ''}`} onClick={() => { setActiveFilter(undefined); loadCities(1, searchQuery, undefined); }}>All</button>
+          <button className={`pr-filter-btn${activeFilter === true ? ' active' : ''}`} onClick={() => { setActiveFilter(true); loadCities(1, searchQuery, true); }}>Active</button>
+          <button className={`pr-filter-btn${activeFilter === false ? ' active' : ''}`} onClick={() => { setActiveFilter(false); loadCities(1, searchQuery, false); }}>Inactive</button>
+        </div>
+        <button className="pr-btn pr-btn-primary" onClick={() => setShowAddModal(true)}><Icon.Plus /><span>Add City</span></button>
+      </div>
 
-            const data = await response.json();
+      {error && <div className="pr-alert pr-alert-danger" style={{ marginBottom: 12 }}><Icon.AlertCircle /><span>{error}</span></div>}
+      {success && <div className="pr-alert pr-alert-success" style={{ marginBottom: 12 }}><Icon.CheckCircle /><span>{success}</span></div>}
 
-            if (data.items) {
-                setCities(data.items);
-                setTotalPages(data.pages || 1);
-                setTotalCities(data.total || data.items.length);
-            } else {
-                let filteredCities = data;
-
-                if (search.trim()) {
-                    filteredCities = filteredCities.filter((city: City) =>
-                        city.name.toLowerCase().includes(search.toLowerCase())
-                    );
-                }
-
-                if (active !== undefined) {
-                    filteredCities = filteredCities.filter((city: City) => city.is_active === active);
-                }
-
-                setCities(filteredCities);
-                setTotalCities(filteredCities.length);
-                setTotalPages(Math.ceil(filteredCities.length / 20));
-            }
-            setCurrentPage(page);
-        } catch (err: any) {
-            setError('Error loading cities.');
-            setCities([]);
-            setTotalCities(0);
-            setTotalPages(1);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        setCurrentPage(1);
-        loadCities(1, searchQuery, activeFilter);
-    };
-
-    const handleFilterChange = (active?: boolean) => {
-        setActiveFilter(active);
-        setCurrentPage(1);
-        loadCities(1, searchQuery, active);
-    };
-
-    const handleToggleActive = async (cityId: number, currentStatus: boolean) => {
-        try {
-            const response = await fetch(`http://localhost:8080/api/address/cities/${cityId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ is_active: !currentStatus }),
-            });
-
-            if (!response.ok) throw new Error('Failed to update city status');
-
-            setSuccess(`City ${!currentStatus ? 'activated' : 'deactivated'} successfully!`);
-            loadCities(currentPage, searchQuery, activeFilter);
-        } catch (err: any) {
-            setError('Error updating city status.');
-        }
-    };
-
-    const handleEditCity = (city: City) => {
-        setCityToEdit(city);
-        setShowEditModal(true);
-    };
-
-    const handleDeleteCity = (city: City) => {
-        setCityToDelete(city);
-        setShowDeleteModal(true);
-    };
-
-    const handleConfirmDelete = async () => {
-        if (!cityToDelete) return;
-
-        setDeleteLoading(true);
-        setError('');
-        try {
-            const response = await fetch(`http://localhost:8080/api/address/cities/${cityToDelete.id}`, {
-                method: 'DELETE',
-            });
-
-            if (!response.ok) throw new Error('Failed to delete city');
-
-            setSuccess('City deleted successfully!');
-            setShowDeleteModal(false);
-            setCityToDelete(null);
-            loadCities(currentPage, searchQuery, activeFilter);
-        } catch (err: any) {
-            setError('Error deleting city.');
-        } finally {
-            setDeleteLoading(false);
-        }
-    };
-
-    const handleCityAdded = () => {
-        setSuccess('City added successfully!');
-        loadCities(currentPage, searchQuery, activeFilter);
-    };
-
-    const handleCityEdited = () => {
-        setSuccess('City updated successfully!');
-        loadCities(currentPage, searchQuery, activeFilter);
-    };
-
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    };
-
-    const handleBackToDashboard = () => {
-        navigate('/dashboard');
-    };
-
-    useEffect(() => {
-        loadCities();
-    }, []);
-
-    return (
-        <Container fluid className="py-4">
-            <Row>
-                <Col>
-                    <Card>
-                        <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
-                            <div className="d-flex align-items-center">
-                                <Button
-                                    variant="light"
-                                    size="sm"
-                                    onClick={handleBackToDashboard}
-                                    className="me-3"
-                                >
-                                    &larr; Back to Dashboard
-                                </Button>
-                                <h4 className="mb-0">City Management</h4>
-                            </div>
-                            <Button
-                                variant="light"
-                                size="sm"
-                                onClick={() => setShowAddModal(true)}
-                            >
-                                Add City
-                            </Button>
-                        </Card.Header>
-
-                        <Card.Body>
-                            <Row className="mb-3">
-                                <Col md={6}>
-                                    <Form onSubmit={handleSearch}>
-                                        <InputGroup>
-                                            <Form.Control
-                                                type="text"
-                                                placeholder="Search cities by name..."
-                                                value={searchQuery}
-                                                onChange={(e) => setSearchQuery(e.target.value)}
-                                            />
-                                            <Button variant="outline-secondary" type="submit">
-                                                Search
-                                            </Button>
-                                        </InputGroup>
-                                    </Form>
-                                </Col>
-                                <Col md={6}>
-                                    <div className="d-flex gap-2">
-                                        <Button
-                                            variant={activeFilter === undefined ? "primary" : "outline-primary"}
-                                            size="sm"
-                                            onClick={() => handleFilterChange(undefined)}
-                                        >
-                                            All
-                                        </Button>
-                                        <Button
-                                            variant={activeFilter === true ? "success" : "outline-success"}
-                                            size="sm"
-                                            onClick={() => handleFilterChange(true)}
-                                        >
-                                            Active
-                                        </Button>
-                                        <Button
-                                            variant={activeFilter === false ? "danger" : "outline-danger"}
-                                            size="sm"
-                                            onClick={() => handleFilterChange(false)}
-                                        >
-                                            Inactive
-                                        </Button>
-                                    </div>
-                                </Col>
-                            </Row>
-
-                            {error && (
-                                <Alert variant="danger" className="mb-3">
-                                    {error}
-                                </Alert>
-                            )}
-
-                            {success && (
-                                <Alert variant="success" className="mb-3">
-                                    {success}
-                                </Alert>
-                            )}
-
-                            {loading ? (
-                                <div className="text-center py-4">
-                                    <Spinner animation="border" variant="primary" />
-                                    <div className="mt-2">Loading cities...</div>
-                                </div>
-                            ) : (
-                                <>
-                                    <div className="mb-3 text-muted">
-                                        Showing {cities.length} of {totalCities} cities
-                                    </div>
-
-                                    <div className="table-responsive">
-                                        <Table striped hover>
-                                            <thead className="table-dark">
-                                            <tr>
-                                                <th>ID</th>
-                                                <th>Name</th>
-                                                <th>Status</th>
-                                                <th>Created</th>
-                                                <th>Actions</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            {cities.length === 0 ? (
-                                                <tr>
-                                                    <td colSpan={5} className="text-center py-4">
-                                                        No cities found
-                                                    </td>
-                                                </tr>
-                                            ) : (
-                                                cities.map((city) => (
-                                                    <tr key={city.id}>
-                                                        <td>
-                                                            <code>{city.id}</code>
-                                                        </td>
-                                                        <td>
-                                                            <strong>{city.name}</strong>
-                                                        </td>
-                                                        <td>
-                                                            <Badge bg={city.is_active ? 'success' : 'secondary'}>
-                                                                {city.is_active ? 'Active' : 'Inactive'}
-                                                            </Badge>
-                                                        </td>
-                                                        <td>{formatDate(city.created_at)}</td>
-                                                        <td>
-                                                            <div className="d-flex gap-1">
-                                                                <Button
-                                                                    variant="outline-primary"
-                                                                    size="sm"
-                                                                    onClick={() => handleEditCity(city)}
-                                                                >
-                                                                    Edit
-                                                                </Button>
-                                                                <Button
-                                                                    variant={city.is_active ? "outline-warning" : "outline-success"}
-                                                                    size="sm"
-                                                                    onClick={() => handleToggleActive(city.id, city.is_active)}
-                                                                >
-                                                                    {city.is_active ? 'Deactivate' : 'Activate'}
-                                                                </Button>
-                                                                <Button
-                                                                    variant="outline-danger"
-                                                                    size="sm"
-                                                                    onClick={() => handleDeleteCity(city)}
-                                                                >
-                                                                    Delete
-                                                                </Button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))
-                                            )}
-                                            </tbody>
-                                        </Table>
-                                    </div>
-
-                                    {totalPages > 1 && (
-                                        <div className="d-flex justify-content-center mt-3">
-                                            <div className="d-flex gap-2">
-                                                <Button
-                                                    variant="outline-primary"
-                                                    size="sm"
-                                                    disabled={currentPage <= 1}
-                                                    onClick={() => loadCities(currentPage - 1, searchQuery, activeFilter)}
-                                                >
-                                                    Previous
-                                                </Button>
-
-                                                <span className="align-self-center px-3">
-                          Page {currentPage} of {totalPages}
-                        </span>
-
-                                                <Button
-                                                    variant="outline-primary"
-                                                    size="sm"
-                                                    disabled={currentPage >= totalPages}
-                                                    onClick={() => loadCities(currentPage + 1, searchQuery, activeFilter)}
-                                                >
-                                                    Next
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </>
-                            )}
-                        </Card.Body>
-                    </Card>
-                </Col>
-            </Row>
-
-            <AddCityModal
-                show={showAddModal}
-                onHide={() => setShowAddModal(false)}
-                onCityAdded={handleCityAdded}
-            />
-
-            {cityToEdit && (
-                <EditCityModal
-                    show={showEditModal}
-                    onHide={() => {
-                        setShowEditModal(false);
-                        setCityToEdit(null);
-                    }}
-                    city={cityToEdit}
-                    onCityEdited={handleCityEdited}
-                />
+      {loading ? (
+        <div className="pr-state-center"><span className="pr-spinner" /><p className="pr-state-label">Loading cities…</p></div>
+      ) : (
+        <>
+          <p className="pr-results-info">Showing {cities.length} of {totalCities} cities</p>
+          <div className="pr-table-card">
+            <div className="pr-table-wrap">
+              <table className="pr-table">
+                <thead><tr><th>ID</th><th>Name</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
+                <tbody>
+                  {cities.length === 0 ? (
+                    <tr><td colSpan={5}><div className="pr-table-empty">No cities found.</div></td></tr>
+                  ) : cities.map(city => (
+                    <tr key={city.id}>
+                      <td><span className="pr-table-id">{city.id}</span></td>
+                      <td className="pr-table-name">{city.name}</td>
+                      <td><span className={`pr-badge ${city.is_active ? 'pr-badge-active' : 'pr-badge-inactive'}`}>{city.is_active ? 'Active' : 'Inactive'}</span></td>
+                      <td>{formatDate(city.created_at)}</td>
+                      <td>
+                        <div className="pr-row-actions">
+                          <button className="pr-action-btn" onClick={() => { setCityToEdit(city); setShowEditModal(true); }}><Icon.Edit />Edit</button>
+                          <button className={`pr-action-btn ${city.is_active ? 'pr-action-btn-warning' : 'pr-action-btn-success'}`} onClick={() => handleToggleActive(city.id, city.is_active)}>{city.is_active ? 'Deactivate' : 'Activate'}</button>
+                          <button className="pr-action-btn pr-action-btn-danger" onClick={() => { setCityToDelete(city); setShowDeleteModal(true); }}><Icon.Trash />Delete</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {totalPages > 1 && (
+              <div className="pr-pagination">
+                <button className="pr-page-btn" disabled={currentPage <= 1} onClick={() => loadCities(currentPage - 1, searchQuery, activeFilter)}><Icon.ChevronLeft /></button>
+                <span className="pr-page-info">Page {currentPage} of {totalPages}</span>
+                <button className="pr-page-btn" disabled={currentPage >= totalPages} onClick={() => loadCities(currentPage + 1, searchQuery, activeFilter)}><Icon.ChevronRight /></button>
+              </div>
             )}
+          </div>
+        </>
+      )}
 
-            {cityToDelete && (
-                <DeleteCityModal
-                    show={showDeleteModal}
-                    onHide={() => {
-                        setShowDeleteModal(false);
-                        setCityToDelete(null);
-                    }}
-                    cityName={cityToDelete.name}
-                    loading={deleteLoading}
-                    error={error}
-                    onConfirm={handleConfirmDelete}
-                />
-            )}
-        </Container>
-    );
+      <AddCityModal show={showAddModal} onHide={() => setShowAddModal(false)} onCityAdded={() => { setSuccess('City added.'); loadCities(currentPage, searchQuery, activeFilter); setTimeout(() => setSuccess(''), 3000); }} />
+      {cityToEdit && <EditCityModal show={showEditModal} onHide={() => { setShowEditModal(false); setCityToEdit(null); }} city={cityToEdit} onCityEdited={() => { setSuccess('City updated.'); loadCities(currentPage, searchQuery, activeFilter); setTimeout(() => setSuccess(''), 3000); }} />}
+      {cityToDelete && <DeleteCityModal show={showDeleteModal} onHide={() => { setShowDeleteModal(false); setCityToDelete(null); }} cityName={cityToDelete.name} loading={deleteLoading} error={error} onConfirm={handleConfirmDelete} />}
+    </div>
+  );
 };
 
 export default CityList;
