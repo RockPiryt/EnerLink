@@ -1,0 +1,319 @@
+/* ============================================================
+   EnerLink — Manager Dashboard
+   ============================================================ */
+
+.mgr-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ---- Section card ---- */
+.mgr-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06);
+}
+
+.mgr-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  flex-wrap: wrap;
+}
+
+.mgr-card-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.mgr-card-body {
+  padding: 24px;
+}
+
+/* ---- Summary stat row ---- */
+.mgr-stats-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.mgr-stat-pill {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 13px;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mgr-stat-pill strong {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+/* ---- Filters row ---- */
+.mgr-filters-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.mgr-filter-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.mgr-select {
+  height: 38px;
+  padding: 0 12px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 9px;
+  background: #fff;
+  font-size: 13px;
+  color: #0f172a;
+  font-family: inherit;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.mgr-select:focus { border-color: #0066ff; box-shadow: 0 0 0 4px rgba(0,102,255,0.1); }
+
+.mgr-input {
+  height: 38px;
+  padding: 0 12px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 9px;
+  background: #fff;
+  font-size: 13px;
+  color: #0f172a;
+  font-family: inherit;
+  outline: none;
+  width: 90px;
+  transition: border-color 0.2s;
+}
+
+.mgr-input:focus { border-color: #0066ff; box-shadow: 0 0 0 4px rgba(0,102,255,0.1); }
+.mgr-input::placeholder { color: #94a3b8; }
+
+/* ---- Btn variants ---- */
+.mgr-btn {
+  height: 38px;
+  padding: 0 16px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 9px;
+  background: #fff;
+  color: #0f172a;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.mgr-btn:hover:not(:disabled) { border-color: #0066ff; color: #0066ff; }
+.mgr-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.mgr-btn-primary {
+  background: #0066ff;
+  border-color: #0066ff;
+  color: #fff;
+}
+.mgr-btn-primary:hover:not(:disabled) { background: #0052cc; border-color: #0052cc; color: #fff; }
+
+.mgr-btn-success {
+  background: #10b981;
+  border-color: #10b981;
+  color: #fff;
+}
+.mgr-btn-success:hover:not(:disabled) { background: #059669; border-color: #059669; color: #fff; }
+
+.mgr-btn svg { width: 14px; height: 14px; }
+
+/* ---- Alert ---- */
+.mgr-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  margin-bottom: 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+}
+.mgr-alert svg { flex-shrink: 0; width: 16px; height: 16px; margin-top: 1px; }
+
+/* ---- Loading state ---- */
+.mgr-loading {
+  text-align: center;
+  padding: 48px 24px;
+  color: #64748b;
+}
+
+/* ---- Table ---- */
+.mgr-table-wrap {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.mgr-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.mgr-table thead tr {
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.mgr-table th {
+  padding: 11px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.mgr-table tbody tr {
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.15s;
+}
+
+.mgr-table tbody tr:last-child { border-bottom: none; }
+.mgr-table tbody tr:hover { background: #f8fafc; }
+
+.mgr-table td {
+  padding: 12px 16px;
+  color: #334155;
+  vertical-align: middle;
+}
+
+.mgr-table-id {
+  font-family: 'SFMono-Regular', Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+/* ---- Badge ---- */
+.mgr-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.mgr-badge-rank1 { background: rgba(245,158,11,0.12); color: #b45309; border: 1px solid rgba(245,158,11,0.25); }
+.mgr-badge-rank2 { background: rgba(100,116,139,0.1); color: #475569; border: 1px solid rgba(100,116,139,0.2); }
+.mgr-badge-rank3 { background: rgba(180,83,9,0.1); color: #b45309; border: 1px solid rgba(180,83,9,0.18); }
+
+/* ---- Generated at note ---- */
+.mgr-generated-note {
+  margin-top: 12px;
+  font-size: 12px;
+  color: #94a3b8;
+  text-align: right;
+}
+
+/* ---- SVG chart container ---- */
+.mgr-chart-wrap {
+  overflow-x: auto;
+  border-radius: 12px;
+}
+
+.mgr-chart-wrap svg {
+  border-radius: 12px;
+  display: block;
+}
+
+/* ---- Checkboxes row ---- */
+.mgr-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.mgr-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #334155;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.mgr-checkbox-label input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: #0066ff;
+  cursor: pointer;
+}
+
+/* ---- Customer report grid ---- */
+.mgr-report-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.mgr-report-cell {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.mgr-report-cell-label {
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.mgr-report-cell-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+@media (max-width: 640px) {
+  .mgr-card-body { padding: 16px; }
+  .mgr-card-header { padding: 14px 16px; }
+  .mgr-filters-row { flex-direction: column; align-items: flex-start; }
+}

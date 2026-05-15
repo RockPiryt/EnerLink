@@ -135,7 +135,12 @@ const ManagerRanking: React.FC = () => {
               </table>
             </div>
             {data?.generated_at && (
-              <p className="mgr-generated-note">Generated at: {data.generated_at}</p>
+              <p className="mgr-generated-note">
+                Generated at: {new Date(data.generated_at).toLocaleString('pl-PL', {
+                  year: 'numeric', month: 'short', day: 'numeric',
+                  hour: '2-digit', minute: '2-digit'
+                })}
+              </p>
             )}
           </>
         )}
