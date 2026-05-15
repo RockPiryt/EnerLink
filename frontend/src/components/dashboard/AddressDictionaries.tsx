@@ -77,7 +77,7 @@ const AddressDictionaries: React.FC = () => {
                 <div style={{padding: 24}}><PKWiUList /></div>
               </Tab>
               <Tab eventKey="tariffs" title="Energy Tariffs">
-                <div style={{padding: 24}}><TariffList /></div>
+                <div style={{padding: 24}}><TariffList hideHeader /></div>
               </Tab>
             </Tabs>
           </div>
