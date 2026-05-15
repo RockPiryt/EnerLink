@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { lookupNip, GusCompanyData } from '../../services/gusService';
 import { getCountries, Country } from '../../services/countryService';
 import { getCities, City } from '../../services/cityService';
+import { findPostcode, findCityByPostcode } from '../../services/postcodeService';
 import AutocompleteSelect, { OptionType } from '../common/AutocompleteSelect';
 import { useNavigate } from 'react-router-dom';
 import './Customer.css';
@@ -58,6 +59,12 @@ const Icon = {
 const CustomerForm: React.FC = () => {
     const [form, setForm] = useState<CustomerFormData>({ company: '', email: '', address: {} });
     const [gusLoading, setGusLoading] = useState(false);
+    const [postcodeLoading, setPostcodeLoading] = useState(false);
+    const [postcodeError, setPostcodeError] = useState<string | null>(null);
+    const [postcodeList, setPostcodeList] = useState<string[]>([]);
+    const [cityLoading, setCityLoading] = useState(false);
+    const [cityError, setCityError] = useState<string | null>(null);
+    const [cityList, setCityList] = useState<string[]>([]);
     const [gusError, setGusError] = useState<string | null>(null);
     const [validationError, setValidationError] = useState<string | null>(null);
     const [countryOptions, setCountryOptions] = useState<OptionType[]>([]);
@@ -235,6 +242,65 @@ const CustomerForm: React.FC = () => {
         }
     };
 
+    // Find postcode by address
+    const handleFindPostcode = async () => {
+        setPostcodeLoading(true);
+        setPostcodeError(null);
+        setPostcodeList([]);
+        try {
+            const city = form.address?.city || '';
+            const street = form.address?.street_name || '';
+            const number = form.address?.building_number || '';
+            if (!city) {
+                setPostcodeError('Enter the city.');
+                setPostcodeLoading(false);
+                return;
+            }
+            const result = await findPostcode(city, street, number);
+            if (result.type === 'single' && result.postcode) {
+                setForm(f => ({ ...f, address: { ...f.address, postal_code: result.postcode } }));
+                setPostcodeList([]);
+            } else if (result.type === 'list' && result.postcodes) {
+                setPostcodeList(result.postcodes);
+            } else {
+                setPostcodeError('No postcode found.');
+            }
+        } catch (err: any) {
+            setPostcodeError(err?.response?.data?.error || 'Error while searching for postcode.');
+        } finally {
+            setPostcodeLoading(false);
+        }
+    };
+
+    // Find city by postcode
+    const handleFindCity = async () => {
+        setCityLoading(true);
+        setCityError(null);
+        setCityList([]);
+        try {
+            const postcode = form.address?.postal_code || '';
+            if (!postcode) {
+                setCityError('Enter the postcode.');
+                setCityLoading(false);
+                return;
+            }
+            const result = await findCityByPostcode(postcode);
+            if (result.cities && result.cities.length === 1) {
+                setForm(f => ({ ...f, address: { ...f.address, city: result.cities[0] } }));
+                setSelectedCity({ value: result.cities[0], label: result.cities[0] });
+                setCityList([]);
+            } else if (result.cities && result.cities.length > 1) {
+                setCityList(result.cities);
+            } else {
+                setCityError('No city found for this postcode.');
+            }
+        } catch (err: any) {
+            setCityError(err?.response?.data?.error || 'Error while searching for city.');
+        } finally {
+            setCityLoading(false);
+        }
+    };
+
     return (
         <div className="cm-page">
             {/* ---- HEADER ---- */}
@@ -394,29 +460,77 @@ const CustomerForm: React.FC = () => {
                                 </div>
                                 <div className="cm-form-group">
                                     <label className="cm-form-label">Postal Code</label>
-                                    <input
-                                        className="cm-form-input"
-                                        type="text"
-                                        name="address.postal_code"
-                                        value={form.address?.postal_code || ''}
-                                        onChange={handleChange}
-                                        placeholder="00-000"
-                                    />
+                                    <div style={{ display: 'flex', gap: 8 }}>
+                                        <input
+                                            className="cm-form-input"
+                                            type="text"
+                                            name="address.postal_code"
+                                            value={form.address?.postal_code || ''}
+                                            onChange={handleChange}
+                                            placeholder="00-000"
+                                            style={{ flex: 1 }}
+                                        />
+                                        <button
+                                            type="button"
+                                            className="cm-btn cm-btn-secondary"
+                                            style={{ minWidth: 90 }}
+                                            onClick={handleFindCity}
+                                            disabled={cityLoading}
+                                        >
+                                            {cityLoading ? 'Searching...' : 'Find city'}
+                                        </button>
+                                    </div>
+                                    {cityError && <div className="cm-alert cm-alert-danger" style={{marginTop: 8}}>{cityError}</div>}
+                                    {cityList.length > 0 && (
+                                        <div style={{marginTop: 8}}>
+                                            <div>Select city:</div>
+                                            {cityList.map(city => (
+                                                <button key={city} type="button" className="cm-btn cm-btn-tertiary" style={{margin: 2, padding: '2px 8px'}} onClick={() => {
+                                                    setForm(f => ({ ...f, address: { ...f.address, city } }));
+                                                    setSelectedCity({ value: city, label: city });
+                                                    setCityList([]);
+                                                }}>{city}</button>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             <div className="cm-form-grid cm-form-grid-3">
                                 <div className="cm-form-group">
                                     <label className="cm-form-label">City</label>
-                                    <AutocompleteSelect
-                                        options={cityOptions}
-                                        value={selectedCity}
-                                        onChange={option => setSelectedCity(option)}
-                                        placeholder="Select city"
-                                        isClearable
-                                        onInputChange={(inputValue, actionMeta) => {
-                                            if (actionMeta.action === 'input-change') handleCityInputChange(inputValue);
-                                        }}
-                                    />
+                                    <div style={{ display: 'flex', gap: 8 }}>
+                                        <AutocompleteSelect
+                                            options={cityOptions}
+                                            value={selectedCity}
+                                            onChange={option => setSelectedCity(option)}
+                                            placeholder="Select city"
+                                            isClearable
+                                            onInputChange={(inputValue, actionMeta) => {
+                                                if (actionMeta.action === 'input-change') handleCityInputChange(inputValue);
+                                            }}
+                                        />
+                                        <button
+                                            type="button"
+                                            className="cm-btn cm-btn-secondary"
+                                            style={{ minWidth: 90 }}
+                                            onClick={handleFindPostcode}
+                                            disabled={postcodeLoading}
+                                        >
+                                            {postcodeLoading ? 'Searching...' : 'Find postcode'}
+                                        </button>
+                                    </div>
+                                    {postcodeError && <div className="cm-alert cm-alert-danger" style={{marginTop: 8}}>{postcodeError}</div>}
+                                    {postcodeList.length > 0 && (
+                                        <div style={{marginTop: 8}}>
+                                            <div>Select postcode:</div>
+                                            {postcodeList.map(pc => (
+                                                <button key={pc} type="button" className="cm-btn cm-btn-tertiary" style={{margin: 2, padding: '2px 8px'}} onClick={() => {
+                                                    setForm(f => ({ ...f, address: { ...f.address, postal_code: pc } }));
+                                                    setPostcodeList([]);
+                                                }}>{pc}</button>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="cm-form-group">
                                     <label className="cm-form-label">Country</label>

@@ -9,6 +9,7 @@ import { User } from '../../models/user';
 import RoleList from '../role/RoleList';
 import SyncCountriesPanel from './SyncCountriesPanel';
 import { SyncCitiesPanel, SyncProvincesPanel } from './SyncCitiesProvincesPanel';
+import SyncPostcodesPanel from './SyncPostcodesPanel';
 import './AdminPanel.css';
 
 /* ----------------- Inline SVG icons ----------------- */
@@ -426,6 +427,7 @@ const AdminPanel: React.FC = () => {
                   <SyncCountriesPanel />
                   <SyncProvincesPanel />
                   <SyncCitiesPanel />
+                   <SyncPostcodesPanel />
                 </div>
               </>
             )}
