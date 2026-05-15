@@ -1,23 +1,31 @@
 import React, { useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
-import { Container, Row, Col, Card, Table, Button, Alert, Spinner } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
 import { getRanking, RankingResponse } from '../../services/managerService';
+import './Manager.css';
 
+const Icon = {
+  AlertCircle: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  ),
+  Download: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+  ),
+};
+
+const MEDAL_COLORS = ['#f59e0b', '#94a3b8', '#b45309'];
 
 const ManagerRanking: React.FC = () => {
   const [data, setData] = useState<RankingResponse | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [month, setMonth] = useState<number | ''>('');
   const [year, setYear] = useState<number | ''>('');
-  const navigate = useNavigate();
 
-  const fetchRanking = async (monthParam?: number | '', yearParam?: number | '') => {
+  const fetchRanking = async (m: number | '' = month, y: number | '' = year) => {
     setLoading(true);
     setError(null);
     try {
-      const json = await getRanking({ month: monthParam, year: yearParam });
+      const json = await getRanking({ month: m, year: y });
       setData(json);
     } catch (err: any) {
       setError(err.message);
@@ -26,121 +34,113 @@ const ManagerRanking: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    fetchRanking(month, year);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [month, year]);
+  useEffect(() => { fetchRanking(month, year); }, [month, year]);
 
   const handleExportXLSX = () => {
-    if (!data || !data.ranking) return;
+    if (!data?.ranking) return;
     const ws = XLSX.utils.json_to_sheet(data.ranking.map(item => ({
-      ID: item.id,
-      Name: item.name,
-      Score: item.value
+      ID: item.id, Name: item.name, Score: item.value
     })));
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Ranking');
     XLSX.writeFile(wb, 'sales_ranking.xlsx');
   };
 
-  // Team summary calculations
-  const totalSales = data?.ranking?.reduce((sum, item) => sum + item.value, 0) || 0;
-  const avgSales = data?.ranking && data.ranking.length > 0 ? (totalSales / data.ranking.length).toFixed(2) : '0';
-  const best = data?.ranking && data.ranking.length > 0 ? data.ranking[0] : null;
-  const worst = data?.ranking && data.ranking.length > 0 ? data.ranking[data.ranking.length - 1] : null;
+  const ranking = data?.ranking || [];
+  const totalSales = ranking.reduce((s, i) => s + i.value, 0);
+  const avgSales = ranking.length > 0 ? (totalSales / ranking.length).toFixed(1) : '0';
+  const best = ranking[0] ?? null;
+  const worst = ranking.length > 0 ? ranking[ranking.length - 1] : null;
 
   return (
-    <Container fluid className="py-4">
-      <Row>
-        <Col>
-          <Card>
-            <Card.Header className="bg-primary text-white d-flex align-items-center justify-content-between">
-              <h4 className="mb-0">Sales Ranking</h4>
-              <div>
-                <Button
-                  variant="success"
-                  size="sm"
-                  className="me-2"
-                  onClick={handleExportXLSX}
-                  disabled={loading || !data || !data.ranking?.length}
-                >
-                  Export to XLSX
-                </Button>
-                <Button
-                  variant="light"
-                  size="sm"
-                  onClick={() => navigate('/dashboard')}
-                >
-                  &larr; Back to Dashboard
-                </Button>
-              </div>
-            </Card.Header>
-            <Card.Body>
-              {/* Team summary section */}
-              {!loading && !error && data?.ranking && data.ranking.length > 0 && (
-                <div className="mb-4">
-                  <h5>Team Summary</h5>
-                  <div className="d-flex flex-wrap gap-4">
-                    <div><strong>Total sales:</strong> {totalSales}</div>
-                    <div><strong>Average per salesperson:</strong> {avgSales}</div>
-                    <div><strong>Best performer:</strong> {best?.name} ({best?.value})</div>
-                    <div><strong>Lowest performer:</strong> {worst?.name} ({worst?.value})</div>
-                  </div>
-                </div>
-              )}
-              <div className="mb-3 d-flex align-items-center gap-2">
-                <label className="me-2 mb-0">Month:</label>
-                <select value={month} onChange={e => setMonth(e.target.value ? Number(e.target.value) : '')} className="form-select w-auto">
-                  <option value="">All</option>
-                  {[...Array(12)].map((_, i) => (
-                    <option key={i+1} value={i+1}>{i+1}</option>
+    <div className="mgr-card">
+      <div className="mgr-card-header">
+        <h3 className="mgr-card-title">Sales Ranking</h3>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <span className="mgr-filter-label">Month:</span>
+          <select className="mgr-select" value={month} onChange={e => setMonth(e.target.value ? Number(e.target.value) : '')}>
+            <option value="">All</option>
+            {[...Array(12)].map((_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}
+          </select>
+          <span className="mgr-filter-label">Year:</span>
+          <input
+            className="mgr-input"
+            type="number"
+            value={year}
+            min={2000}
+            max={2100}
+            placeholder="All"
+            onChange={e => setYear(e.target.value ? Number(e.target.value) : '')}
+          />
+          <button
+            className="mgr-btn mgr-btn-success"
+            onClick={handleExportXLSX}
+            disabled={loading || !ranking.length}
+          >
+            <Icon.Download />Export XLSX
+          </button>
+        </div>
+      </div>
+
+      <div className="mgr-card-body">
+        {/* Summary pills */}
+        {!loading && !error && ranking.length > 0 && (
+          <div className="mgr-stats-row">
+            <div className="mgr-stat-pill"><strong>Total sales:</strong> {totalSales}</div>
+            <div className="mgr-stat-pill"><strong>Avg / person:</strong> {avgSales}</div>
+            {best && <div className="mgr-stat-pill"><strong>Best:</strong> {best.name} ({best.value})</div>}
+            {worst && worst.id !== best?.id && <div className="mgr-stat-pill"><strong>Lowest:</strong> {worst.name} ({worst.value})</div>}
+          </div>
+        )}
+
+        {loading ? (
+          <div className="mgr-loading">
+            <span className="pr-spinner" />
+            <p style={{ marginTop: 12 }}>Loading ranking…</p>
+          </div>
+        ) : error ? (
+          <div className="mgr-alert"><Icon.AlertCircle /><span>{error}</span></div>
+        ) : (
+          <>
+            <div className="mgr-table-wrap">
+              <table className="mgr-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Score</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ranking.length === 0 ? (
+                    <tr><td colSpan={4} style={{ textAlign: 'center', padding: '32px', color: '#94a3b8' }}>No data available.</td></tr>
+                  ) : ranking.map((item, idx) => (
+                    <tr key={item.id}>
+                      <td>
+                        {idx < 3
+                          ? <svg viewBox="0 0 24 24" fill="none" stroke={MEDAL_COLORS[idx]} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 16, height: 16 }}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>
+                          : <span className="mgr-table-id">{idx + 1}</span>}
+                      </td>
+                      <td><span className="mgr-table-id">{item.id}</span></td>
+                      <td style={{ fontWeight: idx === 0 ? 700 : 400 }}>{item.name}</td>
+                      <td>
+                        <span className={idx < 3 ? `mgr-badge mgr-badge-rank${idx + 1}` : ''} style={idx >= 3 ? { fontWeight: 600 } : {}}>
+                          {item.value}
+                        </span>
+                      </td>
+                    </tr>
                   ))}
-                </select>
-                <label className="ms-3 me-2 mb-0">Year:</label>
-                <input
-                  type="number"
-                  className="form-control w-auto"
-                  value={year}
-                  min={2000}
-                  max={2100}
-                  placeholder="All"
-                  onChange={e => setYear(e.target.value ? Number(e.target.value) : '')}
-                />
-              </div>
-              {loading ? (
-                <div style={{ textAlign: 'center' }}><Spinner animation="border" /></div>
-              ) : error ? (
-                <Alert variant="danger">{error}</Alert>
-              ) : (
-                <>
-                  <Table striped bordered hover size="sm">
-                    <thead>
-                      <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Score</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(data?.ranking || []).map(item => (
-                        <tr key={item.id}>
-                          <td>{item.id}</td>
-                          <td>{item.name}</td>
-                          <td>{item.value}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                  <div style={{ marginTop: 16, color: '#888' }}>
-                    {data?.generated_at ? `Generated at: ${data.generated_at}` : 'No generation date'}
-                  </div>
-                </>
-              )}
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-    </Container>
+                </tbody>
+              </table>
+            </div>
+            {data?.generated_at && (
+              <p className="mgr-generated-note">Generated at: {data.generated_at}</p>
+            )}
+          </>
+        )}
+      </div>
+    </div>
   );
 };
 

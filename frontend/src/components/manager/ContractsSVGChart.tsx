@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Spinner, Alert, Form, Row, Col } from 'react-bootstrap';
 import { getContractAnalytics } from '../../services/analyticsService';
+import './Manager.css';
 
-interface MonthlyData {
-  month: number;
-  count: number;
-}
+interface MonthlyData { month: number; count: number; }
 
 const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+const Icon = {
+  AlertCircle: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  ),
+};
 
 const ContractsSVGChart: React.FC = () => {
   const [data, setData] = useState<MonthlyData[]>([]);
@@ -16,130 +19,98 @@ const ContractsSVGChart: React.FC = () => {
   const [year, setYear] = useState<number>(new Date().getFullYear());
   const [allYears, setAllYears] = useState<number[]>([]);
 
-  // Fetch available years for filtering
   useEffect(() => {
     getContractAnalytics().then(json => {
-      if (json.yearly) {
-        setAllYears(json.yearly.map(y => y.year));
-      }
+      if (json.yearly) setAllYears(json.yearly.map((y: any) => y.year));
     });
   }, []);
 
-  // Fetch monthly data for selected year
   useEffect(() => {
     setLoading(true);
     setError(null);
     getContractAnalytics(year)
-      .then(json => {
-        setData(json.monthly || []);
-      })
-      .catch((err: any) => {
-        setError(err.message);
-      })
+      .then(json => setData(json.monthly || []))
+      .catch((err: any) => setError(err.message))
       .finally(() => setLoading(false));
   }, [year]);
 
-  // SVG chart dimensions
-  const width = 800;
-  const height = 320;
-  const padding = 60;
-  const barWidth = 32;
+  const width = 820;
+  const height = 300;
+  const padL = 48, padR = 24, padT = 28, padB = 44;
+  const chartW = width - padL - padR;
+  const chartH = height - padT - padB;
+  const barWidth = 36;
   const months = 12;
-  const maxCount = Math.max(...data.map(d => d.count), 1);
 
-  // Prepare data for all months (fill missing months with 0)
   const monthlyData: MonthlyData[] = Array.from({ length: 12 }, (_, i) => {
     const found = data.find(d => d.month === i + 1);
     return { month: i + 1, count: found ? found.count : 0 };
   });
 
+  const maxCount = Math.max(...monthlyData.map(d => d.count), 1);
+  const yTicks = [0, Math.round(maxCount / 2), maxCount];
+
   return (
-    <Card className="mb-4">
-      <Card.Header>
-        <h5 className="mb-0">Contracts Analytics (SVG) – {year}</h5>
-      </Card.Header>
-      <Card.Body>
-        <Form as={Row} className="mb-3 align-items-end">
-          <Form.Group as={Col} xs={12} sm={6} md={4} lg={3} controlId="yearSelect">
-            <Form.Label>Year</Form.Label>
-            <Form.Select value={year} onChange={e => setYear(Number(e.target.value))}>
-              {Array.from(new Set([year, ...allYears])).sort((a, b) => b - a).map(y => (
-                <option key={y} value={y}>{y}</option>
-              ))}
-            </Form.Select>
-          </Form.Group>
-        </Form>
+    <div className="mgr-card">
+      <div className="mgr-card-header">
+        <h3 className="mgr-card-title">Contracts per Month — {year}</h3>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span className="mgr-filter-label">Year:</span>
+          <select className="mgr-select" value={year} onChange={e => setYear(Number(e.target.value))}>
+            {Array.from(new Set([year, ...allYears])).sort((a, b) => b - a).map(y => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="mgr-card-body">
         {loading ? (
-          <div className="text-center py-4">
-            <Spinner animation="border" variant="primary" />
-            <p className="mt-2">Loading analytics...</p>
+          <div className="mgr-loading">
+            <span className="pr-spinner" />
+            <p style={{ marginTop: 12 }}>Loading analytics…</p>
           </div>
         ) : error ? (
-          <Alert variant="danger">{error}</Alert>
+          <div className="mgr-alert"><Icon.AlertCircle /><span>{error}</span></div>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <svg width={width} height={height} style={{ background: '#f8f9fa', borderRadius: 8 }}>
-              {/* Y axis */}
-              <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke="#888" />
-              {/* X axis */}
-              <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="#888" />
-              {/* Bars, months evenly spaced */}
-              {monthlyData.map((d, i) => {
-                const x = padding + (i + 0.5) * ((width - 2 * padding) / months) - barWidth / 2;
-                const barHeight = ((d.count / maxCount) * (height - 2 * padding)) || 0;
+          <div className="mgr-chart-wrap">
+            <svg width={width} height={height} style={{ background: '#f8fafc', minWidth: 480 }}>
+              {/* Y gridlines + labels */}
+              {yTicks.map(val => {
+                const y = padT + chartH - (val / maxCount) * chartH;
                 return (
-                  <g key={i}>
-                    <rect
-                      x={x}
-                      y={height - padding - barHeight}
-                      width={barWidth}
-                      height={barHeight}
-                      fill="#007bff"
-                    />
-                    {/* Value label */}
-                    {barHeight > 16 && d.count > 0 && (
-                      <text
-                        x={x + barWidth / 2}
-                        y={height - padding - barHeight - 8}
-                        textAnchor="middle"
-                        fontSize="13"
-                        fill="#333"
-                      >
-                        {d.count}
-                      </text>
-                    )}
-                    {/* Month label */}
-                    <text
-                      x={x + barWidth / 2}
-                      y={height - padding + 22}
-                      textAnchor="middle"
-                      fontSize="13"
-                      fill="#333"
-                    >
-                      {monthNames[d.month - 1]}
-                    </text>
+                  <g key={val}>
+                    <line x1={padL} y1={y} x2={padL + chartW} y2={y} stroke="#e2e8f0" strokeDasharray="4 3" />
+                    <text x={padL - 8} y={y + 4} textAnchor="end" fontSize="11" fill="#94a3b8">{val}</text>
                   </g>
                 );
               })}
-              {/* Y axis labels */}
-              {[0, maxCount].map((val, idx) => (
-                <text
-                  key={idx}
-                  x={padding - 16}
-                  y={height - padding - ((val / maxCount) * (height - 2 * padding))}
-                  textAnchor="end"
-                  fontSize="13"
-                  fill="#333"
-                  alignmentBaseline="middle"
-                >
-                  {val}
-                </text>
-              ))}
+
+              {/* Bars */}
+              {monthlyData.map((d, i) => {
+                const slotW = chartW / months;
+                const x = padL + i * slotW + slotW / 2 - barWidth / 2;
+                const barH = (d.count / maxCount) * chartH;
+                const y = padT + chartH - barH;
+                return (
+                  <g key={i}>
+                    <rect x={x} y={y} width={barWidth} height={barH || 0} rx={5} fill="#0066ff" opacity="0.85" />
+                    {barH > 18 && d.count > 0 && (
+                      <text x={x + barWidth / 2} y={y + 14} textAnchor="middle" fontSize="11" fill="#fff" fontWeight="700">{d.count}</text>
+                    )}
+                    <text x={x + barWidth / 2} y={padT + chartH + 18} textAnchor="middle" fontSize="11" fill="#64748b">{monthNames[i]}</text>
+                  </g>
+                );
+              })}
+
+              {/* Axes */}
+              <line x1={padL} y1={padT} x2={padL} y2={padT + chartH} stroke="#e2e8f0" />
+              <line x1={padL} y1={padT + chartH} x2={padL + chartW} y2={padT + chartH} stroke="#e2e8f0" />
             </svg>
           </div>
         )}
-      </Card.Body>
-    </Card>
+      </div>
+    </div>
   );
 };
 
