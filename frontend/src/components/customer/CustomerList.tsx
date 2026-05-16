@@ -237,13 +237,13 @@ const CustomerList: React.FC = () => {
                                                                 <Icon.Edit />
                                                                 Edit
                                                             </button>
-                                                            <button
-                                                                className="cm-action-btn cm-action-btn-danger"
-                                                                onClick={() => { setCustomerToDelete(customer); setShowConfirm(true); }}
-                                                            >
-                                                                <Icon.Trash />
-                                                                Delete
-                                                            </button>
+                                                            {/*<button*/}
+                                                            {/*    className="cm-action-btn cm-action-btn-danger"*/}
+                                                            {/*    onClick={() => { setCustomerToDelete(customer); setShowConfirm(true); }}*/}
+                                                            {/*>*/}
+                                                            {/*    <Icon.Trash />*/}
+                                                            {/*    Delete*/}
+                                                            {/*</button>*/}
                                                         </div>
                                                     </td>
                                                 </tr>
