@@ -44,3 +44,6 @@
 
 ### Manager Panel
 ![Manager Panel](images/enerlink_screenshots/manager_dashboard.png)
+
+### Tests
+(images/enerlink_screenshots/Testy.png)
