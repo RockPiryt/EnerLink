@@ -17,6 +17,10 @@ echo \
 
 apt-get update -y
 apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+apt-get install -y nginx certbot python3-certbot-nginx
+
+systemctl enable nginx
+systemctl start nginx
 
 systemctl enable docker
 systemctl start docker
@@ -37,6 +41,15 @@ fi
 
 cd EnerLink
 
+cp infra/terraform/nginx/enerlink-ec2.conf /etc/nginx/sites-available/enerlink
+
+ln -sf /etc/nginx/sites-available/enerlink /etc/nginx/sites-enabled/enerlink
+
+rm -f /etc/nginx/sites-enabled/default
+
+nginx -t
+systemctl reload nginx
+
 cat > .env <<EOF
 APP_ENV=${APP_ENV}
 DATABASE_URL=${DATABASE_URL}
@@ -46,6 +59,13 @@ EOF
 mkdir -p /opt/enerlink/data
 
 docker compose -f docker-compose.prod.yaml up -d --build
+
+certbot --nginx \
+  -d enerlink.paulinakimak.com \
+  --non-interactive \
+  --agree-tos \
+  -m rockpiryt@gmail.com \
+  --redirect
 
 sleep 10
 

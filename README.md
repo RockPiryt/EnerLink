@@ -253,6 +253,8 @@ The system has the following integrations with external data sources:
 
 1. Retrieval of PKD and PKWiU data from the official PKD and PKWiU classification structure published by the Central Statistical Office (Statistics Poland), available in Excel spreadsheet format.
 
+![Example screenshot](documentation/images/enerlink_screenshots/api_gus.png)
+
 
 ## Room for Improvement
 
