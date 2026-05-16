@@ -157,7 +157,7 @@ const CustomerForm: React.FC = () => {
             }
             
             const token = localStorage.getItem('token');
-            const res = await fetch('http://localhost:8080/api/customers', {
+            const res = await fetch(`${process.env.REACT_APP_API_URL}/api/customers`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

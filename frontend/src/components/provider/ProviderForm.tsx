@@ -46,7 +46,7 @@ const ProviderForm: React.FC = () => {
     setError(null);
     setSuccess(null);
     try {
-      const response = await fetch('http://localhost:8080/api/providers', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/providers`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),

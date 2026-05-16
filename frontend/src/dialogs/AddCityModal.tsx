@@ -17,7 +17,7 @@ const AddCityModal: React.FC<AddCityModalProps> = ({ show, onHide, onCityAdded }
         setError('');
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:8080/api/address/cities', {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/address/cities`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name }),

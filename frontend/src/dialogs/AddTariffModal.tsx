@@ -29,7 +29,7 @@ const AddTariffModal: React.FC<AddTariffModalProps> = ({ show, onHide, onTariffA
     setError('');
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8080/api/supplier/tariffs', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/supplier/tariffs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name }),

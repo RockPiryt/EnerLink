@@ -59,7 +59,7 @@ const ContractForm: React.FC = () => {
 
   useEffect(() => {
     setCustomersLoading(true);
-    fetch('http://localhost:8080/api/customers?per_page=1000')
+    fetch(`${process.env.REACT_APP_API_URL}/api/customers?per_page=1000`)
       .then(res => res.json())
       .then(data => setCustomers(Array.isArray(data) ? data : (data.items || [])))
       .catch(() => setCustomers([]))
@@ -82,7 +82,7 @@ const ContractForm: React.FC = () => {
         id_customer: form.id_customer ? parseInt(form.id_customer, 10) : undefined,
         status: form.status || 'Signed',
       };
-      const res = await fetch('http://localhost:8080/api/contracts', {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/contracts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
